@@ -32,3 +32,28 @@ export async function getMe(): Promise<{ user: User }> {
   const res = await api.get('/auth/me');
   return res.data;
 }
+
+export async function requestPasswordOtp(data: {
+  email: string;
+}): Promise<{ message: string; expires_in: number }> {
+  const res = await api.post('/auth/password/otp', data);
+  return res.data;
+}
+
+export async function verifyPasswordOtp(data: {
+  email: string;
+  otp: string;
+}): Promise<{ message: string }> {
+  const res = await api.post('/auth/password/otp/verify', data);
+  return res.data;
+}
+
+export async function resetPasswordWithOtp(data: {
+  email: string;
+  otp: string;
+  password: string;
+  password_confirmation: string;
+}): Promise<{ message: string }> {
+  const res = await api.post('/auth/password/reset', data);
+  return res.data;
+}

@@ -12,12 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100);
             $table->string('email', 191)->unique();
-            $table->string('phone', 20)->nullable()->unique();
             $table->string('password');
-            $table->string('avatar')->nullable();
-            $table->string('status_text', 160)->default('Hey there! I am using ChatWave.');
-            $table->timestamp('last_seen_at')->nullable();
-            $table->boolean('is_online')->default(false);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
