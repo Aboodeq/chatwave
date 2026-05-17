@@ -1,8 +1,37 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Mail, ArrowLeft, Loader2, MessageCircle, RefreshCw, CheckCircle2 } from "lucide-react";
+import {
+  Mail,
+  ArrowLeft,
+  Loader2,
+  MessageCircle,
+  RefreshCw,
+  CheckCircle2,
+  Lock,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import {
+  requestPasswordOtp,
+  resetPasswordWithOtp,
+  verifyPasswordOtp,
+} from "../api/auth";
 
-type Step = "email" | "otp" | "success";
+type Step = "email" | "otp" | "reset" | "success";
+
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+      errors?: Record<string, string[]>;
+    };
+  };
+};
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  const data = (error as ApiError).response?.data;
+  const firstError = data?.errors ? Object.values(data.errors)[0]?.[0] : undefined;
+  return firstError ?? data?.message ?? fallback;
+};
 
 export default function ForgotPasswordPage() {
   const [mounted, setMounted] = useState(false);
@@ -11,6 +40,9 @@ export default function ForgotPasswordPage() {
   const [emailErr, setEmailErr] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [otpErr, setOtpErr] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [passwordErr, setPasswordErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -123,6 +155,8 @@ export default function ForgotPasswordPage() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailErr("");
+    setOtpErr("");
+    setPasswordErr("");
     if (!email) {
       setEmailErr("Email address is required.");
       return;
@@ -132,11 +166,18 @@ export default function ForgotPasswordPage() {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setLoading(false);
-    setStep("otp");
-    startCountdown();
-    setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    try {
+      await requestPasswordOtp({ email });
+      setStep("otp");
+      setOtp(["", "", "", "", "", ""]);
+      startCountdown();
+      toast.success("Verification code sent.");
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    } catch (error) {
+      setEmailErr(getApiErrorMessage(error, "Unable to send verification code."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -158,6 +199,7 @@ export default function ForgotPasswordPage() {
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (pasted.length === 6) {
       setOtp(pasted.split(""));
+      setOtpErr("");
       inputRefs.current[5]?.focus();
     }
   };
@@ -170,20 +212,67 @@ export default function ForgotPasswordPage() {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setLoading(false);
-    setStep("success");
+    try {
+      await verifyPasswordOtp({ email, otp: code });
+      setPassword("");
+      setPasswordConfirmation("");
+      setPasswordErr("");
+      setStep("reset");
+      toast.success("Code verified.");
+    } catch (error) {
+      setOtpErr(getApiErrorMessage(error, "The verification code is invalid or expired."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResend = async () => {
     if (!canResend) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
-    setOtp(["", "", "", "", "", ""]);
-    setOtpErr("");
-    startCountdown();
-    setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    try {
+      await requestPasswordOtp({ email });
+      setOtp(["", "", "", "", "", ""]);
+      setOtpErr("");
+      startCountdown();
+      toast.success("New code sent.");
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    } catch (error) {
+      setOtpErr(getApiErrorMessage(error, "Unable to resend verification code."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordErr("");
+
+    if (password.length < 8) {
+      setPasswordErr("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (password !== passwordConfirmation) {
+      setPasswordErr("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await resetPasswordWithOtp({
+        email,
+        otp: otp.join(""),
+        password,
+        password_confirmation: passwordConfirmation,
+      });
+      if (timerRef.current) clearInterval(timerRef.current);
+      setStep("success");
+      toast.success("Password reset successfully.");
+    } catch (error) {
+      setPasswordErr(getApiErrorMessage(error, "Unable to reset password."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -567,7 +656,15 @@ export default function ForgotPasswordPage() {
               <div className="step-slide">
                 {/* Back */}
                 <div style={{ marginBottom: "1.8rem" }}>
-                  <button onClick={() => setStep("email")} className="back-link">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("email");
+                      setOtp(["", "", "", "", "", ""]);
+                      setOtpErr("");
+                    }}
+                    className="back-link"
+                  >
                     <ArrowLeft size={15} /> Change email
                   </button>
                 </div>
@@ -772,7 +869,202 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            {/* ── STEP: SUCCESS ── */}
+            {/* STEP: RESET PASSWORD */}
+            {step === "reset" && (
+              <div className="step-slide">
+                <div style={{ marginBottom: "1.8rem" }}>
+                  <button type="button" onClick={() => setStep("otp")} className="back-link">
+                    <ArrowLeft size={15} /> Back to code
+                  </button>
+                </div>
+
+                <div style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "center" }}>
+                  <div
+                    style={{
+                      width: "72px",
+                      height: "72px",
+                      borderRadius: "20px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        "linear-gradient(135deg,rgba(124,58,237,.25),rgba(59,130,246,.2))",
+                      border: "1px solid rgba(167,139,250,.25)",
+                    }}
+                  >
+                    <Lock size={30} color="#a78bfa" />
+                  </div>
+                </div>
+
+                <h2
+                  style={{
+                    fontFamily: "'Fraunces',serif",
+                    fontSize: "1.9rem",
+                    fontWeight: 900,
+                    color: "#f8fafc",
+                    marginBottom: "8px",
+                    textAlign: "center",
+                  }}
+                >
+                  Set a new password
+                </h2>
+                <p
+                  style={{
+                    color: "rgba(148,163,184,.75)",
+                    fontSize: ".875rem",
+                    lineHeight: 1.65,
+                    textAlign: "center",
+                    marginBottom: "2rem",
+                  }}
+                >
+                  Choose a strong password for {email}. You will use it the next time you sign in.
+                </p>
+
+                <form onSubmit={handlePasswordReset}>
+                  <div style={{ marginBottom: "1rem" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        fontSize: ".72rem",
+                        fontWeight: 700,
+                        color: "rgba(148,163,184,.8)",
+                        textTransform: "uppercase",
+                        letterSpacing: ".12em",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      New Password
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <Lock
+                        size={16}
+                        color={password ? "#a78bfa" : "rgba(100,116,139,.7)"}
+                        style={{
+                          position: "absolute",
+                          left: "14px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          transition: "color .2s",
+                        }}
+                      />
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setPasswordErr("");
+                        }}
+                        placeholder="At least 8 characters"
+                        className="fw-input"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: "1.2rem" }}>
+                    <label
+                      style={{
+                        display: "block",
+                        fontSize: ".72rem",
+                        fontWeight: 700,
+                        color: "rgba(148,163,184,.8)",
+                        textTransform: "uppercase",
+                        letterSpacing: ".12em",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      Confirm Password
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <Lock
+                        size={16}
+                        color={passwordConfirmation ? "#a78bfa" : "rgba(100,116,139,.7)"}
+                        style={{
+                          position: "absolute",
+                          left: "14px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          transition: "color .2s",
+                        }}
+                      />
+                      <input
+                        type="password"
+                        value={passwordConfirmation}
+                        onChange={(e) => {
+                          setPasswordConfirmation(e.target.value);
+                          setPasswordErr("");
+                        }}
+                        placeholder="Repeat new password"
+                        className="fw-input"
+                      />
+                    </div>
+                  </div>
+
+                  {passwordErr && (
+                    <p
+                      style={{
+                        color: "#f87171",
+                        fontSize: ".78rem",
+                        marginBottom: "1rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "5px",
+                          height: "5px",
+                          borderRadius: "50%",
+                          background: "#f87171",
+                          display: "inline-block",
+                        }}
+                      />
+                      {passwordErr}
+                    </p>
+                  )}
+
+                  <button type="submit" disabled={loading} className="cta-btn">
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        position: "relative",
+                        zIndex: 1,
+                      }}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 size={17} className="animate-spin" />
+                          Updating password...
+                        </>
+                      ) : (
+                        <>
+                          Reset Password{" "}
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                          </svg>
+                        </>
+                      )}
+                    </span>
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* STEP: SUCCESS */}
             {step === "success" && (
               <div className="step-slide" style={{ textAlign: "center", padding: "1rem 0" }}>
                 {/* Animated check */}
@@ -806,7 +1098,7 @@ export default function ForgotPasswordPage() {
                     marginBottom: "10px",
                   }}
                 >
-                  Identity <span className="grad-text">verified!</span>
+                  Password <span className="grad-text">reset!</span>
                 </h2>
                 <p
                   style={{
@@ -816,35 +1108,8 @@ export default function ForgotPasswordPage() {
                     marginBottom: "2rem",
                   }}
                 >
-                  Your code was accepted. You can now set a new password for your account.
+                  Your password has been updated. Sign in again with your new credentials.
                 </p>
-
-                <button className="cta-btn" onClick={() => {}}>
-                  <span
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "8px",
-                      position: "relative",
-                      zIndex: 1,
-                    }}
-                  >
-                    Set New Password
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </button>
 
                 <div style={{ marginTop: "1.5rem" }}>
                   <Link to="/login" className="back-link" style={{ justifyContent: "center" }}>
