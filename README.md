@@ -6,8 +6,8 @@ Messaging for teams: a Laravel 13 API (`chatwave-api`) and a React 19 + Vite cli
 - Sign up, sign in (with "keep me signed in"), and reset a forgotten password with a
   6-digit code sent by email.
 - One-to-one conversations; find people by name or exact email address.
-- Replies, edits and deletes, unread counts, light and dark themes, a phone layout, and
-  right-to-left text.
+- Replies, edits and deletes, unread counts, a phone layout, and right-to-left text.
+  Light theme by default; dark is available from the account menu.
 - New messages currently arrive by polling every few seconds. Real-time delivery with
   Laravel Reverb is the top item in [AUDIT.md](AUDIT.md#recommended-next-steps-not-done).
 
