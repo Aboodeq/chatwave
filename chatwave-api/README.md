@@ -30,6 +30,17 @@ All under `/api`. Everything except the `auth` group's public routes needs
 | POST | `/conversations/{id}/read` | Mark everything as read |
 | PUT | `/messages/{id}` | Edit your message: `body` |
 | DELETE | `/messages/{id}` | Delete your message |
+| PATCH | `/profile` | `name`, `status_text`, `show_online_status` |
+| POST | `/profile/avatar` | Upload a photo (`avatar`: JPG, PNG or WebP, up to 2 MB) |
+| DELETE | `/profile/avatar` | Remove the photo |
+| PUT | `/profile/password` | `current_password`, `password`; signs out other devices |
+| GET | `/sessions` | Devices you're signed in on |
+| DELETE | `/sessions/{id}` | Sign out one device |
+| DELETE | `/sessions` | Sign out every other device |
+| GET | `/avatars/{file}` | Profile photos (public, used in `<img>` tags) |
+
+Any authenticated request marks you online; it's written at most once a minute, and you
+count as online for two minutes after your last activity.
 
 ## Development
 

@@ -27,12 +27,12 @@ class ConversationResource extends JsonResource
                 : $otherParticipant?->name,
             'avatar' => $this->type === 'group'
                 ? ($this->group?->avatar ? asset('storage/'.$this->group->avatar) : null)
-                : ($otherParticipant?->avatar ? asset('storage/'.$otherParticipant->avatar) : null),
+                : $otherParticipant?->avatarUrl(),
             'is_online' => $this->type === 'private'
-                ? $otherParticipant?->is_online
+                ? (bool) $otherParticipant?->isOnline()
                 : null,
             'last_seen_at' => $this->type === 'private'
-                ? $otherParticipant?->last_seen_at?->toISOString()
+                ? $otherParticipant?->visibleLastSeenAt()?->toISOString()
                 : null,
             'last_message' => $this->latestMessage
                 ? new MessageResource($this->latestMessage)

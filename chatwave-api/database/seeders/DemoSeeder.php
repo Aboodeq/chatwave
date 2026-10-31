@@ -37,7 +37,18 @@ class DemoSeeder extends Seeder
             ['name' => $p[0], 'password' => 'password', 'status_text' => $p[2], 'email_verified_at' => now()],
         ));
 
-        [$maya, $daniel, $lina, $sam] = $people->all();
+        [$maya, $daniel, $lina, $sam, $yuki] = $people->all();
+
+        // Presence, so "Online" and "Last seen" show up. Yuki keeps it private.
+        foreach ([
+            [$maya, ['is_online' => true, 'last_seen_at' => now()]],
+            [$daniel, ['is_online' => false, 'last_seen_at' => now()->subHours(3)]],
+            [$lina, ['is_online' => false, 'last_seen_at' => now()->subDay()->setTime(21, 14)]],
+            [$sam, ['is_online' => false, 'last_seen_at' => now()->subDays(4)]],
+            [$yuki, ['is_online' => true, 'last_seen_at' => now(), 'show_online_status' => false]],
+        ] as [$person, $presence]) {
+            $person->forceFill($presence)->save();
+        }
 
         // [sender, body, minutes ago, reply to (index in this thread)?, edited?]
         $this->thread($conversations, $me, $maya, [

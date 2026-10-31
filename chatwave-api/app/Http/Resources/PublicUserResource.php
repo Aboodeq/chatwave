@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * What other users may see about someone: no email address or phone number.
+ * What other users may see about someone: no email address or phone number, and no
+ * presence if they've hidden it.
  */
 class PublicUserResource extends JsonResource
 {
@@ -15,12 +16,10 @@ class PublicUserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'avatar' => $this->avatar
-                ? asset('storage/'.$this->avatar)
-                : null,
+            'avatar' => $this->avatarUrl(),
             'status_text' => $this->status_text,
-            'is_online' => $this->is_online,
-            'last_seen_at' => $this->last_seen_at?->toISOString(),
+            'is_online' => $this->isOnline(),
+            'last_seen_at' => $this->visibleLastSeenAt()?->toISOString(),
         ];
     }
 }

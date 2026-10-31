@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AvatarController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Middleware\RecordPresence;
 use Illuminate\Support\Facades\Route;
 
 // Every API route is also limited to 120 requests per minute per user/IP ("api" limiter).
@@ -24,12 +28,30 @@ Route::prefix('auth')->group(function () {
         ->middleware('throttle:password-otp-check');
 });
 
-// Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+// Profile photos (public, so <img> tags can load them). Only random upload names match.
+Route::get('/avatars/{file}', [AvatarController::class, 'show'])
+    ->where('file', '[A-Za-z0-9]{20,64}\.(jpg|jpeg|png|webp)')
+    ->name('avatars.show');
+
+// Protected routes. RecordPresence keeps "online" and "last seen" current.
+Route::middleware(['auth:sanctum', RecordPresence::class])->group(function () {
 
     // Auth
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
+
+    // Your profile and settings (the third throttle argument keeps the counters separate)
+    Route::patch('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])
+        ->middleware('throttle:10,1,avatar');
+    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar']);
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])
+        ->middleware('throttle:6,1,password');
+
+    // Devices you're signed in on
+    Route::get('/sessions', [SessionController::class, 'index']);
+    Route::delete('/sessions', [SessionController::class, 'destroyOthers']);
+    Route::delete('/sessions/{session}', [SessionController::class, 'destroy'])->whereNumber('session');
 
     // People search, for starting conversations
     Route::get('/users', [UserController::class, 'index']);
