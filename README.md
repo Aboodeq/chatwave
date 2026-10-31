@@ -62,6 +62,11 @@ you can sign in as two people in two browsers and chat.
 
 ## If `php artisan migrate` fails
 
+- **It prints nothing, or says "database is locked":** another program has
+  `database/database.sqlite` open. Stop `php artisan serve`, `php artisan queue:work` and
+  `composer dev` (Ctrl+C), close database viewers (DB Browser for SQLite, TablePlus, a
+  VS Code SQLite extension), then try again. If it still happens, restart the computer.
+  On Windows, keep the project out of OneDrive-synced folders (such as a synced Desktop).
 - Run it inside `chatwave-api`, after `composer install` has finished without errors.
 - Check the PHP version with `php -v`. It must be 8.4.1 or newer.
 - If `.env` uses MySQL (`DB_CONNECTION=mysql`), make sure the database server is running
