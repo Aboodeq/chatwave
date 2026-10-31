@@ -18,7 +18,7 @@ class MessageReceipt extends Model
 
     protected $casts = [
         'delivered_at' => 'datetime',
-        'read_at'      => 'datetime',
+        'read_at' => 'datetime',
     ];
 
     public function message()

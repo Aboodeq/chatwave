@@ -30,15 +30,15 @@ class User extends Authenticatable
     ];
 
     protected $attributes = [
-        'is_online'   => false,
+        'is_online' => false,
         'status_text' => 'Hey there! I am using ChatWave.',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'last_seen_at'      => 'datetime',
-        'is_online'         => 'boolean',
-        'password'          => 'hashed',
+        'last_seen_at' => 'datetime',
+        'is_online' => 'boolean',
+        'password' => 'hashed',
     ];
 
     /**

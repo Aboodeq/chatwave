@@ -41,9 +41,9 @@ class PasswordResetOtpService
         PasswordResetOtp::updateOrCreate(
             ['email' => $email],
             [
-                'code_hash'   => Hash::make($code),
-                'attempts'    => 0,
-                'expires_at'  => now()->addMinutes(self::TTL_MINUTES),
+                'code_hash' => Hash::make($code),
+                'attempts' => 0,
+                'expires_at' => now()->addMinutes(self::TTL_MINUTES),
                 'verified_at' => null,
             ],
         );
@@ -84,7 +84,7 @@ class PasswordResetOtpService
 
         // The right code shouldn't count against the user (it is checked again on reset).
         PasswordResetOtp::whereKey($otp->getKey())->update([
-            'attempts'    => DB::raw('attempts - 1'),
+            'attempts' => DB::raw('attempts - 1'),
             'verified_at' => now(),
         ]);
 
@@ -113,8 +113,8 @@ class PasswordResetOtpService
             }
 
             $user->forceFill([
-                'password'          => $password, // hashed by the model cast
-                'remember_token'    => Str::random(60),
+                'password' => $password, // hashed by the model cast
+                'remember_token' => Str::random(60),
                 'email_verified_at' => $user->email_verified_at ?? now(),
             ])->save();
 

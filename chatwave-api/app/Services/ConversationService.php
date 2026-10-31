@@ -65,14 +65,14 @@ class ConversationService
 
             return DB::transaction(function () use ($authUser, $otherUser) {
                 $conversation = Conversation::create([
-                    'type'       => 'private',
+                    'type' => 'private',
                     'created_by' => $authUser->id,
                 ]);
 
                 $now = now();
 
                 $conversation->participants()->attach([
-                    $authUser->id  => ['role' => 'member', 'joined_at' => $now],
+                    $authUser->id => ['role' => 'member', 'joined_at' => $now],
                     $otherUser->id => ['role' => 'member', 'joined_at' => $now],
                 ]);
 
@@ -95,12 +95,12 @@ class ConversationService
             ->chunkById(500, function ($messages) use ($user, $now) {
                 MessageReceipt::upsert(
                     $messages->map(fn ($message) => [
-                        'message_id'   => $message->id,
-                        'user_id'      => $user->id,
+                        'message_id' => $message->id,
+                        'user_id' => $user->id,
                         'delivered_at' => $now,
-                        'read_at'      => $now,
-                        'created_at'   => $now,
-                        'updated_at'   => $now,
+                        'read_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
                     ])->all(),
                     ['message_id', 'user_id'],
                     ['read_at', 'updated_at'],

@@ -14,8 +14,8 @@ class UserResource extends PublicUserResource
     {
         return [
             ...parent::toArray($request),
-            'email'      => $this->email,
-            'phone'      => $this->phone,
+            'email' => $this->email,
+            'phone' => $this->phone,
             'created_at' => $this->created_at->toISOString(),
         ];
     }

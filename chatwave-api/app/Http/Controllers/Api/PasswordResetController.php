@@ -22,7 +22,7 @@ class PasswordResetController extends Controller
         SendPasswordResetCode::dispatch($request->validated('email'));
 
         return response()->json([
-            'message'    => 'If an account exists for this email, a verification code has been sent.',
+            'message' => 'If an account exists for this email, a verification code has been sent.',
             'expires_in' => PasswordResetOtpService::TTL_MINUTES * 60,
         ]);
     }

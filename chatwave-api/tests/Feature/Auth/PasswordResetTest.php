@@ -21,9 +21,9 @@ class PasswordResetTest extends TestCase
     private function storeCode(string $email = 'person@example.com', string $code = '123456', array $attributes = []): PasswordResetOtp
     {
         return PasswordResetOtp::create([
-            'email'      => $email,
-            'code_hash'  => Hash::make($code),
-            'attempts'   => 0,
+            'email' => $email,
+            'code_hash' => Hash::make($code),
+            'attempts' => 0,
             'expires_at' => now()->addMinutes(10),
             ...$attributes,
         ]);
@@ -37,9 +37,9 @@ class PasswordResetTest extends TestCase
     private function reset(string $otp, string $password = 'new-password', string $email = 'person@example.com')
     {
         return $this->postJson('/api/auth/password/reset', [
-            'email'                 => $email,
-            'otp'                   => $otp,
-            'password'              => $password,
+            'email' => $email,
+            'otp' => $otp,
+            'password' => $password,
             'password_confirmation' => $password,
         ]);
     }
@@ -59,8 +59,8 @@ class PasswordResetTest extends TestCase
         });
 
         $this->assertDatabaseHas('password_reset_otps', [
-            'email'       => 'person@example.com',
-            'attempts'    => 0,
+            'email' => 'person@example.com',
+            'attempts' => 0,
             'verified_at' => null,
         ]);
     }
@@ -107,7 +107,7 @@ class PasswordResetTest extends TestCase
         Event::fake([PasswordReset::class]);
 
         $user = User::factory()->create([
-            'email'    => 'person@example.com',
+            'email' => 'person@example.com',
             'password' => Hash::make('old-password'),
         ]);
         $token = $user->createToken('auth_token')->plainTextToken;

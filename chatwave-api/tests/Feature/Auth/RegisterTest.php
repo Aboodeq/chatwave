@@ -14,9 +14,9 @@ class RegisterTest extends TestCase
     private function register(array $overrides = [])
     {
         return $this->postJson('/api/auth/register', [
-            'name'                  => 'Ann Lee',
-            'email'                 => 'ann@example.com',
-            'password'              => 'secret-pass-1',
+            'name' => 'Ann Lee',
+            'email' => 'ann@example.com',
+            'password' => 'secret-pass-1',
             'password_confirmation' => 'secret-pass-1',
             ...$overrides,
         ]);

@@ -20,7 +20,7 @@ class StoreMessageRequest extends FormRequest
 
         return [
             // Only text messages exist until media uploads are implemented.
-            'body'        => ['required', 'string', 'max:5000'],
+            'body' => ['required', 'string', 'max:5000'],
             'reply_to_id' => [
                 'nullable',
                 'integer',
@@ -36,7 +36,7 @@ class StoreMessageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'body.required'      => 'Message cannot be empty.',
+            'body.required' => 'Message cannot be empty.',
             'reply_to_id.exists' => 'You can only reply to a message in this conversation.',
         ];
     }

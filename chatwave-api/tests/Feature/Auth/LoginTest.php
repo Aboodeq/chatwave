@@ -14,7 +14,7 @@ class LoginTest extends TestCase
     private function login(array $overrides = [])
     {
         return $this->postJson('/api/auth/login', [
-            'email'    => 'ann@example.com',
+            'email' => 'ann@example.com',
             'password' => 'password',
             ...$overrides,
         ]);

@@ -30,7 +30,7 @@ class MessageController extends Controller
             ->cursorPaginate(30);
 
         return response()->json([
-            'messages'    => MessageResource::collection($messages->items()),
+            'messages' => MessageResource::collection($messages->items()),
             'next_cursor' => $messages->nextCursor()?->encode(),
         ]);
     }
@@ -39,9 +39,9 @@ class MessageController extends Controller
     {
         $message = DB::transaction(function () use ($request, $conversation) {
             $message = $conversation->messages()->create([
-                'sender_id'   => $request->user()->id,
-                'type'        => 'text',
-                'body'        => $request->validated('body'),
+                'sender_id' => $request->user()->id,
+                'type' => 'text',
+                'body' => $request->validated('body'),
                 'reply_to_id' => $request->validated('reply_to_id'),
             ]);
 
@@ -61,7 +61,7 @@ class MessageController extends Controller
     public function update(UpdateMessageRequest $request, Message $message): JsonResponse
     {
         $message->update([
-            'body'      => $request->validated('body'),
+            'body' => $request->validated('body'),
             'is_edited' => true,
             'edited_at' => now(),
         ]);

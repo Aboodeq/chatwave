@@ -29,13 +29,13 @@ class MessageMedia extends Model
 
     public function getUrlAttribute(): string
     {
-        return asset('storage/' . $this->file_path);
+        return asset('storage/'.$this->file_path);
     }
 
     public function getThumbnailUrlAttribute(): ?string
     {
         return $this->thumbnail_path
-            ? asset('storage/' . $this->thumbnail_path)
+            ? asset('storage/'.$this->thumbnail_path)
             : null;
     }
 }

@@ -87,12 +87,12 @@ class DemoSeeder extends Seeder
 
             $message = new Message([
                 'conversation_id' => $conversation->id,
-                'sender_id'       => $sender->id,
-                'type'            => 'text',
-                'body'            => $body,
-                'reply_to_id'     => isset($line[3]) ? $created[$line[3]]->id : null,
-                'is_edited'       => $line[4] ?? false,
-                'edited_at'       => ($line[4] ?? false) ? $at->copy()->addMinutes(2) : null,
+                'sender_id' => $sender->id,
+                'type' => 'text',
+                'body' => $body,
+                'reply_to_id' => isset($line[3]) ? $created[$line[3]]->id : null,
+                'is_edited' => $line[4] ?? false,
+                'edited_at' => ($line[4] ?? false) ? $at->copy()->addMinutes(2) : null,
             ]);
             $message->created_at = $at;
             $message->updated_at = $at;
@@ -113,10 +113,10 @@ class DemoSeeder extends Seeder
             }
 
             MessageReceipt::create([
-                'message_id'   => $message->id,
-                'user_id'      => $reader->id,
+                'message_id' => $message->id,
+                'user_id' => $reader->id,
                 'delivered_at' => $message->created_at,
-                'read_at'      => $message->created_at,
+                'read_at' => $message->created_at,
             ]);
         }
 

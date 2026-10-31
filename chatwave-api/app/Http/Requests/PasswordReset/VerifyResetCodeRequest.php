@@ -18,7 +18,7 @@ class VerifyResetCodeRequest extends FormRequest
     {
         return [
             'email' => ['required', 'string', 'email', 'max:191'],
-            'otp'   => ['required', 'digits:6'],
+            'otp' => ['required', 'digits:6'],
         ];
     }
 }

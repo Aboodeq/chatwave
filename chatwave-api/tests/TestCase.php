@@ -39,8 +39,8 @@ abstract class TestCase extends BaseTestCase
     {
         return $conversation->messages()->create([
             'sender_id' => $sender->id,
-            'type'      => 'text',
-            'body'      => $body,
+            'type' => 'text',
+            'body' => $body,
         ]);
     }
 
