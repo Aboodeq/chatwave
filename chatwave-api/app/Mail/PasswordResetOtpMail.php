@@ -12,7 +12,7 @@ class PasswordResetOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public string $code)
+    public function __construct(public string $code, public int $expiresInMinutes = 10)
     {
         //
     }
@@ -27,7 +27,8 @@ class PasswordResetOtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            text: 'emails.password-reset-otp',
+            view: 'emails.password-reset-otp',
+            text: 'emails.password-reset-otp-text',
         );
     }
 

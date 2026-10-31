@@ -37,9 +37,9 @@ class ConversationResource extends JsonResource
             'last_message'   => $this->latestMessage
                 ? new MessageResource($this->latestMessage)
                 : null,
-            'unread_count'   => $this->unread_count ?? 0,
+            'unread_count'   => (int) ($this->unread_count ?? 0),
             'participant'    => $otherParticipant
-                ? new UserResource($otherParticipant)
+                ? new PublicUserResource($otherParticipant)
                 : null,
             'group'          => $this->type === 'group' && $this->group
                 ? [
@@ -52,6 +52,7 @@ class ConversationResource extends JsonResource
                 ]
                 : null,
             'created_at'     => $this->created_at->toISOString(),
+            'updated_at'     => $this->updated_at->toISOString(),
         ];
     }
 }

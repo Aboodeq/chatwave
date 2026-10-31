@@ -10,6 +10,11 @@ class Message extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Relations MessageResource needs; load these wherever messages are returned.
+     */
+    public const RESOURCE_RELATIONS = ['sender', 'media', 'reactions.user', 'replyTo.sender'];
+
     protected $fillable = [
         'conversation_id',
         'sender_id',

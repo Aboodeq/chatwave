@@ -114,4 +114,20 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Token Lifetimes
+    |--------------------------------------------------------------------------
+    |
+    | Minutes until a personal access token issued at sign-in expires. The
+    | "remember" lifetime applies when the user asks to stay signed in.
+    | Expired tokens are pruned daily by the scheduler (routes/console.php).
+    |
+    */
+
+    'token_lifetime' => [
+        'default' => (int) env('AUTH_TOKEN_LIFETIME', 60 * 24),
+        'remember' => (int) env('AUTH_REMEMBER_TOKEN_LIFETIME', 60 * 24 * 30),
+    ],
+
 ];

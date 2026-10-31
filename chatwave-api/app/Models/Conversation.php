@@ -40,4 +40,18 @@ class Conversation extends Model
     {
         return $this->hasOne(Group::class);
     }
+
+    public function isPrivate(): bool
+    {
+        return $this->type === 'private';
+    }
+
+    public function hasParticipant(User $user): bool
+    {
+        if ($this->relationLoaded('participants')) {
+            return $this->participants->contains('id', $user->getKey());
+        }
+
+        return $this->participants()->whereKey($user->getKey())->exists();
+    }
 }

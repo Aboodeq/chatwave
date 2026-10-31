@@ -12,14 +12,14 @@ class MessageResource extends JsonResource
         return [
             'id'              => $this->id,
             'conversation_id' => $this->conversation_id,
-            'sender'          => new UserResource($this->whenLoaded('sender')),
+            'sender'          => new PublicUserResource($this->whenLoaded('sender')),
             'type'            => $this->type,
             'body'            => $this->body,
             'reply_to'        => $this->whenLoaded('replyTo', function () {
                 return [
                     'id'     => $this->replyTo->id,
                     'body'   => $this->replyTo->body,
-                    'sender' => new UserResource($this->replyTo->sender),
+                    'sender' => new PublicUserResource($this->replyTo->sender),
                 ];
             }),
             'media'           => MediaResource::collection($this->whenLoaded('media')),
@@ -28,7 +28,7 @@ class MessageResource extends JsonResource
                     return [
                         'emoji' => $emoji,
                         'count' => $items->count(),
-                        'users' => UserResource::collection($items->pluck('user')),
+                        'users' => PublicUserResource::collection($items->pluck('user')),
                     ];
                 })->values();
             }),

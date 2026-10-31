@@ -21,5 +21,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Sample people and conversations, so the chat UI has something to show.
+        if (app()->isLocal()) {
+            $this->call(DemoSeeder::class);
+        }
     }
 }

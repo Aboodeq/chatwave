@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Conversation;
+use App\Models\User;
+use Illuminate\Auth\Access\Response;
+
+class ConversationPolicy
+{
+    /**
+     * Participants can read and post. Everyone else gets a 404 so conversation IDs can't be probed.
+     */
+    public function view(User $user, Conversation $conversation): Response
+    {
+        return $conversation->hasParticipant($user)
+            ? Response::allow()
+            : Response::denyAsNotFound();
+    }
+
+    /**
+     * Only group conversations can be left. Leaving a private one used to strand the other
+     * person: they could keep sending messages that would never be seen.
+     */
+    public function leave(User $user, Conversation $conversation): Response
+    {
+        if (! $conversation->hasParticipant($user)) {
+            return Response::denyAsNotFound();
+        }
+
+        return $conversation->isPrivate()
+            ? Response::deny('Private conversations cannot be left.')
+            : Response::allow();
+    }
+}

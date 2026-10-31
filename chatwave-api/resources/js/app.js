@@ -1,9 +1,2 @@
-//
-
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allow your team to quickly build robust real-time web applications.
- */
-
-import './echo';
+// The API serves JSON; the chat UI lives in ../chatwave-client (which also owns the
+// Laravel Echo setup once real-time broadcasting is added).

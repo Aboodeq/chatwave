@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Conversations\StoreConversationRequest;
 use App\Http\Resources\ConversationResource;
 use App\Models\Conversation;
 use App\Models\User;
@@ -10,6 +11,9 @@ use App\Services\ConversationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Access is enforced by ConversationPolicy on the routes (see routes/api.php).
+ */
 class ConversationController extends Controller
 {
     public function __construct(protected ConversationService $conversationService) {}
@@ -24,49 +28,34 @@ class ConversationController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreConversationRequest $request): JsonResponse
     {
-        $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
-        ]);
-
-        $otherUser = User::findOrFail($request->user_id);
-
-        if ($otherUser->id === $request->user()->id) {
-            return response()->json([
-                'message' => 'You cannot start a conversation with yourself.',
-            ], 422);
-        }
+        $otherUser = User::findOrFail($request->integer('user_id'));
 
         $conversation = $this->conversationService
             ->findOrCreatePrivateConversation($request->user(), $otherUser);
 
-        $conversation->load(['participants', 'group', 'latestMessage.sender']);
+        $this->conversationService->loadForUser($conversation, $request->user());
 
         return response()->json([
             'conversation' => new ConversationResource($conversation),
-        ], 201);
+        ], $conversation->wasRecentlyCreated ? 201 : 200);
     }
 
     public function show(Request $request, Conversation $conversation): JsonResponse
     {
-        if (!$this->conversationService->userBelongsToConversation($request->user(), $conversation)) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
-
-        $conversation->load(['participants', 'group', 'latestMessage.sender']);
+        $this->conversationService->loadForUser($conversation, $request->user());
 
         return response()->json([
             'conversation' => new ConversationResource($conversation),
         ]);
     }
 
+    /**
+     * Leave a group conversation.
+     */
     public function destroy(Request $request, Conversation $conversation): JsonResponse
     {
-        if (!$this->conversationService->userBelongsToConversation($request->user(), $conversation)) {
-            return response()->json(['message' => 'Forbidden.'], 403);
-        }
-
         $conversation->participants()->detach($request->user()->id);
 
         return response()->json([
