@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AvatarController;
+use App\Http\Controllers\Api\BlockController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\PasswordResetController;
@@ -56,6 +57,11 @@ Route::middleware(['auth:sanctum', RecordPresence::class])->group(function () {
     // People search, for starting conversations
     Route::get('/users', [UserController::class, 'index']);
 
+    // Blocking
+    Route::get('/blocks', [BlockController::class, 'index']);
+    Route::post('/users/{user}/block', [BlockController::class, 'store']);
+    Route::delete('/users/{user}/block', [BlockController::class, 'destroy']);
+
     // Conversations
     Route::get('/conversations', [ConversationController::class, 'index']);
     Route::post('/conversations', [ConversationController::class, 'store']);
@@ -68,7 +74,7 @@ Route::middleware(['auth:sanctum', RecordPresence::class])->group(function () {
     Route::get('/conversations/{conversation}/messages', [MessageController::class, 'index'])
         ->can('view', 'conversation');
     Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store'])
-        ->can('view', 'conversation');
+        ->can('send', 'conversation');
     Route::post('/conversations/{conversation}/read', [MessageController::class, 'markAsRead'])
         ->can('view', 'conversation');
     Route::put('/messages/{message}', [MessageController::class, 'update'])

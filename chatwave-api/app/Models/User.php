@@ -88,6 +88,69 @@ class User extends Authenticatable
         return $this->show_online_status ? $this->last_seen_at : null;
     }
 
+    /**
+     * Whether this user has blocked the other one.
+     */
+    public function hasBlocked(User|int $user): bool
+    {
+        return isset($this->blockState()['blocked'][self::idOf($user)]);
+    }
+
+    /**
+     * Whether the other user has blocked this one.
+     */
+    public function isBlockedBy(User|int $user): bool
+    {
+        return isset($this->blockState()['blockedBy'][self::idOf($user)]);
+    }
+
+    /**
+     * Call after blocking or unblocking so later checks in the same request see it.
+     */
+    public function forgetBlocks(): void
+    {
+        request()->attributes->remove($this->blockCacheKey());
+    }
+
+    /**
+     * Who this user has blocked and who has blocked them. Loaded with one query and kept
+     * on the current request, so every check while rendering a response is free and the
+     * next request starts fresh.
+     *
+     * @return array{blocked: array<int, true>, blockedBy: array<int, true>}
+     */
+    private function blockState(): array
+    {
+        $cache = request()->attributes;
+
+        if ($cache->has($this->blockCacheKey())) {
+            return $cache->get($this->blockCacheKey());
+        }
+
+        $rows = Contact::query()
+            ->where('is_blocked', true)
+            ->where(fn ($query) => $query->where('user_id', $this->id)->orWhere('contact_id', $this->id))
+            ->get(['user_id', 'contact_id']);
+
+        $state = [
+            'blocked' => $rows->where('user_id', $this->id)->mapWithKeys(fn ($row) => [(int) $row->contact_id => true])->all(),
+            'blockedBy' => $rows->where('contact_id', $this->id)->mapWithKeys(fn ($row) => [(int) $row->user_id => true])->all(),
+        ];
+        $cache->set($this->blockCacheKey(), $state);
+
+        return $state;
+    }
+
+    private function blockCacheKey(): string
+    {
+        return 'chatwave.blocks.'.$this->getKey();
+    }
+
+    private static function idOf(User|int $user): int
+    {
+        return $user instanceof User ? (int) $user->getKey() : $user;
+    }
+
     public function contacts()
     {
         return $this->hasMany(Contact::class);

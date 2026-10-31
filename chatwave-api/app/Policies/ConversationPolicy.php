@@ -19,6 +19,30 @@ class ConversationPolicy
     }
 
     /**
+     * Posting a message. In a private conversation, a block in either direction stops it.
+     */
+    public function send(User $user, Conversation $conversation): Response
+    {
+        if (! $conversation->hasParticipant($user)) {
+            return Response::denyAsNotFound();
+        }
+
+        if ($conversation->isPrivate()) {
+            $other = $conversation->participants()->whereKeyNot($user->getKey())->first();
+
+            if ($other && $user->hasBlocked($other)) {
+                return Response::deny('You blocked this person. Unblock them to send a message.');
+            }
+
+            if ($other && $user->isBlockedBy($other)) {
+                return Response::deny("You can't send messages to this person.");
+            }
+        }
+
+        return Response::allow();
+    }
+
+    /**
      * Only group conversations can be left. Leaving a private one used to strand the other
      * person: they could keep sending messages that would never be seen.
      */

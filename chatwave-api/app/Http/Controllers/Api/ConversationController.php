@@ -32,6 +32,9 @@ class ConversationController extends Controller
     {
         $otherUser = User::findOrFail($request->integer('user_id'));
 
+        // Someone who blocked you won't see a new conversation from you appear.
+        abort_if($request->user()->isBlockedBy($otherUser), 403, "You can't message this person.");
+
         $conversation = $this->conversationService
             ->findOrCreatePrivateConversation($request->user(), $otherUser);
 

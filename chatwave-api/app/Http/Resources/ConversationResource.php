@@ -19,6 +19,10 @@ class ConversationResource extends JsonResource
                 ->first();
         }
 
+        // In a private chat: whether either person blocked the other.
+        $iBlocked = $otherParticipant !== null && $authUser->hasBlocked($otherParticipant);
+        $theyBlocked = $otherParticipant !== null && $authUser->isBlockedBy($otherParticipant);
+
         return [
             'id' => $this->id,
             'type' => $this->type,
@@ -29,11 +33,13 @@ class ConversationResource extends JsonResource
                 ? ($this->group?->avatar ? asset('storage/'.$this->group->avatar) : null)
                 : $otherParticipant?->avatarUrl(),
             'is_online' => $this->type === 'private'
-                ? (bool) $otherParticipant?->isOnline()
+                ? ! $theyBlocked && (bool) $otherParticipant?->isOnline()
                 : null,
-            'last_seen_at' => $this->type === 'private'
+            'last_seen_at' => $this->type === 'private' && ! $theyBlocked
                 ? $otherParticipant?->visibleLastSeenAt()?->toISOString()
                 : null,
+            'is_blocked' => $iBlocked,
+            'can_message' => ! $iBlocked && ! $theyBlocked,
             'last_message' => $this->latestMessage
                 ? new MessageResource($this->latestMessage)
                 : null,
