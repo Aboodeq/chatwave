@@ -106,7 +106,7 @@ export function MessageBubble({
         first ? "mt-3" : "mt-0.5",
       )}
     >
-      <div className={cn("flex min-w-0 max-w-[min(85%,36rem)] flex-col", mine ? "items-end" : "items-start")}>
+      <div className={cn("flex min-w-0 max-w-[min(85%,40rem)] flex-col md:max-w-[min(70%,40rem)]", mine ? "items-end" : "items-start")}>
         {showSender && first && (
           <span dir="auto" className="mb-1 px-3 text-xs font-medium text-fg-subtle">
             {message.sender.name}
@@ -166,7 +166,7 @@ export function PendingBubble({
 
   return (
     <div className={cn("flex flex-col items-end", first ? "mt-3" : "mt-0.5")}>
-      <div className={cn("flex max-w-[min(85%,36rem)] flex-col items-end", !failed && "opacity-75")}>
+      <div className={cn("flex max-w-[min(85%,40rem)] flex-col items-end md:max-w-[min(70%,40rem)]", !failed && "opacity-75")}>
         <Bubble
           mine
           first={first}

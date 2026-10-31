@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useMatch } from "react-router-dom";
 import { useConversations } from "../hooks/useConversations";
 import { useSession } from "../hooks/useSession";
 import { cn } from "../lib/utils";
@@ -7,11 +7,15 @@ import { ConversationView } from "../components/chat/ConversationView";
 import { EmptyThread } from "../components/chat/EmptyThread";
 import { NewChatDialog } from "../components/chat/NewChatDialog";
 import { Sidebar } from "../components/chat/Sidebar";
+import { SettingsView } from "../components/settings/SettingsView";
 
+/** The signed-in app: the conversation list beside a conversation, or Settings. */
 export default function ChatPage() {
-  const params = useParams();
-  const parsed = Number(params.conversationId);
+  const conversationMatch = useMatch("/chat/:conversationId");
+  const onSettings = useMatch("/settings") !== null;
+  const parsed = Number(conversationMatch?.params.conversationId);
   const activeId = Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+  const showDetail = onSettings || activeId !== null;
   const [newChatOpen, setNewChatOpen] = useState(false);
 
   useSession();
@@ -31,14 +35,16 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-canvas">
-      {/* On phones, show either the list or the open conversation. */}
+      {/* On phones, show either the list or what's open next to it. */}
       <Sidebar
         activeId={activeId}
         onNewChat={() => setNewChatOpen(true)}
-        className={cn("w-full md:w-[22rem] lg:w-96", activeId ? "hidden md:flex" : "flex")}
+        className={cn("w-full md:w-[22rem] lg:w-96", showDetail ? "hidden md:flex" : "flex")}
       />
-      <main className={cn("min-w-0 flex-1 flex-col", activeId ? "flex" : "hidden md:flex")}>
-        {activeId ? (
+      <main className={cn("min-w-0 flex-1 flex-col", showDetail ? "flex" : "hidden md:flex")}>
+        {onSettings ? (
+          <SettingsView />
+        ) : activeId ? (
           <ConversationView key={activeId} conversationId={activeId} />
         ) : (
           <EmptyThread onNewChat={() => setNewChatOpen(true)} />

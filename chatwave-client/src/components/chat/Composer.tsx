@@ -6,6 +6,9 @@ import { IconButton } from "../ui/IconButton";
 
 export const MAX_MESSAGE_LENGTH = 5000;
 
+/** The box grows with the text up to this height (about eight lines), then scrolls. */
+const MAX_HEIGHT = 216;
+
 interface ComposerProps {
   value: string;
   onChange: (value: string) => void;
@@ -36,12 +39,16 @@ export function Composer({
   const remaining = MAX_MESSAGE_LENGTH - value.length;
   const context = editing ?? replyTo;
 
-  // Grow with the text, up to about eight lines.
+  // Grow with the text. scrollHeight leaves out the borders, so add them back; without
+  // that the box is 2px short and Windows shows a scrollbar even when it's empty.
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 216)}px`;
+    const borders = el.offsetHeight - el.clientHeight;
+    const needed = el.scrollHeight + borders;
+    el.style.height = `${Math.min(needed, MAX_HEIGHT)}px`;
+    el.style.overflowY = needed > MAX_HEIGHT ? "auto" : "hidden";
   }, [value, textareaRef]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -59,8 +66,8 @@ export function Composer({
   };
 
   return (
-    <div className="shrink-0 border-t border-line bg-surface px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-6">
-      <div className="mx-auto max-w-3xl">
+    <div className="shrink-0 border-t border-line bg-surface px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-6 lg:px-8">
+      <div>
         {context && (
           <div className="mb-2 flex animate-rise items-center gap-3 rounded-xl bg-surface-2 py-2 ps-3 pe-1.5">
             {editing ? (
@@ -99,7 +106,7 @@ export function Composer({
             aria-label="Message"
             dir="auto"
             className={cn(
-              "scrollbar-thin min-h-11 flex-1 resize-none rounded-[1.375rem] border border-line-strong bg-canvas px-4 py-2.5 text-base leading-6 text-fg md:text-[0.9375rem]",
+              "scrollbar-thin min-h-11 flex-1 resize-none overflow-y-hidden rounded-[1.375rem] border border-line-strong bg-canvas px-4 py-2.5 text-base leading-6 text-fg md:text-[0.9375rem]",
               "placeholder:text-fg-subtle outline-none transition-[border-color,box-shadow,background-color]",
               "focus:border-primary focus:bg-surface focus:ring-4 focus:ring-primary/15",
               remaining < 0 && "border-danger focus:border-danger focus:ring-danger/15",

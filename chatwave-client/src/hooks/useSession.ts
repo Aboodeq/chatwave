@@ -1,7 +1,8 @@
 import { useCallback, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe, logout } from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
+import type { User } from "../types/user";
 
 /**
  * Refreshes the signed-in user's profile. An expired or revoked token comes back as a 401,
@@ -14,6 +15,20 @@ export function useSession() {
   useEffect(() => {
     if (data) setUser(data);
   }, [data, setUser]);
+}
+
+/** Puts an updated profile everywhere the signed-in user is shown. */
+export function useUpdateCurrentUser() {
+  const queryClient = useQueryClient();
+  const setUser = useAuthStore((s) => s.setUser);
+
+  return useCallback(
+    (user: User) => {
+      setUser(user);
+      queryClient.setQueryData(["me"], user);
+    },
+    [queryClient, setUser],
+  );
 }
 
 /** Forgets the session right away and revokes its token on the server. */

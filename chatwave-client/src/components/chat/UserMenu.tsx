@@ -1,22 +1,15 @@
 import { DropdownMenu } from "radix-ui";
-import { Check, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
-import { useUIStore, type ThemePreference } from "../../stores/uiStore";
 import { useSignOut } from "../../hooks/useSession";
 import { cn } from "../../lib/utils";
 import { Avatar } from "../ui/Avatar";
-import { menuContent, menuItem, menuItemDanger, menuLabel, menuSeparator } from "../ui/menuStyles";
-
-const themes = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "Match system", icon: Monitor },
-] as const;
+import { menuContent, menuItem, menuItemDanger, menuSeparator } from "../ui/menuStyles";
 
 export function UserMenu() {
   const user = useAuthStore((s) => s.user);
-  const theme = useUIStore((s) => s.theme);
-  const setTheme = useUIStore((s) => s.setTheme);
+  const navigate = useNavigate();
   const signOut = useSignOut();
 
   return (
@@ -39,18 +32,10 @@ export function UserMenu() {
           </div>
 
           <DropdownMenu.Separator className={menuSeparator} />
-          <DropdownMenu.Label className={menuLabel}>Appearance</DropdownMenu.Label>
-          <DropdownMenu.RadioGroup value={theme} onValueChange={(value) => setTheme(value as ThemePreference)}>
-            {themes.map(({ value, label, icon: Icon }) => (
-              <DropdownMenu.RadioItem key={value} value={value} className={menuItem}>
-                <Icon aria-hidden="true" />
-                {label}
-                <DropdownMenu.ItemIndicator className="ms-auto">
-                  <Check aria-hidden="true" className="text-primary!" />
-                </DropdownMenu.ItemIndicator>
-              </DropdownMenu.RadioItem>
-            ))}
-          </DropdownMenu.RadioGroup>
+          <DropdownMenu.Item onSelect={() => navigate("/settings")} className={menuItem}>
+            <Settings aria-hidden="true" />
+            Settings
+          </DropdownMenu.Item>
 
           <DropdownMenu.Separator className={menuSeparator} />
           <DropdownMenu.Item onSelect={() => void signOut()} className={cn(menuItem, menuItemDanger)}>

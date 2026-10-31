@@ -137,7 +137,7 @@ export function MessageList({
         onScroll={onScroll}
         className="scrollbar-thin flex min-h-0 flex-1 flex-col-reverse overflow-y-auto overscroll-contain"
       >
-        <div role="log" aria-label="Messages" className="mx-auto w-full max-w-3xl px-3 pt-4 pb-3 md:px-6">
+        <div role="log" aria-label="Messages" className="w-full px-3 pt-4 pb-3 md:px-6 lg:px-8">
           <div ref={topRef} />
 
           {isLoading ? (

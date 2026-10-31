@@ -29,16 +29,16 @@ interface AvatarProps {
 }
 
 export function Avatar({ name, src, size = "md", online, className }: AvatarProps) {
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const palette = palettes[hashString(name ?? "") % palettes.length];
 
   return (
     <span className={cn("relative inline-flex shrink-0", className)}>
-      {src && !failed ? (
+      {src && failedSrc !== src ? (
         <img
           src={src}
           alt=""
-          onError={() => setFailed(true)}
+          onError={() => setFailedSrc(src)}
           className={cn("rounded-full object-cover", sizes[size])}
         />
       ) : (

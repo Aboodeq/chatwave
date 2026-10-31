@@ -12,5 +12,7 @@ export interface PublicUser {
 export interface User extends PublicUser {
   email: string;
   phone: string | null;
+  /** Privacy: whether others may see when you're online and last active. */
+  show_online_status: boolean;
   created_at: string;
 }

@@ -44,13 +44,25 @@ export function formatDayLabel(date: string): string {
   return fullDateFormat.format(d.toDate());
 }
 
-export function formatLastSeen(date: string): string {
-  const minutes = Math.round(dayjs(date).diff(dayjs(), "minute", true));
-  if (minutes > -1) return "Last seen just now";
-  if (minutes > -60) return `Last seen ${relativeFormat.format(minutes, "minute")}`;
-  const hours = Math.round(minutes / 60);
-  if (hours > -24) return `Last seen ${relativeFormat.format(hours, "hour")}`;
-  return `Last seen ${formatDayLabel(date).toLowerCase()}`;
+/** "Last seen 5 minutes ago", "Last seen yesterday at 9:14 PM", "Last seen Monday"… */
+export function formatLastSeen(date: string, now: number = Date.now(), label = "Last seen"): string {
+  const seen = dayjs(date);
+  const current = dayjs(now);
+  const minutes = Math.round(seen.diff(current, "minute", true));
+
+  if (minutes > -1) return `${label} just now`;
+  if (minutes > -60) return `${label} ${relativeFormat.format(minutes, "minute")}`;
+  if (seen.isSame(current, "day")) return `${label} today at ${formatTime(date)}`;
+  if (seen.isSame(current.subtract(1, "day"), "day")) return `${label} yesterday at ${formatTime(date)}`;
+  if (seen.isAfter(current.subtract(6, "day"))) return `${label} ${longWeekdayFormat.format(seen.toDate())}`;
+  if (seen.isSame(current, "year")) return `${label} ${shortDateFormat.format(seen.toDate())}`;
+  return `${label} ${fullDateFormat.format(seen.toDate())}`;
+}
+
+/** "Oct 31" this year, "Oct 31, 2025" otherwise. */
+export function formatShortDate(date: string): string {
+  const d = dayjs(date);
+  return (d.isSame(dayjs(), "year") ? shortDateFormat : fullDateFormat).format(d.toDate());
 }
 
 export function initials(name: string | null | undefined): string {

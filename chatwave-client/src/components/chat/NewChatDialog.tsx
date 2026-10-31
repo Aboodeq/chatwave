@@ -90,7 +90,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
                       disabled={start.isPending}
                       className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start outline-none transition-colors hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                     >
-                      <Avatar name={person.name} src={person.avatar} />
+                      <Avatar name={person.name} src={person.avatar} online={person.is_online} />
                       <span className="min-w-0 flex-1">
                         <span dir="auto" className="block truncate text-sm font-medium">
                           {person.name}

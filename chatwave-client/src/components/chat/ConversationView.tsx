@@ -12,7 +12,8 @@ import {
   useSendMessage,
 } from "../../hooks/useMessages";
 import { getDraft, setDraft } from "../../lib/drafts";
-import { formatLastSeen, isTouchDevice } from "../../lib/utils";
+import { cn, formatLastSeen, isTouchDevice } from "../../lib/utils";
+import { useNow } from "../../hooks/useNow";
 import { useAuthStore } from "../../stores/authStore";
 import { useOutboxStore } from "../../stores/outboxStore";
 import type { Conversation } from "../../types/conversation";
@@ -181,13 +182,17 @@ export function ConversationView({ conversationId }: { conversationId: number })
 }
 
 function ThreadHeader({ conversation }: { conversation: Conversation | undefined }) {
+  // Re-render periodically so "Last seen 2 minutes ago" keeps counting.
+  const now = useNow(30_000);
+  const online = conversation?.type === "private" && conversation.is_online === true;
+
   let subtitle = "";
   if (conversation?.type === "group") {
     subtitle = conversation.group?.description ?? "Group";
-  } else if (conversation?.is_online) {
+  } else if (online) {
     subtitle = "Online";
   } else if (conversation?.last_seen_at) {
-    subtitle = formatLastSeen(conversation.last_seen_at);
+    subtitle = formatLastSeen(conversation.last_seen_at, now);
   } else if (conversation?.participant) {
     subtitle = conversation.participant.status_text;
   }
@@ -210,7 +215,10 @@ function ThreadHeader({ conversation }: { conversation: Conversation | undefined
               {conversation.name ?? "Conversation"}
             </h1>
             {subtitle && (
-              <p dir="auto" className="truncate text-xs text-fg-subtle">
+              <p
+                dir="auto"
+                className={cn("truncate text-xs", online ? "font-medium text-success" : "text-fg-subtle")}
+              >
                 {subtitle}
               </p>
             )}
