@@ -1,9 +1,10 @@
-import api from '../lib/axios';
-import type { User } from '../types/user';
+import api from "../lib/axios";
+import type { User } from "../types/user";
 
 export interface AuthResponse {
   user: User;
   token: string;
+  expires_at: string | null;
 }
 
 export async function register(data: {
@@ -12,31 +13,32 @@ export async function register(data: {
   password: string;
   password_confirmation: string;
 }): Promise<AuthResponse> {
-  const res = await api.post('/auth/register', data);
+  const res = await api.post("/auth/register", data);
   return res.data;
 }
 
 export async function login(data: {
   email: string;
   password: string;
+  remember: boolean;
 }): Promise<AuthResponse> {
-  const res = await api.post('/auth/login', data);
+  const res = await api.post("/auth/login", data);
   return res.data;
 }
 
 export async function logout(): Promise<void> {
-  await api.post('/auth/logout');
+  await api.post("/auth/logout");
 }
 
-export async function getMe(): Promise<{ user: User }> {
-  const res = await api.get('/auth/me');
-  return res.data;
+export async function getMe(): Promise<User> {
+  const res = await api.get("/auth/me");
+  return res.data.user;
 }
 
 export async function requestPasswordOtp(data: {
   email: string;
 }): Promise<{ message: string; expires_in: number }> {
-  const res = await api.post('/auth/password/otp', data);
+  const res = await api.post("/auth/password/otp", data);
   return res.data;
 }
 
@@ -44,7 +46,7 @@ export async function verifyPasswordOtp(data: {
   email: string;
   otp: string;
 }): Promise<{ message: string }> {
-  const res = await api.post('/auth/password/otp/verify', data);
+  const res = await api.post("/auth/password/otp/verify", data);
   return res.data;
 }
 
@@ -54,6 +56,6 @@ export async function resetPasswordWithOtp(data: {
   password: string;
   password_confirmation: string;
 }): Promise<{ message: string }> {
-  const res = await api.post('/auth/password/reset', data);
+  const res = await api.post("/auth/password/reset", data);
   return res.data;
 }

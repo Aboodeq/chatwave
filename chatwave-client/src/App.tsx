@@ -1,58 +1,63 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuthStore } from "./stores/authStore";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { selectIsAuthenticated, useAuthStore } from "./stores/authStore";
+import { useApplyTheme } from "./hooks/useApplyTheme";
+import { LogoMark } from "./components/ui/Logo";
 import LoginPage from "./pages/LoginPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import RegisterPage from "./pages/RegisterPage";
-import ChatPage from "./pages/ChatPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+// The chat UI is the heavier part of the app; load it only once someone signs in.
+const ChatPage = lazy(() => import("./pages/ChatPage"));
+
+function RequireAuth() {
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+  return <Outlet />;
 }
 
-function GuestRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return !isAuthenticated ? <>{children}</> : <Navigate to="/chat" replace />;
+/** Sign-in pages. Once signed in, continue to where the user was headed. */
+function GuestOnly() {
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
+  const location = useLocation();
+
+  if (isAuthenticated) {
+    const from = (location.state as { from?: string } | null)?.from;
+    return <Navigate to={from?.startsWith("/chat") ? from : "/chat"} replace />;
+  }
+  return <Outlet />;
+}
+
+function FullScreenLoader() {
+  return (
+    <div className="grid min-h-dvh place-items-center bg-canvas">
+      <LogoMark className="size-10 animate-pulse" />
+    </div>
+  );
 }
 
 export default function App() {
+  useApplyTheme();
+
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            <GuestRoute>
-              <LoginPage />
-            </GuestRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <GuestRoute>
-              <RegisterPage />
-            </GuestRoute>
-          }
-        />
-        <Route
-          path="/chat"
-          element={
-            <ProtectedRoute>
-              <ChatPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/forgot-password"
-          element={
-            <GuestRoute>
-              <ForgotPasswordPage />
-            </GuestRoute>
-          }
-        />
-        <Route path="/" element={<Navigate to="/chat" replace />} />
-      </Routes>
+      <Suspense fallback={<FullScreenLoader />}>
+        <Routes>
+          <Route element={<GuestOnly />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          </Route>
+          <Route element={<RequireAuth />}>
+            <Route path="/chat/:conversationId?" element={<ChatPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/chat" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

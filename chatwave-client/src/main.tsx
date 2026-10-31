@@ -1,32 +1,30 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
-import App from "./App";
+import "@fontsource-variable/geist";
+import "@fontsource-variable/bricolage-grotesque";
 import "./index.css";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import App from "./App";
+import { queryClient } from "./lib/queryClient";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
-          duration: 3000,
+          duration: 3500,
           style: {
-            background: "#1A1D27",
-            color: "#F0F2FF",
-            border: "1px solid #22263A",
+            background: "var(--surface)",
+            color: "var(--fg)",
+            border: "1px solid var(--line)",
+            borderRadius: "14px",
+            boxShadow: "var(--shadow-pop)",
+            fontSize: "0.875rem",
           },
+          success: { iconTheme: { primary: "var(--primary)", secondary: "var(--primary-fg)" } },
         }}
       />
     </QueryClientProvider>

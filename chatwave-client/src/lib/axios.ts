@@ -1,32 +1,28 @@
-import axios from 'axios';
+import axios, { isAxiosError } from "axios";
+import { useAuthStore } from "../stores/authStore";
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
+  baseURL: import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api",
+  headers: { Accept: "application/json" },
 });
 
-// Attach token to every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
+  const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Handle 401 globally
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+// An authenticated request that comes back 401 means the token expired or was revoked
+// (e.g. by a password reset). Clearing the session lets the route guards send the user
+// to sign in, without a full page reload. Failed sign-ins don't carry a token, so they
+// are left for the form to handle.
+api.interceptors.response.use(undefined, (error) => {
+  if (isAxiosError(error) && error.response?.status === 401 && error.config?.headers?.Authorization) {
+    useAuthStore.getState().clearSession();
   }
-);
+  return Promise.reject(error);
+});
 
 export default api;

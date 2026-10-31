@@ -1,19 +1,20 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+export type ThemePreference = "light" | "dark" | "system";
 
 interface UIState {
-  isSidebarOpen: boolean;
-  activeConversationId: number | null;
-  toggleSidebar: () => void;
-  setActiveConversation: (id: number | null) => void;
+  theme: ThemePreference;
+  setTheme: (theme: ThemePreference) => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
-  isSidebarOpen: true,
-  activeConversationId: null,
-
-  toggleSidebar: () =>
-    set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-
-  setActiveConversation: (id) =>
-    set({ activeConversationId: id }),
-}));
+// The "chatwave-ui" key is also read by the inline script in index.html.
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      theme: "system",
+      setTheme: (theme) => set({ theme }),
+    }),
+    { name: "chatwave-ui" },
+  ),
+);

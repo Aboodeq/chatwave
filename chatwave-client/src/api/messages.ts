@@ -6,19 +6,22 @@ export interface MessagePage {
   next_cursor: string | null;
 }
 
+/** One page of history, newest first. Pass next_cursor to get older messages. */
 export async function getMessages(
   conversationId: number,
-  cursor?: string
+  cursor?: string | null,
+  signal?: AbortSignal
 ): Promise<MessagePage> {
   const res = await api.get(`/conversations/${conversationId}/messages`, {
     params: cursor ? { cursor } : {},
+    signal,
   });
   return res.data;
 }
 
 export async function sendMessage(
   conversationId: number,
-  data: { body?: string; type?: string; reply_to_id?: number }
+  data: { body: string; reply_to_id?: number | null }
 ): Promise<Message> {
   const res = await api.post(`/conversations/${conversationId}/messages`, data);
   return res.data.message;

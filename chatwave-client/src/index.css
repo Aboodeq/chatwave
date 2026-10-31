@@ -1,1 +1,201 @@
 @import "tailwindcss";
+
+/* Dark mode follows the `.dark` class on <html> (set from the saved theme in index.html). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans", "Noto Sans Arabic", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-display: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, system-ui,
+    sans-serif;
+
+  /* Lagoon: the ChatWave brand teal. */
+  --color-brand-50: #effcfb;
+  --color-brand-100: #d6f5f2;
+  --color-brand-200: #aeebe5;
+  --color-brand-300: #77d8d0;
+  --color-brand-400: #3dbdb5;
+  --color-brand-500: #1a9f99;
+  --color-brand-600: #0f7f7c;
+  --color-brand-700: #126564;
+  --color-brand-800: #145252;
+  --color-brand-900: #154545;
+  --color-brand-950: #052828;
+
+  --shadow-soft: 0 1px 2px rgb(15 26 34 / 0.04), 0 1px 3px rgb(15 26 34 / 0.06);
+  --shadow-pop: 0 16px 40px -12px rgb(15 26 34 / 0.22), 0 4px 12px -4px rgb(15 26 34 / 0.08);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-fade-in: fade-in 180ms ease-out both;
+  --animate-rise: rise 480ms var(--ease-out-expo) both;
+  --animate-pop: pop 220ms var(--ease-out-expo) both;
+  --animate-shake: shake 380ms ease-in-out;
+  --animate-typing: typing 1.2s ease-in-out infinite;
+  --animate-flash: flash 1.4s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes shake {
+    20%,
+    60% {
+      transform: translateX(-6px);
+    }
+    40%,
+    80% {
+      transform: translateX(6px);
+    }
+  }
+  @keyframes typing {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.45;
+    }
+    30% {
+      transform: translateY(-3px);
+      opacity: 1;
+    }
+  }
+  @keyframes flash {
+    from {
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 45%, transparent);
+    }
+  }
+}
+
+/* Semantic colors. Components use these, so light/dark is a variable swap. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-fg: var(--primary-soft-fg);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-bubble-out: var(--bubble-out);
+  --color-bubble-out-fg: var(--bubble-out-fg);
+  --color-bubble-in: var(--bubble-in);
+  --color-bubble-in-fg: var(--bubble-in-fg);
+  --color-ring: var(--ring);
+}
+
+:root {
+  color-scheme: light;
+  --canvas: #f4f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f3f6;
+  --surface-3: #e6ebef;
+  --line: #e3e8ed;
+  --line-strong: #d0d8df;
+  --fg: #0e1a22;
+  --fg-muted: #4e5d6a;
+  --fg-subtle: #66737f;
+  --primary: #0f7f7c;
+  --primary-hover: #0c6b68;
+  --primary-fg: #ffffff;
+  --primary-soft: #e4f5f3;
+  --primary-soft-fg: #0b5c5a;
+  --danger: #c93636;
+  --danger-soft: #fdeeee;
+  --success: #1c8a4c;
+  --success-soft: #e7f6ed;
+  --bubble-out: #0f7f7c;
+  --bubble-out-fg: #ffffff;
+  --bubble-in: #ffffff;
+  --bubble-in-fg: #0e1a22;
+  --ring: rgb(15 127 124 / 0.5);
+}
+
+.dark {
+  color-scheme: dark;
+  --canvas: #0b1117;
+  --surface: #111a21;
+  --surface-2: #17222b;
+  --surface-3: #1f2c36;
+  --line: #1d2a33;
+  --line-strong: #2c3c48;
+  --fg: #e7eef2;
+  --fg-muted: #a2b1bc;
+  --fg-subtle: #83929e;
+  --primary: #3cc4ba;
+  --primary-hover: #5ed2c9;
+  --primary-fg: #03211f;
+  --primary-soft: rgb(60 196 186 / 0.13);
+  --primary-soft-fg: #86e3db;
+  --danger: #f17070;
+  --danger-soft: rgb(241 112 112 / 0.13);
+  --success: #4cc985;
+  --success-soft: rgb(76 201 133 / 0.13);
+  --bubble-out: #13605c;
+  --bubble-out-fg: #ebfbf9;
+  --bubble-in: #17222b;
+  --bubble-in-fg: #e7eef2;
+  --ring: rgb(60 196 186 / 0.55);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-fg antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 28%, transparent);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

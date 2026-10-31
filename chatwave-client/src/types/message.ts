@@ -1,14 +1,15 @@
-import type { User } from './user';
+import type { PublicUser } from "./user";
 
 export interface Message {
   id: number;
   conversation_id: number;
-  sender: User;
-  type: 'text' | 'image' | 'file' | 'audio' | 'system';
+  sender: PublicUser;
+  type: "text" | "image" | "file" | "audio" | "system";
   body: string | null;
-  reply_to: ReplyTo | null;
-  media: MessageMedia[];
-  reactions: MessageReaction[];
+  reply_to?: ReplyTo | null;
+  /** Not included in a conversation's last_message preview. */
+  media?: MessageMedia[];
+  reactions?: MessageReaction[];
   is_edited: boolean;
   edited_at: string | null;
   created_at: string;
@@ -18,7 +19,7 @@ export interface Message {
 export interface ReplyTo {
   id: number;
   body: string | null;
-  sender: User;
+  sender: PublicUser;
 }
 
 export interface MessageMedia {
@@ -33,5 +34,5 @@ export interface MessageMedia {
 export interface MessageReaction {
   emoji: string;
   count: number;
-  users: User[];
+  users: PublicUser[];
 }

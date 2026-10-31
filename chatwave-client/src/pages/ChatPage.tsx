@@ -4,7 +4,7 @@ import { useAuthStore } from "../stores/authStore";
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const logout = useAuthStore((s) => s.logout);
+  const logout = useAuthStore((s) => s.clearSession);
 
   const handleLogout = () => {
     logout();
