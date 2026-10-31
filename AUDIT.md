@@ -208,8 +208,11 @@ These are missing features or larger design decisions rather than bugs.
    broadcasting auth route under `api` + `auth:sanctum` (it currently uses the `web`
    middleware); restrict Reverb's `allowed_origins` (currently `*`); then connect
    `laravel-echo` in the client (already a dependency) and slow polling to a fallback.
-2. **Presence.** `is_online` and `last_seen_at` exist but are never updated.
-3. **Media uploads.** Schema and resource exist; there's no upload endpoint. Validate type
+2. ~~**Presence.**~~ Done after the audit: activity is recorded (at most once a minute),
+   people show as online for two minutes after their last request, signing out marks
+   you offline, and a privacy setting hides it.
+3. **Media in messages.** Schema and resource exist; there's no upload endpoint. (Profile
+   photos are done: type and size validated, random names, SVG refused.) Validate type
    and size, store privately, serve through signed URLs.
 4. **Reactions.** Schema and resource exist; there's no endpoint to add or remove one.
 5. **Blocking.** `contacts.is_blocked` exists but isn't enforced; anyone can start a chat
