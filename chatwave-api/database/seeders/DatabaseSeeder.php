@@ -15,12 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // firstOrCreate so seeding twice (e.g. `migrate --seed` on an existing database)
+        // doesn't fail on the unique email.
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => 'password', 'email_verified_at' => now()],
+        );
 
         // Sample people and conversations, so the chat UI has something to show.
         if (app()->isLocal()) {

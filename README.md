@@ -15,7 +15,7 @@ See [AUDIT.md](AUDIT.md) for the October 2026 security audit and what changed.
 
 ## Requirements
 
-- PHP 8.4+ and Composer
+- PHP 8.4.1 or newer, and Composer
 - Node.js 22+
 
 ## Run it locally
@@ -59,6 +59,14 @@ The client calls `http://127.0.0.1:8000/api` unless `VITE_API_URL` says otherwis
 Sign in as `test@example.com` with password `password`. The other sample people
 (`maya@`, `daniel@`, `lina@`, `sam@` and `yuki@example.com`) use the same password, so
 you can sign in as two people in two browsers and chat.
+
+## If `php artisan migrate` fails
+
+- Run it inside `chatwave-api`, after `composer install` has finished without errors.
+- Check the PHP version with `php -v`. It must be 8.4.1 or newer.
+- If `.env` uses MySQL (`DB_CONNECTION=mysql`), make sure the database server is running
+  (in XAMPP or Laragon, start MySQL first) and the `DB_*` values match it.
+- "Nothing to migrate" means the database is already up to date.
 
 ## Checks
 

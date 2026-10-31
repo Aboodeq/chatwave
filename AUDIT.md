@@ -6,14 +6,14 @@ October 2026. Covers `chatwave-api` (Laravel 13) and `chatwave-client` (React 19
 
 Every file in both projects was read. Each backend issue below was first reproduced
 with an automated test against the original code, then fixed, and the test was kept as
-a regression test. The API test suite grew from 4 tests to 48.
+a regression test. The API test suite grew from 4 tests to 49.
 
 | | Found | Fixed | Recommended (not done) |
 |---|---|---|---|
 | Critical | 1 | 1 | |
 | High | 6 | 6 | |
 | Medium | 8 | 8 | |
-| Low | 10 | 10 | |
+| Low | 11 | 11 | |
 | Missing features | | | 12 |
 
 The most serious problems:
@@ -176,7 +176,8 @@ messages and a user's conversations scanned whole tables. SQLite is the default 
 `composer.json` allowed PHP 8.3, but the lock file contained Symfony 8 packages that need
 8.4, so `composer install` failed on 8.3.
 
-**Fixed:** `composer.json` now requires PHP ^8.4, matching the lock file.
+**Fixed:** `composer.json` now requires PHP ^8.4.1, matching the lock file (the patched
+Symfony 8.1 releases need 8.4.1).
 
 ### Low
 
@@ -192,6 +193,7 @@ messages and a user's conversations scanned whole tables. SQLite is the default 
 | B23 | Expired reset codes were never deleted. | Prunable model, scheduled daily. |
 | B24 | The reset email was plain text only. | Added an HTML version in the new brand style. |
 | B25 | The code didn't match the project's own Pint formatter. | Applied in a separate commit. |
+| B26 | The database seeder always inserted `test@example.com`, so `migrate --seed` crashed on a database that already had it. | Seeders can run repeatedly. |
 
 ---
 
@@ -260,7 +262,7 @@ All of these are addressed by the redesign.
 
 ## How this was verified
 
-- **API:** 48 tests, 323 assertions (previously 4). Every fixed bug has a regression test.
+- **API:** 49 tests, 326 assertions (previously 4). Every fixed bug has a regression test.
   `vendor/bin/pint --test` passes.
 - **Client:** TypeScript, ESLint and the production build pass. Every screen was exercised
   in Chromium with Playwright: light and dark themes, phone and desktop, validation and
@@ -270,4 +272,5 @@ All of these are addressed by the redesign.
 - **Caveat:** PHP 8.4 wasn't available in the review environment, so the tests ran on PHP
   8.3 against the same Laravel, Sanctum and Reverb versions as the updated lock file
   (with Symfony 7.4 instead of 8.1). Run `composer install && php artisan test` on PHP 8.4
-  to confirm.
+  to confirm. The upgrade path (running the new migrations on a database created by the
+  original code) was tested on SQLite and MariaDB 10.11, including rollback.
