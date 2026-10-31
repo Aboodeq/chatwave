@@ -50,7 +50,7 @@ export function TextField({
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy || undefined}
           className={cn(
-            "h-11 w-full rounded-xl border border-line-strong bg-surface px-3.5 text-[0.9375rem] text-fg shadow-soft",
+            "h-12 w-full rounded-xl border border-line-strong bg-surface px-3.5 text-base text-fg shadow-soft",
             "placeholder:text-fg-subtle/80 outline-none transition-[border-color,box-shadow] duration-150",
             "hover:border-fg-subtle/50 focus:border-primary focus:ring-4 focus:ring-primary/15",
             "aria-invalid:border-danger aria-invalid:focus:ring-danger/15",

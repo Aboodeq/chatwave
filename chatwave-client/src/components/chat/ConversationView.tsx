@@ -11,6 +11,7 @@ import {
   useMessageHistory,
   useSendMessage,
 } from "../../hooks/useMessages";
+import { getDraft, setDraft } from "../../lib/drafts";
 import { formatLastSeen, isTouchDevice } from "../../lib/utils";
 import { useAuthStore } from "../../stores/authStore";
 import { useOutboxStore } from "../../stores/outboxStore";
@@ -23,9 +24,6 @@ import { Composer } from "./Composer";
 import { DeleteMessageDialog } from "./DeleteMessageDialog";
 import { MessageList } from "./MessageList";
 
-/** Unsent text per conversation, kept while the app is open. */
-const drafts = new Map<number, string>();
-
 export function ConversationView({ conversationId }: { conversationId: number }) {
   const meId = useAuthStore((s) => s.user?.id);
   const { conversation, notFound } = useConversation(conversationId);
@@ -35,7 +33,7 @@ export function ConversationView({ conversationId }: { conversationId: number })
   const edit = useEditMessage(conversationId);
   const remove = useDeleteMessage(conversationId);
 
-  const [text, setText] = useState(() => drafts.get(conversationId) ?? "");
+  const [text, setText] = useState(() => getDraft(conversationId));
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editing, setEditing] = useState<{ message: Message; draft: string } | null>(null);
   const [deleting, setDeleting] = useState<Message | null>(null);
@@ -56,9 +54,7 @@ export function ConversationView({ conversationId }: { conversationId: number })
 
   const updateText = (value: string) => {
     setText(value);
-    if (editing) return;
-    if (value) drafts.set(conversationId, value);
-    else drafts.delete(conversationId);
+    if (!editing) setDraft(conversationId, value);
   };
 
   const stopEditing = () => {
@@ -111,7 +107,7 @@ export function ConversationView({ conversationId }: { conversationId: number })
     send(body, replyTo ? toReplyTo(replyTo) : null);
     setText("");
     setReplyTo(null);
-    drafts.delete(conversationId);
+    setDraft(conversationId, "");
   };
 
   const editLast = () => {

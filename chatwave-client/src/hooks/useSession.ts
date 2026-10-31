@@ -16,16 +16,18 @@ export function useSession() {
   }, [data, setUser]);
 }
 
-/** Revokes the token on the server, then forgets it locally. */
+/** Forgets the session right away and revokes its token on the server. */
 export function useSignOut() {
   const clearSession = useAuthStore((s) => s.clearSession);
 
   return useCallback(async () => {
+    const token = useAuthStore.getState().token;
+    clearSession("signed-out");
+    if (!token) return;
     try {
-      await logout();
+      await logout(token);
     } catch {
-      // Already invalid or offline: signing out locally is still the right outcome.
+      // Already invalid or offline: the local sign-out has happened either way.
     }
-    clearSession();
   }, [clearSession]);
 }

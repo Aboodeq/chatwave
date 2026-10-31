@@ -7,9 +7,11 @@ interface AuthState {
   user: User | null;
   /** "Keep me signed in": stored in localStorage (survives restarts) instead of sessionStorage. */
   remember: boolean;
+  /** Why the last session ended; not persisted. */
+  endedBy: "signed-out" | "expired" | null;
   startSession: (session: { token: string; user: User }, remember: boolean) => void;
   setUser: (user: User) => void;
-  clearSession: () => void;
+  clearSession: (reason?: "signed-out" | "expired") => void;
 }
 
 /**
@@ -45,9 +47,10 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       remember: false,
-      startSession: ({ token, user }, remember) => set({ token, user, remember }),
+      endedBy: null,
+      startSession: ({ token, user }, remember) => set({ token, user, remember, endedBy: null }),
       setUser: (user) => set({ user }),
-      clearSession: () => set({ token: null, user: null, remember: false }),
+      clearSession: (reason = "signed-out") => set({ token: null, user: null, remember: false, endedBy: reason }),
     }),
     {
       name: "chatwave-auth",

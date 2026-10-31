@@ -116,7 +116,7 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-fg-muted">
+      <p className="mt-8 text-sm text-fg-muted">
         New to ChatWave? <TextLink to="/register">Create an account</TextLink>
       </p>
     </AuthLayout>

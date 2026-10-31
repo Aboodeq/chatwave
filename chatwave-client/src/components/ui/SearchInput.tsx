@@ -31,7 +31,7 @@ export function SearchInput({ value, onChange, label, className, placeholder, ..
         autoComplete="off"
         spellCheck={false}
         className={cn(
-          "h-10 w-full rounded-xl border border-transparent bg-surface-2 ps-9 pe-9 text-sm text-fg placeholder:text-fg-subtle",
+          "h-10 w-full rounded-xl border border-transparent bg-surface-2 ps-9 pe-9 text-base text-fg placeholder:text-fg-subtle md:text-sm",
           "outline-none transition-[border-color,box-shadow,background-color] focus:border-primary focus:bg-surface focus:ring-4 focus:ring-primary/15",
           "[&::-webkit-search-cancel-button]:hidden",
           className,

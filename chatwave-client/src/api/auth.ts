@@ -26,8 +26,8 @@ export async function login(data: {
   return res.data;
 }
 
-export async function logout(): Promise<void> {
-  await api.post("/auth/logout");
+export async function logout(token?: string): Promise<void> {
+  await api.post("/auth/logout", null, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
 }
 
 export async function getMe(): Promise<User> {

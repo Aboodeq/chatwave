@@ -12,10 +12,12 @@ const ChatPage = lazy(() => import("./pages/ChatPage"));
 
 function RequireAuth() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
+  const signedOut = useAuthStore((s) => s.endedBy === "signed-out");
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    // Remember the page so signing back in returns to it, unless the user chose to leave.
+    return <Navigate to="/login" replace state={signedOut ? undefined : { from: location.pathname }} />;
   }
   return <Outlet />;
 }

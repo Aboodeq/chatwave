@@ -303,7 +303,7 @@ function CodeStep({
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-fg-muted" aria-live="polite">
+      <p className="mt-6 text-sm text-fg-muted" aria-live="polite">
         Didn't get it? Check your spam folder, or{" "}
         {secondsLeft > 0 ? (
           <span className="font-medium text-fg-subtle tabular-nums">
@@ -422,12 +422,14 @@ function DoneStep({ email }: { email: string }) {
   const navigate = useNavigate();
 
   return (
-    <div className="text-center">
-      <span className="mx-auto mb-6 grid size-16 animate-pop place-items-center rounded-full bg-success-soft text-success">
-        <CircleCheck className="size-8" aria-hidden="true" />
+    <div>
+      <span className="mb-6 grid size-14 animate-pop place-items-center rounded-2xl bg-success-soft text-success">
+        <CircleCheck className="size-7" aria-hidden="true" />
       </span>
-      <h1 className="font-display text-[2rem] leading-tight font-semibold tracking-[-0.025em]">Password updated</h1>
-      <p className="mx-auto mt-2 max-w-sm text-[0.9375rem] leading-relaxed text-fg-muted">
+      <h1 className="font-display text-[1.875rem] leading-[1.15] font-semibold tracking-[-0.025em] sm:text-[2.25rem]">
+        Password updated
+      </h1>
+      <p className="mt-3 text-base leading-relaxed text-fg-muted">
         For your security, you've been signed out everywhere. Sign in with your new password to continue.
       </p>
       <Button size="lg" className="mt-8 w-full" onClick={() => navigate("/login", { state: { email } })} autoFocus>
@@ -439,7 +441,7 @@ function DoneStep({ email }: { email: string }) {
 
 function BackToSignIn() {
   return (
-    <p className="mt-8 text-center text-sm">
+    <p className="mt-8 text-sm">
       <TextLink to="/login" className="inline-flex items-center gap-1.5 text-fg-muted hover:text-fg">
         <ArrowLeft className="size-4" aria-hidden="true" />
         Back to sign in

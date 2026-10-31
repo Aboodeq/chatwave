@@ -99,7 +99,7 @@ export function Composer({
             aria-label="Message"
             dir="auto"
             className={cn(
-              "scrollbar-thin min-h-11 flex-1 resize-none rounded-[1.375rem] border border-line-strong bg-canvas px-4 py-2.5 text-[0.9375rem] leading-6 text-fg",
+              "scrollbar-thin min-h-11 flex-1 resize-none rounded-[1.375rem] border border-line-strong bg-canvas px-4 py-2.5 text-base leading-6 text-fg md:text-[0.9375rem]",
               "placeholder:text-fg-subtle outline-none transition-[border-color,box-shadow,background-color]",
               "focus:border-primary focus:bg-surface focus:ring-4 focus:ring-primary/15",
               remaining < 0 && "border-danger focus:border-danger focus:ring-danger/15",

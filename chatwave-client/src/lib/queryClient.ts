@@ -1,6 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 import { getStatus } from "./errors";
 import { useAuthStore } from "../stores/authStore";
+import { useOutboxStore } from "../stores/outboxStore";
+import { clearDrafts } from "./drafts";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,9 +18,12 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Never show one account's cached conversations to the next person who signs in.
+// When a session ends, forget everything held for that account, so the next person to
+// sign in on this tab never sees its conversations, drafts or unsent messages.
 useAuthStore.subscribe((state, previous) => {
   if (previous.token && !state.token) {
     queryClient.clear();
+    clearDrafts();
+    useOutboxStore.setState({ pending: [] });
   }
 });

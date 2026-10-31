@@ -137,7 +137,7 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-fg-muted">
+      <p className="mt-8 text-sm text-fg-muted">
         Already have an account? <TextLink to="/login">Sign in</TextLink>
       </p>
     </AuthLayout>
