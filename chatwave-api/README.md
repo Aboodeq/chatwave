@@ -34,6 +34,9 @@ All under `/api`. Everything except the `auth` group's public routes needs
 | POST | `/profile/avatar` | Upload a photo (`avatar`: JPG, PNG or WebP, up to 2 MB) |
 | DELETE | `/profile/avatar` | Remove the photo |
 | PUT | `/profile/password` | `current_password`, `password`; signs out other devices |
+| GET | `/blocks` | People you blocked |
+| POST | `/users/{id}/block` | Block someone |
+| DELETE | `/users/{id}/block` | Unblock them |
 | GET | `/sessions` | Devices you're signed in on |
 | DELETE | `/sessions/{id}` | Sign out one device |
 | DELETE | `/sessions` | Sign out every other device |
@@ -41,6 +44,11 @@ All under `/api`. Everything except the `auth` group's public routes needs
 
 Any authenticated request marks you online; it's written at most once a minute, and you
 count as online for two minutes after your last activity.
+
+Blocking works both ways for messages: in a private chat where either person blocked the
+other, sending returns 403, and the blocked person can't start a new chat with you. They
+also stop seeing your online status and last seen. Conversations include `is_blocked`
+(you blocked the other person) and `can_message`.
 
 ## Development
 

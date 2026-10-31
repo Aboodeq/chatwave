@@ -8,8 +8,12 @@ Messaging for teams: a Laravel 13 API (`chatwave-api`) and a React 19 + Vite cli
 - One-to-one conversations; find people by name or exact email address.
 - Replies, edits and deletes, unread counts, "Online" and "Last seen", a phone layout,
   and right-to-left text.
-- Settings: profile photo, name and about; password; hide your online status; light,
-  dark or device theme; and the devices you're signed in on, with remote sign-out.
+- Contact info for each chat (select the name at the top): a larger photo, their about
+  text and status, and blocking. Close a chat with the X button or Esc, and hide the chat
+  list for more room.
+- Settings, one page per category: Profile (photo, name, about), Account (email,
+  password), Privacy (online status, blocked people), Appearance (light, dark or device
+  theme) and Devices (where you're signed in, with remote sign-out).
 - New messages currently arrive by polling every few seconds. Real-time delivery with
   Laravel Reverb is the top item in [AUDIT.md](AUDIT.md#recommended-next-steps-not-done).
 
@@ -108,6 +112,6 @@ cd chatwave-client && npm run lint && npm run build
 ```
 chatwave-api/      Laravel API: app/Http (controllers, requests, resources),
                    app/Policies, app/Services, database/migrations, tests/Feature
-chatwave-client/   React client: src/pages, src/components/{ui,auth,chat},
+chatwave-client/   React client: src/pages, src/components/{ui,auth,chat,settings},
                    src/hooks (data fetching), src/stores (session, theme, outbox)
 ```

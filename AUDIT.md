@@ -215,8 +215,10 @@ These are missing features or larger design decisions rather than bugs.
    photos are done: type and size validated, random names, SVG refused.) Validate type
    and size, store privately, serve through signed URLs.
 4. **Reactions.** Schema and resource exist; there's no endpoint to add or remove one.
-5. **Blocking.** `contacts.is_blocked` exists but isn't enforced; anyone can start a chat
-   with any user ID.
+5. ~~**Blocking.**~~ Done after the audit, enforced by the API: in a private chat where
+   either person blocked the other, neither can send; the blocked person can't start a
+   new chat and no longer sees your online status or last seen. Block from a chat's
+   contact info; unblock there or in Settings › Privacy.
 6. **Groups.** Schema exists; there's no API to create or manage groups.
 7. **Email verification** on sign-up.
 8. **"Delete chat for me"** for private conversations (needs a per-participant hidden or
