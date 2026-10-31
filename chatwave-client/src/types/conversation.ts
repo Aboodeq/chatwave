@@ -12,6 +12,10 @@ export interface Conversation {
   unread_count: number;
   participant: PublicUser | null;
   group: Group | null;
+  /** You blocked the other person (private chats). */
+  is_blocked: boolean;
+  /** False when either person in a private chat blocked the other. */
+  can_message: boolean;
   created_at: string;
   updated_at: string;
 }

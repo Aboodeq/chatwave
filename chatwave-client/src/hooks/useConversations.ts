@@ -17,6 +17,7 @@ export function useConversations() {
     queryKey: conversationKeys.all,
     queryFn: getConversations,
     refetchInterval: LIST_POLL_MS,
+    refetchOnWindowFocus: true,
   });
 }
 

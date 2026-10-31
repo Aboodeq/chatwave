@@ -10,7 +10,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { PasswordStrength } from "../auth/PasswordStrength";
 import { Button } from "../ui/Button";
 import { PasswordField } from "../ui/PasswordField";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsCard } from "./SettingsCard";
 
 const schema = z
   .object({
@@ -26,7 +26,8 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 const fields = ["current_password", "password", "password_confirmation"] as const;
 
-export function AccountSection() {
+/** Settings › Account: the sign-in email and changing the password. */
+export function AccountSettings() {
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
 
@@ -63,52 +64,48 @@ export function AccountSection() {
   });
 
   return (
-    <SettingsSection id="account" title="Account">
-      <div className="flex items-center gap-3">
-        <span className="grid size-10 place-items-center rounded-xl bg-surface-2 text-fg-muted">
-          <Mail className="size-5" aria-hidden="true" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-fg">Email</p>
-          <p className="truncate text-sm text-fg-muted">{user?.email}</p>
+    <>
+      <SettingsCard title="Email" description="You use this address to sign in. Only you can see it.">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg-muted">
+            <Mail className="size-5" aria-hidden="true" />
+          </span>
+          <p className="min-w-0 truncate text-[0.9375rem] font-medium text-fg">{user?.email}</p>
         </div>
-      </div>
+      </SettingsCard>
 
-      <form
-        noValidate
-        className="mt-6 space-y-5 border-t border-line pt-6"
-        onSubmit={handleSubmit((values) => mutation.mutate(values))}
+      <SettingsCard
+        title="Change password"
+        description="You'll stay signed in here. Your other devices will be signed out."
       >
-        <div>
-          <h3 className="text-sm font-semibold text-fg">Change password</h3>
-          <p className="mt-1 text-sm text-fg-muted">You'll stay signed in here. Other devices will be signed out.</p>
-        </div>
-        {/* Lets password managers file the new password under the right account. */}
-        <input type="email" name="username" autoComplete="username" value={user?.email ?? ""} readOnly hidden />
-        <PasswordField
-          label="Current password"
-          autoComplete="current-password"
-          error={errors.current_password?.message}
-          {...register("current_password")}
-        />
-        <PasswordField
-          label="New password"
-          placeholder="At least 8 characters"
-          autoComplete="new-password"
-          error={errors.password?.message}
-          hint={password ? <PasswordStrength password={password} /> : "Use 8 or more characters. Longer is stronger."}
-          {...register("password")}
-        />
-        <PasswordField
-          label="Confirm new password"
-          autoComplete="new-password"
-          error={errors.password_confirmation?.message}
-          {...register("password_confirmation")}
-        />
-        <Button type="submit" loading={mutation.isPending}>
-          Update password
-        </Button>
-      </form>
-    </SettingsSection>
+        <form noValidate className="space-y-5" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
+          {/* Lets password managers file the new password under the right account. */}
+          <input type="email" name="username" autoComplete="username" value={user?.email ?? ""} readOnly hidden />
+          <PasswordField
+            label="Current password"
+            autoComplete="current-password"
+            error={errors.current_password?.message}
+            {...register("current_password")}
+          />
+          <PasswordField
+            label="New password"
+            placeholder="At least 8 characters"
+            autoComplete="new-password"
+            error={errors.password?.message}
+            hint={password ? <PasswordStrength password={password} /> : "Use 8 or more characters. Longer is stronger."}
+            {...register("password")}
+          />
+          <PasswordField
+            label="Confirm new password"
+            autoComplete="new-password"
+            error={errors.password_confirmation?.message}
+            {...register("password_confirmation")}
+          />
+          <Button type="submit" loading={mutation.isPending}>
+            Update password
+          </Button>
+        </form>
+      </SettingsCard>
+    </>
   );
 }

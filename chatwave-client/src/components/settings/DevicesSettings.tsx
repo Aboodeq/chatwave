@@ -8,9 +8,10 @@ import { getErrorMessage } from "../../lib/errors";
 import { formatLastSeen, formatShortDate } from "../../lib/utils";
 import { Button } from "../ui/Button";
 import { Skeleton } from "../ui/Skeleton";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsCard } from "./SettingsCard";
 
-export function SessionsSection() {
+/** Settings › Devices: where the account is signed in, with sign-out per device. */
+export function DevicesSettings() {
   const queryClient = useQueryClient();
   const now = useNow(60_000);
   const { data: sessions, isPending, isError } = useQuery({ queryKey: ["sessions"], queryFn: getSessions });
@@ -38,11 +39,7 @@ export function SessionsSection() {
   const others = sessions?.filter((session) => !session.current).length ?? 0;
 
   return (
-    <SettingsSection
-      id="sessions"
-      title="Signed-in devices"
-      description="Where your account is signed in. Sign out anything you don't recognize."
-    >
+    <SettingsCard title="Signed-in devices" description="Sign out of any device you don't recognize.">
       {isPending ? (
         <div className="space-y-4" aria-label="Loading devices">
           {[0, 1].map((i) => (
@@ -111,6 +108,6 @@ export function SessionsSection() {
           </Button>
         </div>
       )}
-    </SettingsSection>
+    </SettingsCard>
   );
 }

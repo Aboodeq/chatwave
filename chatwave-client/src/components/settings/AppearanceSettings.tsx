@@ -2,7 +2,7 @@ import { RadioGroup } from "radix-ui";
 import { Check } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useUIStore, type ThemePreference } from "../../stores/uiStore";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsCard } from "./SettingsCard";
 
 const options: { value: ThemePreference; label: string; preview: string }[] = [
   { value: "light", label: "Light", preview: "bg-[#f4f6f8]" },
@@ -10,12 +10,13 @@ const options: { value: ThemePreference; label: string; preview: string }[] = [
   { value: "system", label: "Match device", preview: "bg-[linear-gradient(135deg,#f4f6f8_50%,#0b1117_50%)]" },
 ];
 
-export function AppearanceSection() {
+/** Settings › Appearance: light, dark or match the device. Saved on this device only. */
+export function AppearanceSettings() {
   const theme = useUIStore((s) => s.theme);
   const setTheme = useUIStore((s) => s.setTheme);
 
   return (
-    <SettingsSection id="appearance" title="Appearance" description="Choose how ChatWave looks on this device.">
+    <SettingsCard title="Theme" description="Choose how ChatWave looks on this device.">
       <RadioGroup.Root
         value={theme}
         onValueChange={(value) => setTheme(value as ThemePreference)}
@@ -44,6 +45,6 @@ export function AppearanceSection() {
           </RadioGroup.Item>
         ))}
       </RadioGroup.Root>
-    </SettingsSection>
+    </SettingsCard>
   );
 }

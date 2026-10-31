@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { MessageSquarePlus, RefreshCw, SearchX, SquarePen } from "lucide-react";
+import { MessageSquarePlus, PanelLeftClose, RefreshCw, SearchX, SquarePen } from "lucide-react";
 import { useConversations } from "../../hooks/useConversations";
 import { cn } from "../../lib/utils";
+import { useUIStore } from "../../stores/uiStore";
 import { Button } from "../ui/Button";
 import { IconButton } from "../ui/IconButton";
 import { Logo } from "../ui/Logo";
@@ -18,6 +19,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeId, onNewChat, className }: SidebarProps) {
   const { data: conversations, isPending, isError, refetch, isRefetching } = useConversations();
+  const setChatListHidden = useUIStore((s) => s.setChatListHidden);
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -33,6 +35,15 @@ export function Sidebar({ activeId, onNewChat, className }: SidebarProps) {
         <div className="flex items-center gap-1">
           <IconButton icon={SquarePen} label="New chat (Ctrl+K)" onClick={onNewChat} />
           <UserMenu />
+          {/* Hiding the list only makes sense while a chat is open next to it. */}
+          {activeId !== null && (
+            <IconButton
+              icon={PanelLeftClose}
+              label="Hide chat list"
+              className="hidden md:inline-grid"
+              onClick={() => setChatListHidden(true)}
+            />
+          )}
         </div>
       </div>
 

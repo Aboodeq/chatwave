@@ -1,6 +1,6 @@
 import { DropdownMenu } from "radix-ui";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, UserRound } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { useSignOut } from "../../hooks/useSession";
 import { cn } from "../../lib/utils";
@@ -32,6 +32,10 @@ export function UserMenu() {
           </div>
 
           <DropdownMenu.Separator className={menuSeparator} />
+          <DropdownMenu.Item onSelect={() => navigate("/settings/profile")} className={menuItem}>
+            <UserRound aria-hidden="true" />
+            Profile
+          </DropdownMenu.Item>
           <DropdownMenu.Item onSelect={() => navigate("/settings")} className={menuItem}>
             <Settings aria-hidden="true" />
             Settings

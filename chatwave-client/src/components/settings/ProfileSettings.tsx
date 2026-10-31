@@ -13,7 +13,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
 import { TextField } from "../ui/TextField";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsCard } from "./SettingsCard";
 
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 const ABOUT_MAX = 160;
@@ -25,7 +25,8 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function ProfileSection() {
+/** Settings › Profile: photo, display name and about. */
+export function ProfileSettings() {
   const user = useAuthStore((s) => s.user);
   const updateUser = useUpdateCurrentUser();
   const queryClient = useQueryClient();
@@ -85,7 +86,7 @@ export function ProfileSection() {
   });
 
   return (
-    <SettingsSection id="profile" title="Profile" description="How other people see you in ChatWave.">
+    <SettingsCard>
       <div className="flex items-center gap-5">
         <div className="relative">
           <Avatar name={user?.name} src={user?.avatar} size="xl" />
@@ -163,6 +164,6 @@ export function ProfileSection() {
           )}
         </div>
       </form>
-    </SettingsSection>
+    </SettingsCard>
   );
 }

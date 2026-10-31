@@ -18,6 +18,7 @@ const sizes = {
   md: "size-10 text-sm",
   lg: "size-12 text-base",
   xl: "size-16 text-xl",
+  "2xl": "size-40 text-5xl",
 };
 
 interface AvatarProps {

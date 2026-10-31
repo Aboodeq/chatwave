@@ -29,7 +29,7 @@ function GuestOnly() {
 
   if (isAuthenticated) {
     const from = (location.state as { from?: string } | null)?.from;
-    const safe = from && (from.startsWith("/chat") || from === "/settings");
+    const safe = from && (from.startsWith("/chat") || from.startsWith("/settings"));
     return <Navigate to={safe ? from : "/chat"} replace />;
   }
   return <Outlet />;
@@ -56,10 +56,11 @@ export default function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
           <Route element={<RequireAuth />}>
-            {/* One shell for all signed-in pages, so the sidebar stays put between them. */}
+            {/* One shell for all signed-in pages; it reads the URL to decide what to show. */}
             <Route element={<ChatPage />}>
               <Route path="/chat/:conversationId?" element={null} />
-              <Route path="/settings" element={null} />
+              <Route path="/chat/:conversationId/info" element={null} />
+              <Route path="/settings/:section?" element={null} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/chat" replace />} />
