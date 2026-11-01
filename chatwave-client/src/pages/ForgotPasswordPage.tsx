@@ -1,39 +1,61 @@
 import { useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { ArrowLeft, CircleCheck, Mail, MailCheck } from "lucide-react";
-import { requestPasswordOtp, resetPasswordWithOtp, verifyPasswordOtp } from "../api/auth";
+import { ArrowLeft, CircleCheck, Mail, MailCheck, MessageSquareText } from "lucide-react";
+import { requestPasswordOtp, resetPasswordWithOtp, verifyPasswordOtp, type Contact } from "../api/auth";
 import { getErrorMessage, getFieldErrors, getRetryAfter } from "../lib/errors";
+import { guessCountry } from "../lib/phoneCountry";
 import { cn } from "../lib/utils";
-import { useCountdown } from "../hooks/useCountdown";
-import { AuthHeading, AuthLayout } from "../components/auth/AuthLayout";
+import { Accent, AuthHeading, AuthLayout } from "../components/auth/AuthLayout";
+import { MethodSwitch } from "../components/auth/MethodSwitch";
 import { PasswordStrength } from "../components/auth/PasswordStrength";
+import { VerificationCodeForm } from "../components/auth/VerificationCodeForm";
+import {
+  checkContact,
+  contactFields,
+  resolveContact,
+  savedContactMethod,
+  type ContactMethod,
+  type ContactValues,
+} from "../components/auth/contact";
+import { sendWave } from "../components/auth/waveSignal";
 import { Alert } from "../components/ui/Alert";
 import { Button } from "../components/ui/Button";
-import { OtpInput } from "../components/ui/OtpInput";
 import { PasswordField } from "../components/ui/PasswordField";
+import { PhoneField } from "../components/ui/LazyPhoneField";
 import { TextField } from "../components/ui/TextField";
 import { TextLink, textLinkStyles } from "../components/ui/TextLink";
+import type { LoginPrefill } from "./LoginPage";
 
-type Step = "email" | "code" | "password" | "done";
+type Step = "contact" | "code" | "password" | "done";
 
-/** Matches the server's cooldown between codes for the same address. */
+/** Matches the server's cooldown between codes for the same address or number. */
 const RESEND_SECONDS = 60;
 
 export default function ForgotPasswordPage() {
   const location = useLocation();
-  const [step, setStep] = useState<Step>("email");
-  const [email, setEmail] = useState((location.state as { email?: string } | null)?.email ?? "");
+  const prefill = (location.state as LoginPrefill | null) ?? {};
+  const [step, setStep] = useState<Step>("contact");
+  const [values, setValues] = useState<ContactValues>({
+    method: prefill.method ?? savedContactMethod(),
+    email: prefill.email ?? "",
+    phone: prefill.phone ?? "",
+    country: prefill.country ?? guessCountry(),
+  });
   const [code, setCode] = useState("");
   const [resendAt, setResendAt] = useState(0);
   const [codeError, setCodeError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  // Where the code went: { email } or { phone } for the API, and how to show it.
+  const [sentTo, setSentTo] = useState<{ contact: Contact; display: string } | null>(null);
 
-  const goToCode = (address: string, waitSeconds: number) => {
-    setEmail(address);
+  const goToCode = (next: ContactValues, destination: { contact: Contact; display: string }, waitSeconds: number) => {
+    setValues(next);
+    setSentTo(destination);
     setCode("");
     setCodeError(null);
     setResendAt(Date.now() + waitSeconds * 1000);
@@ -42,56 +64,66 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      title={
+      headline={
         <>
-          Locked out?
+          Back in
           <br />
-          Let's fix that.
+          one <Accent>wave.</Accent>
         </>
       }
-      subtitle="We'll email you a 6‑digit code. It works once and expires after 10 minutes."
+      intro="We'll send a 6‑digit code to your email or phone. It works once and expires after 10 minutes."
     >
       {step !== "done" && <Progress step={step} />}
 
-      {step === "email" && <EmailStep initialEmail={email} onSent={goToCode} />}
+      {step === "contact" && <ContactStep initialValues={values} onSent={goToCode} />}
 
-      {step === "code" && (
+      {step === "code" && sentTo && (
         <CodeStep
-          email={email}
+          contact={sentTo.contact}
+          display={sentTo.display}
           resendAt={resendAt}
-          initialError={codeError}
+          error={codeError}
+          attempt={attempt}
+          onRejected={(message) => {
+            setCodeError(message);
+            setAttempt((n) => n + 1);
+          }}
           onResent={(waitSeconds) => setResendAt(Date.now() + waitSeconds * 1000)}
           onVerified={(verified) => {
             setCode(verified);
             setStep("password");
           }}
-          onChangeEmail={() => setStep("email")}
+          onChangeContact={() => setStep("contact")}
         />
       )}
 
-      {step === "password" && (
+      {step === "password" && sentTo && (
         <PasswordStep
-          email={email}
+          contact={sentTo.contact}
           code={code}
-          onDone={() => setStep("done")}
+          onDone={() => {
+            sendWave(1.6);
+            setStep("done");
+          }}
           onCodeRejected={(message) => {
             setCodeError(message);
+            setAttempt((n) => n + 1);
             setCode("");
             setStep("code");
           }}
         />
       )}
 
-      {step === "done" && <DoneStep email={email} />}
+      {step === "done" && <DoneStep values={values} />}
     </AuthLayout>
   );
 }
 
 function Progress({ step }: { step: Exclude<Step, "done"> }) {
-  const index = ["email", "code", "password"].indexOf(step);
+  const index = ["contact", "code", "password"].indexOf(step);
 
   return (
-    <div className="mb-8 flex items-center gap-3">
+    <div className="mb-7 flex items-center gap-3">
       <div className="flex flex-1 gap-1.5" aria-hidden="true">
         {[0, 1, 2].map((i) => (
           <span
@@ -105,64 +137,84 @@ function Progress({ step }: { step: Exclude<Step, "done"> }) {
   );
 }
 
-const emailSchema = z.object({
-  email: z.string().trim().min(1, "Enter your email address.").pipe(z.email("Enter a valid email address.")),
-});
+const contactSchema = z.object(contactFields).superRefine(checkContact);
 
-function EmailStep({
-  initialEmail,
+function ContactStep({
+  initialValues,
   onSent,
 }: {
-  initialEmail: string;
-  onSent: (email: string, waitSeconds: number) => void;
+  initialValues: ContactValues;
+  onSent: (values: ContactValues, destination: { contact: Contact; display: string }, waitSeconds: number) => void;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
-  const [rateLimitedEmail, setRateLimitedEmail] = useState<string | null>(null);
+  const [rateLimited, setRateLimited] = useState<{ values: ContactValues; destination: { contact: Contact; display: string } } | null>(null);
   const {
     register,
     handleSubmit,
+    control,
     setFocus,
+    setValue,
+    clearErrors,
     formState: { errors },
-  } = useForm<z.infer<typeof emailSchema>>({
-    resolver: zodResolver(emailSchema),
-    defaultValues: { email: initialEmail },
-  });
+  } = useForm<ContactValues>({ resolver: zodResolver(contactSchema), defaultValues: initialValues });
+  const [method, country] = useWatch({ control, name: ["method", "country"] });
+  // The phone field loads on demand, so it takes focus itself when it appears.
+  const [focusPhone, setFocusPhone] = useState(initialValues.method === "phone");
 
   useEffect(() => {
-    setFocus("email");
-  }, [setFocus]);
+    setFocus(initialValues.method);
+  }, [initialValues.method, setFocus]);
 
   const mutation = useMutation({
-    mutationFn: (email: string) => requestPasswordOtp({ email }),
-    onSuccess: (_, email) => onSent(email, RESEND_SECONDS),
-    onError: (error, email) => {
-      setRateLimitedEmail(getRetryAfter(error) ? email : null);
-      setFormError(getErrorMessage(error, "We couldn't send a code. Please try again."));
+    mutationFn: async (values: ContactValues) => {
+      const destination = await resolveContact(values);
+      try {
+        await requestPasswordOtp(destination.contact);
+      } catch (error) {
+        // Let "I already have a code" continue with this address after a rate limit.
+        setRateLimited(getRetryAfter(error) ? { values, destination } : null);
+        throw error;
+      }
+      return destination;
     },
+    onSuccess: (destination, values) => onSent(values, destination, RESEND_SECONDS),
+    onError: (error) => setFormError(getErrorMessage(error, "We couldn't send a code. Please try again.")),
   });
+
+  const switchMethod = (next: ContactMethod, source: "pointer" | "keyboard") => {
+    setValue("method", next);
+    clearErrors();
+    setFormError(null);
+    sendWave(0.8);
+    // Clicking a method moves on to its field; arrow keys stay on the switch.
+    setFocusPhone(source === "pointer" && next === "phone");
+    if (source === "pointer" && next === "email") requestAnimationFrame(() => setFocus("email"));
+  };
 
   return (
     <>
       <AuthHeading
         title="Reset your password"
-        description="Enter the email you signed up with and we'll send you a verification code."
+        description="Enter the email address or phone number you signed up with, and we'll send you a code."
       />
 
       <form
         noValidate
         className="space-y-5"
-        onSubmit={handleSubmit(({ email }) => {
+        onSubmit={handleSubmit((values) => {
           setFormError(null);
-          mutation.mutate(email);
+          mutation.mutate(values);
         })}
       >
+        <MethodSwitch value={method} onChange={switchMethod} label="Reset with" />
+
         {formError && (
           <Alert>
             {formError}
-            {rateLimitedEmail && (
+            {rateLimited && (
               <button
                 type="button"
-                onClick={() => onSent(rateLimitedEmail, RESEND_SECONDS)}
+                onClick={() => onSent(rateLimited.values, rateLimited.destination, RESEND_SECONDS)}
                 className={cn(textLinkStyles, "mt-1 block text-danger")}
               >
                 I already have a code
@@ -171,17 +223,40 @@ function EmailStep({
           </Alert>
         )}
 
-        <TextField
-          label="Email"
-          type="email"
-          icon={Mail}
-          placeholder="you@company.com"
-          autoComplete="email"
-          autoCapitalize="none"
-          spellCheck={false}
-          error={errors.email?.message}
-          {...register("email")}
-        />
+        <div key={method} className="animate-fade-in">
+          {method === "email" ? (
+            <TextField
+              label="Email"
+              type="email"
+              icon={Mail}
+              placeholder="you@company.com"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              error={errors.email?.message}
+              {...register("email")}
+            />
+          ) : (
+            <Controller
+              control={control}
+              name="phone"
+              render={({ field }) => (
+                <PhoneField
+                  label="Phone number"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                  name={field.name}
+                  country={country}
+                  onCountryChange={(code) => setValue("country", code)}
+                  error={errors.phone?.message}
+                  autoFocus={focusPhone}
+                />
+              )}
+            />
+          )}
+        </div>
 
         <Button type="submit" size="lg" loading={mutation.isPending} className="w-full">
           {mutation.isPending ? "Sending code…" : "Send code"}
@@ -194,132 +269,79 @@ function EmailStep({
 }
 
 function CodeStep({
-  email,
+  contact,
+  display,
   resendAt,
-  initialError,
+  error,
+  attempt,
+  onRejected,
   onResent,
   onVerified,
-  onChangeEmail,
+  onChangeContact,
 }: {
-  email: string;
+  contact: Contact;
+  display: string;
   resendAt: number;
-  initialError: string | null;
+  error: string | null;
+  attempt: number;
+  onRejected: (message: string) => void;
   onResent: (waitSeconds: number) => void;
   onVerified: (code: string) => void;
-  onChangeEmail: () => void;
+  onChangeContact: () => void;
 }) {
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(initialError);
-  // Remounting the boxes clears them, refocuses the first one and replays the shake.
-  const [attempt, setAttempt] = useState(0);
-  const secondsLeft = useCountdown(resendAt);
+  const byPhone = "phone" in contact;
+  const Icon = byPhone ? MessageSquareText : MailCheck;
 
   const verify = useMutation({
-    mutationFn: (otp: string) => verifyPasswordOtp({ email, otp }),
+    mutationFn: (otp: string) => verifyPasswordOtp({ ...contact, otp }),
     onSuccess: (_, otp) => onVerified(otp),
-    onError: (err) => {
-      setError(getErrorMessage(err, "That code didn't work. Please try again."));
-      setCode("");
-      setAttempt((a) => a + 1);
-    },
+    onError: (err) => onRejected(getErrorMessage(err, "That code didn't work. Please try again.")),
   });
 
   const resend = useMutation({
-    mutationFn: () => requestPasswordOtp({ email }),
+    mutationFn: () => requestPasswordOtp(contact),
     onSuccess: () => {
       onResent(RESEND_SECONDS);
-      setError(null);
-      setCode("");
-      setAttempt((a) => a + 1);
-      toast.success("We sent you a new code.");
+      toast.success(byPhone ? "We texted you a new code." : "We sent you a new code.");
     },
     onError: (err) => {
       const wait = getRetryAfter(err);
       if (wait) onResent(wait);
-      setError(getErrorMessage(err, "We couldn't send a new code. Please try again."));
+      onRejected(getErrorMessage(err, "We couldn't send a new code. Please try again."));
     },
   });
-
-  const submit = (otp: string) => {
-    if (otp.length < 6 || verify.isPending) return;
-    setError(null);
-    verify.mutate(otp);
-  };
 
   return (
     <>
       <AuthHeading
-        title="Check your inbox"
+        title={byPhone ? "Check your phone" : "Check your inbox"}
         description={
           <>
-            If an account exists for <span className="font-medium text-fg">{email}</span>, we sent it a 6‑digit code.{" "}
-            <button type="button" onClick={onChangeEmail} className={textLinkStyles}>
-              Use a different email
+            If an account uses <span className="font-medium whitespace-nowrap text-fg">{display}</span>, we{" "}
+            {byPhone ? "texted" : "sent"} it a 6‑digit code.{" "}
+            <button type="button" onClick={onChangeContact} className={textLinkStyles}>
+              Use something else
             </button>
           </>
         }
       >
         <span className="mb-5 grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary-soft-fg">
-          <MailCheck className="size-6" aria-hidden="true" />
+          <Icon className="size-6" aria-hidden="true" />
         </span>
       </AuthHeading>
 
-      <form
-        noValidate
-        className="space-y-5"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (code.length < 6) {
-            setError("Enter all 6 digits of the code.");
-            setAttempt((a) => a + 1);
-            return;
-          }
-          submit(code);
-        }}
-      >
-        <div className="space-y-2">
-          <OtpInput
-            key={attempt}
-            value={code}
-            onChange={(value) => {
-              setCode(value);
-              if (error) setError(null);
-            }}
-            onComplete={submit}
-            invalid={Boolean(error)}
-            disabled={verify.isPending}
-            autoFocus
-            describedBy={error ? "otp-error" : undefined}
-          />
-          {error && (
-            <p id="otp-error" role="alert" className="text-[0.8125rem] font-medium text-danger">
-              {error}
-            </p>
-          )}
-        </div>
-
-        <Button type="submit" size="lg" loading={verify.isPending} className="w-full">
-          {verify.isPending ? "Checking…" : "Verify code"}
-        </Button>
-      </form>
-
-      <p className="mt-6 text-sm text-fg-muted" aria-live="polite">
-        Didn't get it? Check your spam folder, or{" "}
-        {secondsLeft > 0 ? (
-          <span className="font-medium text-fg-subtle tabular-nums">
-            resend in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
-          </span>
-        ) : (
-          <button
-            type="button"
-            onClick={() => resend.mutate()}
-            disabled={resend.isPending}
-            className={cn(textLinkStyles, "disabled:opacity-60")}
-          >
-            {resend.isPending ? "sending…" : "send a new code"}
-          </button>
-        )}
-      </p>
+      <VerificationCodeForm
+        onSubmit={(otp) => verify.mutate(otp)}
+        submitting={verify.isPending}
+        submitLabel="Verify code"
+        submittingLabel="Checking…"
+        error={error}
+        attempt={attempt}
+        resendAt={resendAt}
+        onResend={() => resend.mutate()}
+        resending={resend.isPending}
+        resendHint={byPhone ? "Didn't get a text? Give it a minute, or" : "Didn't get it? Check your spam folder, or"}
+      />
     </>
   );
 }
@@ -335,12 +357,12 @@ const passwordSchema = z
   });
 
 function PasswordStep({
-  email,
+  contact,
   code,
   onDone,
   onCodeRejected,
 }: {
-  email: string;
+  contact: Contact;
   code: string;
   onDone: () => void;
   onCodeRejected: (message: string) => void;
@@ -364,7 +386,7 @@ function PasswordStep({
   }, [setFocus]);
 
   const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof passwordSchema>) => resetPasswordWithOtp({ email, otp: code, ...values }),
+    mutationFn: (values: z.infer<typeof passwordSchema>) => resetPasswordWithOtp({ ...contact, otp: code, ...values }),
     onSuccess: onDone,
     onError: (error) => {
       const fields = getFieldErrors(error);
@@ -418,7 +440,7 @@ function PasswordStep({
   );
 }
 
-function DoneStep({ email }: { email: string }) {
+function DoneStep({ values }: { values: ContactValues }) {
   const navigate = useNavigate();
 
   return (
@@ -426,13 +448,18 @@ function DoneStep({ email }: { email: string }) {
       <span className="mb-6 grid size-14 animate-pop place-items-center rounded-2xl bg-success-soft text-success">
         <CircleCheck className="size-7" aria-hidden="true" />
       </span>
-      <h1 className="font-display text-[1.875rem] leading-[1.15] font-semibold tracking-[-0.025em] sm:text-[2.25rem]">
+      <h1 className="font-display text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.03em] sm:text-[2rem]">
         Password updated
       </h1>
-      <p className="mt-3 text-base leading-relaxed text-fg-muted">
+      <p className="mt-2 text-[0.9375rem] leading-relaxed text-fg-muted">
         For your security, you've been signed out everywhere. Sign in with your new password to continue.
       </p>
-      <Button size="lg" className="mt-8 w-full" onClick={() => navigate("/login", { state: { email } })} autoFocus>
+      <Button
+        size="lg"
+        className="mt-8 w-full"
+        onClick={() => navigate("/login", { state: values satisfies LoginPrefill })}
+        autoFocus
+      >
         Back to sign in
       </Button>
     </div>
@@ -441,9 +468,9 @@ function DoneStep({ email }: { email: string }) {
 
 function BackToSignIn() {
   return (
-    <p className="mt-8 text-sm">
+    <p className="mt-7 border-t border-line pt-6 text-center text-sm">
       <TextLink to="/login" className="inline-flex items-center gap-1.5 text-fg-muted hover:text-fg">
-        <ArrowLeft className="size-4" aria-hidden="true" />
+        <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
         Back to sign in
       </TextLink>
     </p>

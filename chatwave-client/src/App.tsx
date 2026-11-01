@@ -7,8 +7,9 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
-// The chat UI is the heavier part of the app; load it only once someone signs in.
+// The chat UI and the admin dashboard load only when needed.
 const ChatPage = lazy(() => import("./pages/ChatPage"));
+const AdminApp = lazy(() => import("./pages/admin/AdminApp"));
 
 function RequireAuth() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
@@ -22,6 +23,12 @@ function RequireAuth() {
   return <Outlet />;
 }
 
+/** The admin dashboard is for admins only (the API enforces this too). */
+function RequireAdmin() {
+  const isAdmin = useAuthStore((s) => s.user?.role === "admin");
+  return isAdmin ? <AdminApp /> : <Navigate to="/chat" replace />;
+}
+
 /** Sign-in pages. Once signed in, continue to where the user was headed. */
 function GuestOnly() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
@@ -29,7 +36,7 @@ function GuestOnly() {
 
   if (isAuthenticated) {
     const from = (location.state as { from?: string } | null)?.from;
-    const safe = from && (from.startsWith("/chat") || from.startsWith("/settings"));
+    const safe = from && ["/chat", "/settings", "/admin"].some((prefix) => from.startsWith(prefix));
     return <Navigate to={safe ? from : "/chat"} replace />;
   }
   return <Outlet />;
@@ -62,6 +69,7 @@ export default function App() {
               <Route path="/chat/:conversationId/info" element={null} />
               <Route path="/settings/:section?" element={null} />
             </Route>
+            <Route path="/admin/*" element={<RequireAdmin />} />
           </Route>
           <Route path="*" element={<Navigate to="/chat" replace />} />
         </Routes>

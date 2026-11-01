@@ -3,8 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Mail } from "lucide-react";
+import { Mail, Smartphone } from "lucide-react";
 import { changePassword } from "../../api/profile";
+import { signInIdentifier } from "../../lib/account";
 import { getErrorMessage, getFieldErrors } from "../../lib/errors";
 import { useAuthStore } from "../../stores/authStore";
 import { PasswordStrength } from "../auth/PasswordStrength";
@@ -65,12 +66,15 @@ export function AccountSettings() {
 
   return (
     <>
-      <SettingsCard title="Email" description="You use this address to sign in. Only you can see it.">
+      <SettingsCard
+        title={user?.email ? "Email" : "Phone number"}
+        description={`You use this ${user?.email ? "address" : "number"} to sign in. Only you can see it.`}
+      >
         <div className="flex items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg-muted">
-            <Mail className="size-5" aria-hidden="true" />
+            {user?.email ? <Mail className="size-5" aria-hidden="true" /> : <Smartphone className="size-5" aria-hidden="true" />}
           </span>
-          <p className="min-w-0 truncate text-[0.9375rem] font-medium text-fg">{user?.email}</p>
+          <p className="min-w-0 truncate text-[0.9375rem] font-medium text-fg tabular-nums">{signInIdentifier(user)}</p>
         </div>
       </SettingsCard>
 
@@ -80,7 +84,7 @@ export function AccountSettings() {
       >
         <form noValidate className="space-y-5" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
           {/* Lets password managers file the new password under the right account. */}
-          <input type="email" name="username" autoComplete="username" value={user?.email ?? ""} readOnly hidden />
+          <input type="text" name="username" autoComplete="username" value={user?.email ?? user?.phone ?? ""} readOnly hidden />
           <PasswordField
             label="Current password"
             autoComplete="current-password"

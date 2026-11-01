@@ -19,16 +19,18 @@ api.interceptors.request.use((config) => {
 // (e.g. by a password reset). Clearing the session lets the route guards send the user
 // to sign in, without a full page reload. Failed sign-ins don't carry a token, and
 // requests made with an older token (e.g. the sign-out call itself) are ignored.
+// A 403 with "account_suspended" means an admin suspended the account.
 api.interceptors.response.use(undefined, (error) => {
   const { token, clearSession } = useAuthStore.getState();
-  if (
-    isAxiosError(error) &&
-    error.response?.status === 401 &&
-    token &&
-    error.config?.headers?.Authorization === `Bearer ${token}`
-  ) {
-    clearSession("expired");
-    toast("Your session ended. Please sign in again.", { id: "session-ended" });
+  const sentWithCurrentToken = Boolean(token) && error?.config?.headers?.Authorization === `Bearer ${token}`;
+
+  if (isAxiosError<{ code?: string }>(error) && sentWithCurrentToken) {
+    if (error.response?.status === 401) {
+      clearSession("expired");
+      toast("Your session ended. Please sign in again.", { id: "session-ended" });
+    } else if (error.response?.status === 403 && error.response.data?.code === "account_suspended") {
+      clearSession("suspended");
+    }
   }
   return Promise.reject(error);
 });

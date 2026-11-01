@@ -61,7 +61,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
             <div>
               <Dialog.Title className="font-display text-lg font-semibold">New chat</Dialog.Title>
               <Dialog.Description className="mt-1 text-sm text-fg-muted">
-                Find someone by name, or by their full email address.
+                Find someone by name, their full email address, or their phone number with the country code.
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
@@ -70,7 +70,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
           </div>
 
           <div className="px-5 pt-4 pb-3">
-            <SearchInput value={search} onChange={setSearch} label="Name or email" autoFocus />
+            <SearchInput value={search} onChange={setSearch} label="Name, email or phone" autoFocus />
           </div>
 
           <div className="scrollbar-thin min-h-40 overflow-y-auto border-t border-line p-2" aria-live="polite">
@@ -115,7 +115,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
               <Hint>
                 No one matches "{term}".
                 <br />
-                Try their full email address.
+                Try their full email address, or their phone number starting with + and the country code.
               </Hint>
             )}
           </div>

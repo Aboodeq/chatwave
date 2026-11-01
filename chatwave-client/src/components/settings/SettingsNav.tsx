@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { ArrowLeft, ChevronRight, LogOut } from "lucide-react";
 import { useSignOut } from "../../hooks/useSession";
+import { signInIdentifier } from "../../lib/account";
 import { cn } from "../../lib/utils";
 import { useAuthStore } from "../../stores/authStore";
 import { Avatar } from "../ui/Avatar";
@@ -39,7 +40,7 @@ export function SettingsNav({ className }: { className?: string }) {
               {user?.name}
             </span>
             <span dir="auto" className="block truncate text-sm text-fg-muted">
-              {user?.status_text || user?.email}
+              {user?.status_text || signInIdentifier(user)}
             </span>
           </span>
           <span className="sr-only">. Edit your profile</span>

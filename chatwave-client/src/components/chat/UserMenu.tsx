@@ -1,6 +1,7 @@
 import { DropdownMenu } from "radix-ui";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Settings, UserRound } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, UserRound } from "lucide-react";
+import { signInIdentifier } from "../../lib/account";
 import { useAuthStore } from "../../stores/authStore";
 import { useSignOut } from "../../hooks/useSession";
 import { cn } from "../../lib/utils";
@@ -27,7 +28,7 @@ export function UserMenu() {
             <Avatar name={user?.name} src={user?.avatar} />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">{user?.name}</p>
-              <p className="truncate text-xs text-fg-subtle">{user?.email}</p>
+              <p className="truncate text-xs text-fg-subtle">{signInIdentifier(user)}</p>
             </div>
           </div>
 
@@ -40,6 +41,12 @@ export function UserMenu() {
             <Settings aria-hidden="true" />
             Settings
           </DropdownMenu.Item>
+          {user?.role === "admin" && (
+            <DropdownMenu.Item onSelect={() => navigate("/admin")} className={menuItem}>
+              <LayoutDashboard aria-hidden="true" />
+              Admin dashboard
+            </DropdownMenu.Item>
+          )}
 
           <DropdownMenu.Separator className={menuSeparator} />
           <DropdownMenu.Item onSelect={() => void signOut()} className={cn(menuItem, menuItemDanger)}>

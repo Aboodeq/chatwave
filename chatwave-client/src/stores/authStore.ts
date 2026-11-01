@@ -8,11 +8,13 @@ interface AuthState {
   /** "Keep me signed in": stored in localStorage (survives restarts) instead of sessionStorage. */
   remember: boolean;
   /** Why the last session ended; not persisted. */
-  endedBy: "signed-out" | "expired" | null;
+  endedBy: SessionEnd | null;
   startSession: (session: { token: string; user: User }, remember: boolean) => void;
   setUser: (user: User) => void;
-  clearSession: (reason?: "signed-out" | "expired") => void;
+  clearSession: (reason?: SessionEnd) => void;
 }
+
+export type SessionEnd = "signed-out" | "expired" | "suspended";
 
 /**
  * Persists to localStorage when the user asked to be remembered, otherwise to
