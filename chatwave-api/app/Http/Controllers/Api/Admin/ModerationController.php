@@ -94,10 +94,16 @@ class ModerationController extends Controller
 
         if ($user->role_id !== $role->id) {
             DB::transaction(function () use ($editor, $user, $role) {
-                $from = $user->currentRole()->name;
+                $from = $user->currentRole();
                 $user->forceFill(['role_id' => $role->id])->save();
 
-                AdminAction::record($editor, AdminAction::ROLE_CHANGED, $user, ['from' => $from, 'to' => $role->name]);
+                // Keys let the app show built-in role names in the viewer's language.
+                AdminAction::record($editor, AdminAction::ROLE_CHANGED, $user, array_filter([
+                    'from' => $from->name,
+                    'to' => $role->name,
+                    'from_key' => $from->key,
+                    'to_key' => $role->key,
+                ]));
             });
         }
 

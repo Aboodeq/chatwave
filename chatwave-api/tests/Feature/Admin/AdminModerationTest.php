@@ -89,6 +89,9 @@ class AdminModerationTest extends TestCase
             ->assertJsonPath('user.role.key', 'admin');
 
         $this->assertDatabaseHas('admin_actions', ['action' => 'user.role_changed', 'target_user_id' => $person->id]);
+        $this->getJson('/api/admin/activity')
+            ->assertJsonPath('data.0.details.from_key', 'member')
+            ->assertJsonPath('data.0.details.to_key', 'admin');
 
         $this->putJson("/api/admin/users/{$this->admin->id}/role", ['role_id' => Role::member()->id])
             ->assertJsonValidationErrors(['user' => "You can't change your own role."]);

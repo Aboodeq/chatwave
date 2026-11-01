@@ -21,6 +21,16 @@ class PresenceTest extends TestCase
         $this->assertTrue($user->last_seen_at->gte(now()->subSeconds(5)));
     }
 
+    public function test_checking_for_messages_from_a_background_tab_does_not_count_as_online(): void
+    {
+        $user = User::factory()->create(['is_online' => false, 'last_seen_at' => now()->subHour()]);
+
+        $this->actingAs($user)->withHeader('X-Background', '1')->getJson('/api/conversations')->assertOk();
+
+        $this->assertFalse($user->fresh()->is_online);
+        $this->assertTrue($user->fresh()->last_seen_at->lt(now()->subMinutes(59)));
+    }
+
     public function test_activity_is_written_at_most_once_a_minute(): void
     {
         $user = User::factory()->create();

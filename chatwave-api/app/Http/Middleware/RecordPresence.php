@@ -13,6 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
  * The client polls every few seconds, so this writes at most once a minute per user to
  * keep database writes (and SQLite lock contention) low. It runs before the controller,
  * so signing out can still mark the user offline.
+ *
+ * The app keeps checking for messages while it's in a background tab (so they still get
+ * delivered) and marks those requests with "X-Background: 1": they don't count as being
+ * online.
  */
 class RecordPresence
 {
@@ -22,7 +26,7 @@ class RecordPresence
     {
         $user = $request->user();
 
-        if ($user instanceof User && $this->isStale($user)) {
+        if ($user instanceof User && $request->header('X-Background') !== '1' && $this->isStale($user)) {
             User::withoutTimestamps(fn () => $user->forceFill([
                 'is_online' => true,
                 'last_seen_at' => now(),

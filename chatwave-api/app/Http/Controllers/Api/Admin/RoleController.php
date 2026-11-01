@@ -74,6 +74,7 @@ class RoleController extends Controller
 
             AdminAction::record($editor, AdminAction::ROLE_UPDATED, details: array_filter([
                 'role' => $role->name,
+                'role_key' => $role->key,
                 'added' => array_values(array_diff($role->grantedPermissions(), $before)),
                 'removed' => array_values(array_diff($before, $role->grantedPermissions())),
             ]));
