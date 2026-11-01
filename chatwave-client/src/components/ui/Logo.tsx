@@ -29,11 +29,14 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ className }: { className?: string }) {
+/** The mark and the name. `inverted` is for dark brand surfaces (white name). */
+export function Logo({ className, inverted = false }: { className?: string; inverted?: boolean }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
+    <span className={cn("inline-flex items-center gap-2.5", className)} dir="ltr">
       <LogoMark />
-      <span className="font-display text-[1.15rem] font-semibold tracking-tight text-fg">ChatWave</span>
+      <span className={cn("font-display text-[1.15rem] font-semibold tracking-tight", inverted ? "text-white" : "text-fg")}>
+        ChatWave
+      </span>
     </span>
   );
 }

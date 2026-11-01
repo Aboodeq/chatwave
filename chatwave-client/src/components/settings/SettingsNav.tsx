@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { ArrowLeft, ChevronRight, LogOut } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useSignOut } from "../../hooks/useSession";
 import { signInIdentifier } from "../../lib/account";
 import { cn } from "../../lib/utils";
@@ -13,20 +14,21 @@ const tile = "grid size-10 shrink-0 place-items-center rounded-xl transition-col
 
 /** The list of settings categories. Takes the chat list's place while Settings is open. */
 export function SettingsNav({ className }: { className?: string }) {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const signOut = useSignOut();
 
   return (
-    <aside aria-label="Settings" className={cn("min-h-0 flex-col border-e border-line bg-surface", className)}>
+    <aside aria-label={t("settings.title")} className={cn("min-h-0 flex-col border-e border-line bg-surface", className)}>
       <header className="flex h-16 shrink-0 items-center gap-1 px-2 md:px-3">
         <Link
           to="/chat"
-          aria-label="Back to chats"
+          aria-label={t("chat.thread.backToChats")}
           className="grid size-10 shrink-0 place-items-center rounded-full text-fg-muted outline-none transition-colors hover:bg-surface-2 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft className="size-5 rtl:rotate-180" aria-hidden="true" />
         </Link>
-        <h1 className="font-display text-lg font-semibold tracking-tight">Settings</h1>
+        <h1 className="font-display text-lg font-semibold tracking-tight">{t("settings.title")}</h1>
       </header>
 
       <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-2 pb-4">
@@ -43,12 +45,12 @@ export function SettingsNav({ className }: { className?: string }) {
               {user?.status_text || signInIdentifier(user)}
             </span>
           </span>
-          <span className="sr-only">. Edit your profile</span>
+          <span className="sr-only">. {t("settings.editProfile")}</span>
         </Link>
 
-        <nav aria-label="Settings categories" className="mt-2 border-t border-line pt-2">
+        <nav aria-label={t("settings.categoriesLabel")} className="mt-2 border-t border-line pt-2">
           <ul className="space-y-0.5">
-            {settingsCategories.map(({ id, title, description, icon: Icon }) => (
+            {settingsCategories.map(({ id, icon: Icon }) => (
               <li key={id}>
                 <NavLink
                   to={`/settings/${id}`}
@@ -65,8 +67,10 @@ export function SettingsNav({ className }: { className?: string }) {
                         <Icon className="size-5" aria-hidden="true" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[0.9375rem] font-medium text-fg">{title}</span>
-                        <span className="block truncate text-sm text-fg-muted">{description}</span>
+                        <span className="block text-[0.9375rem] font-medium text-fg">{t(`settings.categories.${id}.title`)}</span>
+                        <span className="block truncate text-sm text-fg-muted">
+                          {t(`settings.categories.${id}.description`)}
+                        </span>
                       </span>
                       {/* On phones each row opens a new screen. */}
                       <ChevronRight className="size-4 shrink-0 text-fg-subtle md:hidden rtl:rotate-180" aria-hidden="true" />
@@ -81,9 +85,9 @@ export function SettingsNav({ className }: { className?: string }) {
         <div className="mt-2 border-t border-line pt-2">
           <button type="button" onClick={() => void signOut()} className={cn(row, "text-danger hover:bg-danger-soft")}>
             <span className={cn(tile, "bg-danger-soft")}>
-              <LogOut className="size-5" aria-hidden="true" />
+              <LogOut className="size-5 rtl:-scale-x-100" aria-hidden="true" />
             </span>
-            <span className="text-[0.9375rem] font-medium">Sign out</span>
+            <span className="text-[0.9375rem] font-medium">{t("settings.signOut")}</span>
           </button>
         </div>
       </div>

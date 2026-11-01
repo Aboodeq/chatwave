@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "../../lib/utils";
 
 interface OtpInputProps {
@@ -27,6 +28,7 @@ export function OtpInput({
   autoFocus = false,
   describedBy,
 }: OtpInputProps) {
+  const { t } = useTranslation();
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const digits = Array.from({ length }, (_, i) => value[i] ?? "");
 
@@ -81,7 +83,8 @@ export function OtpInput({
   return (
     <div
       role="group"
-      aria-label="Verification code"
+      aria-label={t("auth.code.label")}
+      dir="ltr"
       aria-describedby={describedBy}
       className={cn("flex gap-2 sm:gap-2.5", invalid && "animate-shake")}
     >
@@ -116,7 +119,7 @@ export function OtpInput({
           pattern="[0-9]*"
           maxLength={length}
           disabled={disabled}
-          aria-label={`Digit ${index + 1} of ${length}`}
+          aria-label={t("auth.code.digit", { n: index + 1, total: length })}
           aria-invalid={invalid || undefined}
           className={cn(
             "h-14 w-full min-w-0 rounded-xl border border-line-strong bg-surface text-center font-display text-2xl font-semibold text-fg shadow-soft",

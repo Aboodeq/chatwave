@@ -1,4 +1,5 @@
 import { isAxiosError } from "axios";
+import i18n from "../i18n";
 
 interface ApiErrorBody {
   message?: string;
@@ -34,9 +35,9 @@ export function getRetryAfter(error: unknown): number | undefined {
 }
 
 /** A sentence that is safe to show the user. */
-export function getErrorMessage(error: unknown, fallback = "Something went wrong. Please try again."): string {
+export function getErrorMessage(error: unknown, fallback: string = i18n.t("errors.generic")): string {
   if (isAxiosError(error) && !error.response) {
-    return "Can't reach ChatWave. Check your connection and try again.";
+    return i18n.t("errors.offline");
   }
   const data = body(error);
   const firstFieldError = data?.errors ? Object.values(data.errors)[0]?.[0] : undefined;

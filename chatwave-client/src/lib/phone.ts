@@ -12,27 +12,48 @@ export type { CountryCode };
 
 export interface Country {
   code: CountryCode;
+  /** In the app's language, e.g. "Jordan" or "الأردن". */
   name: string;
+  /** Also searchable, so English names work in every language. */
+  englishName: string;
   /** "+962" */
   dialCode: string;
 }
 
-const regionNames = typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames(["en"], { type: "region" }) : null;
-
-let countries: Country[] | null = null;
-
-/** Every country with a calling code, sorted by English name. */
-export function getCountryList(): Country[] {
-  countries ??= getCountries()
-    .map((code) => ({ code, name: regionNames?.of(code) ?? code, dialCode: `+${getCountryCallingCode(code)}` }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  return countries;
+function regionNames(language: string): Intl.DisplayNames | null {
+  try {
+    return new Intl.DisplayNames([language], { type: "region" });
+  } catch {
+    return null;
+  }
 }
 
-export function getCountry(code: CountryCode): Country {
-  return getCountryList().find((country) => country.code === code) ?? {
+const lists = new Map<string, Country[]>();
+
+/** Every country with a calling code, named and sorted in the given language. */
+export function getCountryList(language = "en"): Country[] {
+  let list = lists.get(language);
+  if (!list) {
+    const names = regionNames(language);
+    const english = language === "en" ? names : regionNames("en");
+    list = getCountries()
+      .map((code) => ({
+        code,
+        name: names?.of(code) ?? code,
+        englishName: english?.of(code) ?? code,
+        dialCode: `+${getCountryCallingCode(code)}`,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, language));
+    lists.set(language, list);
+  }
+  return list;
+}
+
+export function getCountry(code: CountryCode, language = "en"): Country {
+  return getCountryList(language).find((country) => country.code === code) ?? {
     code,
     name: code,
+    englishName: code,
     dialCode: `+${getCountryCallingCode(code)}`,
   };
 }
@@ -70,10 +91,10 @@ export function formatInternational(e164: string): string {
   return parsePhoneNumberFromString(e164)?.formatInternational() ?? e164;
 }
 
-/** A realistic mobile number for the placeholder, e.g. "7 9012 3456". */
+/** A realistic mobile number for the placeholder, e.g. "7 9012 3456" ("" if there's none). */
 export function examplePhone(country: CountryCode): string {
   const example = getExampleNumber(country, examples);
-  return example ? formatPhoneInput(example.nationalNumber, country) : "Phone number";
+  return example ? formatPhoneInput(example.nationalNumber, country) : "";
 }
 
 /** Typing as you go: an international number or a national one. */

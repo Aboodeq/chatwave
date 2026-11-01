@@ -5,12 +5,14 @@ import { z } from "zod";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { Trans, useTranslation } from "react-i18next";
 import { ArrowLeft, CircleCheck, Mail, MailCheck, MessageSquareText } from "lucide-react";
+import i18n from "../i18n";
 import { requestPasswordOtp, resetPasswordWithOtp, verifyPasswordOtp, type Contact } from "../api/auth";
 import { getErrorMessage, getFieldErrors, getRetryAfter } from "../lib/errors";
 import { guessCountry } from "../lib/phoneCountry";
-import { cn } from "../lib/utils";
-import { Accent, AuthHeading, AuthLayout } from "../components/auth/AuthLayout";
+import { cn, formatNumber } from "../lib/utils";
+import { AuthHeading, AuthLayout } from "../components/auth/AuthLayout";
 import { MethodSwitch } from "../components/auth/MethodSwitch";
 import { PasswordStrength } from "../components/auth/PasswordStrength";
 import { VerificationCodeForm } from "../components/auth/VerificationCodeForm";
@@ -22,7 +24,6 @@ import {
   type ContactMethod,
   type ContactValues,
 } from "../components/auth/contact";
-import { sendWave } from "../components/auth/waveSignal";
 import { Alert } from "../components/ui/Alert";
 import { Button } from "../components/ui/Button";
 import { PasswordField } from "../components/ui/PasswordField";
@@ -63,16 +64,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <AuthLayout
-      headline={
-        <>
-          Back in
-          <br />
-          one <Accent>wave.</Accent>
-        </>
-      }
-      intro="We'll send a 6‑digit code to your email or phone. It works once and expires after 10 minutes."
-    >
+    <AuthLayout>
       {step !== "done" && <Progress step={step} />}
 
       {step === "contact" && <ContactStep initialValues={values} onSent={goToCode} />}
@@ -101,10 +93,7 @@ export default function ForgotPasswordPage() {
         <PasswordStep
           contact={sentTo.contact}
           code={code}
-          onDone={() => {
-            sendWave(1.6);
-            setStep("done");
-          }}
+          onDone={() => setStep("done")}
           onCodeRejected={(message) => {
             setCodeError(message);
             setAttempt((n) => n + 1);
@@ -120,6 +109,7 @@ export default function ForgotPasswordPage() {
 }
 
 function Progress({ step }: { step: Exclude<Step, "done"> }) {
+  const { t } = useTranslation();
   const index = ["contact", "code", "password"].indexOf(step);
 
   return (
@@ -132,7 +122,7 @@ function Progress({ step }: { step: Exclude<Step, "done"> }) {
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-fg-subtle">Step {index + 1} of 3</span>
+      <span className="text-xs font-medium text-fg-subtle">{t("auth.forgot.step", { n: formatNumber(index + 1), total: formatNumber(3) })}</span>
     </div>
   );
 }
@@ -146,6 +136,7 @@ function ContactStep({
   initialValues: ContactValues;
   onSent: (values: ContactValues, destination: { contact: Contact; display: string }, waitSeconds: number) => void;
 }) {
+  const { t } = useTranslation();
   const [formError, setFormError] = useState<string | null>(null);
   const [rateLimited, setRateLimited] = useState<{ values: ContactValues; destination: { contact: Contact; display: string } } | null>(null);
   const {
@@ -178,14 +169,13 @@ function ContactStep({
       return destination;
     },
     onSuccess: (destination, values) => onSent(values, destination, RESEND_SECONDS),
-    onError: (error) => setFormError(getErrorMessage(error, "We couldn't send a code. Please try again.")),
+    onError: (error) => setFormError(getErrorMessage(error, t("auth.forgot.contact.failed"))),
   });
 
   const switchMethod = (next: ContactMethod, source: "pointer" | "keyboard") => {
     setValue("method", next);
     clearErrors();
     setFormError(null);
-    sendWave(0.8);
     // Clicking a method moves on to its field; arrow keys stay on the switch.
     setFocusPhone(source === "pointer" && next === "phone");
     if (source === "pointer" && next === "email") requestAnimationFrame(() => setFocus("email"));
@@ -193,10 +183,7 @@ function ContactStep({
 
   return (
     <>
-      <AuthHeading
-        title="Reset your password"
-        description="Enter the email address or phone number you signed up with, and we'll send you a code."
-      />
+      <AuthHeading title={t("auth.forgot.contact.title")} description={t("auth.forgot.contact.description")} />
 
       <form
         noValidate
@@ -206,7 +193,7 @@ function ContactStep({
           mutation.mutate(values);
         })}
       >
-        <MethodSwitch value={method} onChange={switchMethod} label="Reset with" />
+        <MethodSwitch value={method} onChange={switchMethod} label={t("auth.forgot.contact.method")} />
 
         {formError && (
           <Alert>
@@ -217,7 +204,7 @@ function ContactStep({
                 onClick={() => onSent(rateLimited.values, rateLimited.destination, RESEND_SECONDS)}
                 className={cn(textLinkStyles, "mt-1 block text-danger")}
               >
-                I already have a code
+                {t("auth.forgot.contact.haveCode")}
               </button>
             )}
           </Alert>
@@ -226,10 +213,11 @@ function ContactStep({
         <div key={method} className="animate-fade-in">
           {method === "email" ? (
             <TextField
-              label="Email"
+              label={t("auth.fields.email")}
               type="email"
+              dir="ltr"
               icon={Mail}
-              placeholder="you@company.com"
+              placeholder={t("auth.fields.emailPlaceholder")}
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
@@ -242,7 +230,7 @@ function ContactStep({
               name="phone"
               render={({ field }) => (
                 <PhoneField
-                  label="Phone number"
+                  label={t("auth.fields.phone")}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -259,7 +247,7 @@ function ContactStep({
         </div>
 
         <Button type="submit" size="lg" loading={mutation.isPending} className="w-full">
-          {mutation.isPending ? "Sending code…" : "Send code"}
+          {mutation.isPending ? t("auth.forgot.contact.sending") : t("auth.forgot.contact.submit")}
         </Button>
       </form>
 
@@ -289,38 +277,42 @@ function CodeStep({
   onVerified: (code: string) => void;
   onChangeContact: () => void;
 }) {
+  const { t } = useTranslation();
   const byPhone = "phone" in contact;
   const Icon = byPhone ? MessageSquareText : MailCheck;
 
   const verify = useMutation({
     mutationFn: (otp: string) => verifyPasswordOtp({ ...contact, otp }),
     onSuccess: (_, otp) => onVerified(otp),
-    onError: (err) => onRejected(getErrorMessage(err, "That code didn't work. Please try again.")),
+    onError: (err) => onRejected(getErrorMessage(err, t("auth.code.failed"))),
   });
 
   const resend = useMutation({
     mutationFn: () => requestPasswordOtp(contact),
     onSuccess: () => {
       onResent(RESEND_SECONDS);
-      toast.success(byPhone ? "We texted you a new code." : "We sent you a new code.");
+      toast.success(byPhone ? t("auth.forgot.code.resentPhone") : t("auth.forgot.code.resentEmail"));
     },
     onError: (err) => {
       const wait = getRetryAfter(err);
       if (wait) onResent(wait);
-      onRejected(getErrorMessage(err, "We couldn't send a new code. Please try again."));
+      onRejected(getErrorMessage(err, t("auth.code.resendFailed")));
     },
   });
 
   return (
     <>
       <AuthHeading
-        title={byPhone ? "Check your phone" : "Check your inbox"}
+        title={byPhone ? t("auth.forgot.code.titlePhone") : t("auth.forgot.code.titleEmail")}
         description={
           <>
-            If an account uses <span className="font-medium whitespace-nowrap text-fg">{display}</span>, we{" "}
-            {byPhone ? "texted" : "sent"} it a 6‑digit code.{" "}
+            <Trans
+              i18nKey={byPhone ? "auth.forgot.code.descriptionPhone" : "auth.forgot.code.descriptionEmail"}
+              values={{ contact: display }}
+              components={{ contact: <span dir="ltr" className="font-medium whitespace-nowrap text-fg" /> }}
+            />{" "}
             <button type="button" onClick={onChangeContact} className={textLinkStyles}>
-              Use something else
+              {t("auth.forgot.code.useOther")}
             </button>
           </>
         }
@@ -333,14 +325,14 @@ function CodeStep({
       <VerificationCodeForm
         onSubmit={(otp) => verify.mutate(otp)}
         submitting={verify.isPending}
-        submitLabel="Verify code"
-        submittingLabel="Checking…"
+        submitLabel={t("auth.forgot.code.submit")}
+        submittingLabel={t("auth.forgot.code.checking")}
         error={error}
         attempt={attempt}
         resendAt={resendAt}
         onResend={() => resend.mutate()}
         resending={resend.isPending}
-        resendHint={byPhone ? "Didn't get a text? Give it a minute, or" : "Didn't get it? Check your spam folder, or"}
+        resendHint={byPhone ? t("auth.forgot.code.resendHintPhone") : t("auth.forgot.code.resendHintEmail")}
       />
     </>
   );
@@ -348,11 +340,14 @@ function CodeStep({
 
 const passwordSchema = z
   .object({
-    password: z.string().min(8, "Use at least 8 characters.").max(72, "Use 72 characters or fewer."),
-    password_confirmation: z.string().min(1, "Confirm your new password."),
+    password: z
+      .string()
+      .min(8, { error: () => i18n.t("auth.validation.passwordMin") })
+      .max(72, { error: () => i18n.t("auth.validation.passwordMax") }),
+    password_confirmation: z.string().min(1, { error: () => i18n.t("auth.validation.confirmNewRequired") }),
   })
   .refine((values) => values.password === values.password_confirmation, {
-    message: "Passwords don't match.",
+    error: () => i18n.t("auth.validation.mismatch"),
     path: ["password_confirmation"],
   });
 
@@ -367,6 +362,7 @@ function PasswordStep({
   onDone: () => void;
   onCodeRejected: (message: string) => void;
 }) {
+  const { t } = useTranslation();
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
@@ -396,14 +392,14 @@ function PasswordStep({
         setError("password", { message: fields.password });
         setFocus("password");
       } else {
-        setFormError(getErrorMessage(error, "We couldn't update your password. Please try again."));
+        setFormError(getErrorMessage(error, t("auth.forgot.password.failed")));
       }
     },
   });
 
   return (
     <>
-      <AuthHeading title="Choose a new password" description="Pick something you haven't used here before." />
+      <AuthHeading title={t("auth.forgot.password.title")} description={t("auth.forgot.password.description")} />
 
       <form
         noValidate
@@ -416,24 +412,24 @@ function PasswordStep({
         {formError && <Alert>{formError}</Alert>}
 
         <PasswordField
-          label="New password"
-          placeholder="At least 8 characters"
+          label={t("auth.forgot.password.new")}
+          placeholder={t("auth.password.newPlaceholder")}
           autoComplete="new-password"
           error={errors.password?.message}
-          hint={password ? <PasswordStrength password={password} /> : "Use 8 or more characters. Longer is stronger."}
+          hint={password ? <PasswordStrength password={password} /> : t("auth.password.hint")}
           {...register("password")}
         />
 
         <PasswordField
-          label="Confirm new password"
-          placeholder="Type it again"
+          label={t("auth.forgot.password.confirm")}
+          placeholder={t("auth.password.again")}
           autoComplete="new-password"
           error={errors.password_confirmation?.message}
           {...register("password_confirmation")}
         />
 
         <Button type="submit" size="lg" loading={mutation.isPending} className="w-full">
-          {mutation.isPending ? "Updating…" : "Update password"}
+          {mutation.isPending ? t("auth.forgot.password.updating") : t("auth.forgot.password.submit")}
         </Button>
       </form>
     </>
@@ -441,6 +437,7 @@ function PasswordStep({
 }
 
 function DoneStep({ values }: { values: ContactValues }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -449,29 +446,28 @@ function DoneStep({ values }: { values: ContactValues }) {
         <CircleCheck className="size-7" aria-hidden="true" />
       </span>
       <h1 className="font-display text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.03em] sm:text-[2rem]">
-        Password updated
+        {t("auth.forgot.done.title")}
       </h1>
-      <p className="mt-2 text-[0.9375rem] leading-relaxed text-fg-muted">
-        For your security, you've been signed out everywhere. Sign in with your new password to continue.
-      </p>
+      <p className="mt-2 text-[0.9375rem] leading-relaxed text-fg-muted">{t("auth.forgot.done.description")}</p>
       <Button
         size="lg"
         className="mt-8 w-full"
         onClick={() => navigate("/login", { state: values satisfies LoginPrefill })}
         autoFocus
       >
-        Back to sign in
+        {t("auth.forgot.done.back")}
       </Button>
     </div>
   );
 }
 
 function BackToSignIn() {
+  const { t } = useTranslation();
   return (
     <p className="mt-7 border-t border-line pt-6 text-center text-sm">
       <TextLink to="/login" className="inline-flex items-center gap-1.5 text-fg-muted hover:text-fg">
         <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-        Back to sign in
+        {t("auth.forgot.backToSignIn")}
       </TextLink>
     </p>
   );

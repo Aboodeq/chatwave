@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { AlertDialog } from "radix-ui";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/Button";
 
 /**
@@ -27,6 +28,7 @@ export function ConfirmDialog({
   reasonLabel?: string;
   onConfirm: (reason: string) => void;
 }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState("");
 
   return (
@@ -46,7 +48,7 @@ export function ConfirmDialog({
           {reasonLabel && (
             <div className="mt-4 space-y-1.5">
               <label htmlFor="admin-reason" className="text-sm font-medium text-fg">
-                {reasonLabel} <span className="font-normal text-fg-subtle">(optional)</span>
+                {reasonLabel} <span className="font-normal text-fg-subtle">{t("admin.confirm.optional")}</span>
               </label>
               <textarea
                 id="admin-reason"
@@ -54,7 +56,7 @@ export function ConfirmDialog({
                 onChange={(event) => setReason(event.target.value)}
                 maxLength={255}
                 rows={3}
-                placeholder="Only admins see this."
+                placeholder={t("admin.confirm.adminsOnly")}
                 className="w-full resize-none rounded-xl border border-line-strong bg-surface px-3.5 py-2.5 text-base text-fg shadow-soft outline-none placeholder:text-fg-subtle/80 focus:border-primary focus:ring-4 focus:ring-primary/15 md:text-sm"
               />
             </div>
@@ -62,7 +64,7 @@ export function ConfirmDialog({
 
           <div className="mt-6 flex justify-end gap-2">
             <AlertDialog.Cancel asChild>
-              <Button variant="secondary">Cancel</Button>
+              <Button variant="secondary">{t("common.cancel")}</Button>
             </AlertDialog.Cancel>
             <Button variant={danger ? "danger" : "primary"} loading={pending} onClick={() => onConfirm(reason)}>
               {confirmLabel}

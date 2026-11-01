@@ -9,14 +9,20 @@ export const conversationKeys = {
   detail: (id: number) => ["conversations", "detail", id] as const,
 };
 
-/** Until real-time updates exist, poll for new messages and unread counts. */
+/**
+ * Until real-time updates exist, poll for new messages and unread counts. This also keeps
+ * going (more slowly) in a background tab: fetching the list is what marks new messages
+ * "delivered" for their senders.
+ */
 const LIST_POLL_MS = 10_000;
+const BACKGROUND_POLL_MS = 30_000;
 
 export function useConversations() {
   return useQuery({
     queryKey: conversationKeys.all,
     queryFn: getConversations,
-    refetchInterval: LIST_POLL_MS,
+    refetchInterval: () => (document.visibilityState === "hidden" ? BACKGROUND_POLL_MS : LIST_POLL_MS),
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
   });
 }

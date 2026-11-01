@@ -1,4 +1,4 @@
-import type { Role } from "./user";
+import type { Permission, RoleRef } from "./user";
 
 /** A person as admins see them. */
 export interface AdminUser {
@@ -8,7 +8,9 @@ export interface AdminUser {
   phone: string | null;
   avatar: string | null;
   status_text: string;
-  role: Role;
+  role: RoleRef;
+  /** Their role includes at least one admin permission. */
+  has_admin_access: boolean;
   sign_up_method: "email" | "phone";
   verified: boolean;
   is_online: boolean;
@@ -26,13 +28,59 @@ export interface PersonRef {
   avatar: string | null;
 }
 
-export type AdminActionType = "user.suspended" | "user.restored" | "user.role_changed" | "user.signed_out";
+/** A role, as the roles page shows it. */
+export interface AdminRole {
+  id: number;
+  /** "admin" or "member" for the built-in roles (their names are translated), null otherwise. */
+  key: RoleRef["key"];
+  name: string;
+  description: string | null;
+  permissions: Permission[];
+  /** The Admin role: always every permission, can't be edited. */
+  locked: boolean;
+  deletable: boolean;
+  users_count: number;
+}
+
+export interface RolesResponse {
+  roles: AdminRole[];
+  /** Every permission there is, in display order. */
+  permissions: Permission[];
+}
+
+export interface RoleInput {
+  name: string;
+  description: string | null;
+  permissions: Permission[];
+}
+
+export type AdminActionType =
+  | "user.suspended"
+  | "user.restored"
+  | "user.role_changed"
+  | "user.signed_out"
+  | "role.created"
+  | "role.updated"
+  | "role.deleted";
 
 /** One entry in the admin audit log. */
 export interface AdminActionEntry {
   id: number;
   action: AdminActionType | (string & {});
-  details: { reason?: string; from?: Role; to?: Role; devices?: number };
+  details: {
+    reason?: string;
+    /** Role names at the time; keys for built-in roles (older entries may hold "admin"/"user"). */
+    from?: string;
+    to?: string;
+    from_key?: "admin" | "member";
+    to_key?: "admin" | "member";
+    devices?: number;
+    role?: string;
+    role_key?: "admin" | "member";
+    added?: Permission[];
+    removed?: Permission[];
+    moved?: number;
+  };
   created_at: string;
   admin: PersonRef | null;
   target: PersonRef | null;
@@ -76,7 +124,8 @@ export interface Paginated<T> {
 export interface PeopleQuery {
   search?: string;
   status?: "all" | "active" | "suspended" | "online";
-  role?: "all" | "admin" | "user";
+  /** A role id, or "all". */
+  role?: string;
   method?: "all" | "email" | "phone";
   sort?: string;
   page?: number;

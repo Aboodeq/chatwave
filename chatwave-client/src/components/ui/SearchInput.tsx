@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { Search, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "../../lib/utils";
 
 interface SearchInputProps extends Omit<ComponentProps<"input">, "onChange" | "value"> {
@@ -10,6 +11,7 @@ interface SearchInputProps extends Omit<ComponentProps<"input">, "onChange" | "v
 }
 
 export function SearchInput({ value, onChange, label, className, placeholder, ...props }: SearchInputProps) {
+  const { t } = useTranslation();
   return (
     <div className="relative">
       <Search
@@ -42,7 +44,7 @@ export function SearchInput({ value, onChange, label, className, placeholder, ..
         <button
           type="button"
           onClick={() => onChange("")}
-          aria-label="Clear search"
+          aria-label={t("common.clearSearch")}
           className="absolute end-1.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-lg text-fg-subtle outline-none hover:bg-surface-3 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="size-4" aria-hidden="true" />

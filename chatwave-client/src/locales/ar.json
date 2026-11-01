@@ -1,0 +1,930 @@
+{
+  "common": {
+    "appName": "ChatWave",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "save": "حفظ التغييرات",
+    "back": "رجوع",
+    "retry": "حاول مجددًا",
+    "loading": "جارٍ التحميل…",
+    "you": "أنت",
+    "yes": "نعم",
+    "no": "لا",
+    "remove": "إزالة",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "search": "بحث",
+    "continue": "متابعة",
+    "done": "تم",
+    "or": "أو",
+    "copyright": "© {{year}} ChatWave",
+    "clearSearch": "مسح البحث",
+    "unknown": "غير معروف"
+  },
+  "language": {
+    "label": "اللغة",
+    "switchTo": "تغيير اللغة",
+    "en": "English",
+    "ar": "العربية"
+  },
+  "theme": {
+    "toDark": "التبديل إلى الوضع الداكن",
+    "toLight": "التبديل إلى الوضع الفاتح"
+  },
+  "time": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "lastSeen": {
+      "justNow": "آخر ظهور الآن",
+      "relative": "آخر ظهور {{relative}}",
+      "today": "آخر ظهور اليوم الساعة {{time}}",
+      "yesterday": "آخر ظهور أمس الساعة {{time}}",
+      "day": "آخر ظهور يوم {{day}}",
+      "date": "آخر ظهور {{date}}"
+    },
+    "lastActive": {
+      "justNow": "نشط الآن",
+      "relative": "آخر نشاط {{relative}}",
+      "today": "آخر نشاط اليوم الساعة {{time}}",
+      "yesterday": "آخر نشاط أمس الساعة {{time}}",
+      "day": "آخر نشاط يوم {{day}}",
+      "date": "آخر نشاط {{date}}"
+    },
+    "joined": {
+      "justNow": "انضم الآن",
+      "relative": "انضم {{relative}}",
+      "today": "انضم اليوم الساعة {{time}}",
+      "yesterday": "انضم أمس الساعة {{time}}",
+      "day": "انضم يوم {{day}}",
+      "date": "انضم في {{date}}"
+    },
+    "plain": {
+      "justNow": "الآن",
+      "relative": "{{relative}}",
+      "today": "اليوم الساعة {{time}}",
+      "yesterday": "أمس الساعة {{time}}",
+      "day": "{{day}}",
+      "date": "{{date}}"
+    }
+  },
+  "device": {
+    "notRecorded": "جهاز غير مسجّل",
+    "unknown": "جهاز غير معروف",
+    "browserOn": "{{browser}} على {{os}}"
+  },
+  "errors": {
+    "offline": "تعذّر الوصول إلى ChatWave. تحقّق من اتصالك وحاول مجددًا.",
+    "generic": "حدث خطأ ما. يرجى المحاولة مجددًا.",
+    "sessionEnded": "انتهت جلستك. يرجى تسجيل الدخول مجددًا."
+  },
+  "status": {
+    "sent": "تم الإرسال",
+    "delivered": "تم التسليم",
+    "seen": "تمت القراءة",
+    "sending": "جارٍ الإرسال",
+    "failed": "لم تُرسَل"
+  },
+  "auth": {
+    "intro": {
+      "eyebrow": "تطبيق مراسلة للفرق",
+      "headline": "محادثات يعتمد عليها فريقك.",
+      "body": "اعرف لحظة وصول رسالتك ولحظة قراءتها، وسجّل الدخول ببريدك أو رقم هاتفك، واستخدم ChatWave بالعربية أو الإنجليزية.",
+      "preview": {
+        "contact": "لينا حداد",
+        "online": "متصلة الآن",
+        "incoming": "هل يمكنك إرسال الشرائح النهائية قبل الاجتماع؟",
+        "outgoing": "أرسلتها قبل دقيقة. ألقِ نظرة!",
+        "typing": "لينا تكتب…",
+        "reply": "وصلتني، شكرًا لك! 🙌",
+        "label": "محادثة: تنتقل رسالتك من تم الإرسال إلى تم التسليم ثم إلى تمت القراءة."
+      },
+      "features": {
+        "status": "اعرف متى تصل رسائلك ومتى تُقرأ",
+        "phone": "سجّل الدخول ببريدك أو رقم هاتفك",
+        "languages": "متاح بالعربية والإنجليزية"
+      }
+    },
+    "methods": {
+      "email": "البريد",
+      "phone": "الهاتف"
+    },
+    "fields": {
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "you@company.com",
+      "phone": "رقم الهاتف",
+      "password": "كلمة المرور",
+      "name": "الاسم الكامل",
+      "namePlaceholder": "سارة أحمد"
+    },
+    "validation": {
+      "emailRequired": "أدخل بريدك الإلكتروني.",
+      "emailInvalid": "أدخل بريدًا إلكترونيًا صحيحًا.",
+      "phoneRequired": "أدخل رقم هاتفك.",
+      "phoneInvalid": "لا يبدو هذا رقمًا صحيحًا في {{country}}. تحقّق منه وحاول مجددًا.",
+      "passwordRequired": "أدخل كلمة المرور.",
+      "nameMin": "يجب أن يتكون الاسم من حرفين على الأقل.",
+      "nameMax": "الاسم طويل جدًا.",
+      "passwordMin": "استخدم 8 أحرف على الأقل.",
+      "passwordMax": "استخدم 72 حرفًا أو أقل.",
+      "confirmRequired": "أكّد كلمة المرور.",
+      "confirmNewRequired": "أكّد كلمة المرور الجديدة.",
+      "mismatch": "كلمتا المرور غير متطابقتين."
+    },
+    "strength": {
+      "label": "قوة كلمة المرور:",
+      "tooShort": "قصيرة جدًا",
+      "weak": "ضعيفة",
+      "fair": "مقبولة",
+      "good": "جيدة",
+      "strong": "قوية"
+    },
+    "password": {
+      "show": "إظهار كلمة المرور",
+      "hide": "إخفاء كلمة المرور",
+      "hint": "استخدم 8 أحرف أو أكثر. كلما طالت كانت أقوى.",
+      "newPlaceholder": "8 أحرف على الأقل",
+      "again": "اكتبها مرة أخرى"
+    },
+    "login": {
+      "title": "أهلًا بعودتك",
+      "description": "سجّل الدخول لمتابعة محادثاتك من حيث توقفت.",
+      "method": "تسجيل الدخول باستخدام",
+      "passwordPlaceholder": "كلمة مرورك",
+      "forgot": "نسيت كلمة المرور؟",
+      "remember": "أبقني مسجّلًا لمدة 30 يومًا",
+      "submit": "تسجيل الدخول",
+      "submitting": "جارٍ تسجيل الدخول…",
+      "noAccount": "جديد على ChatWave؟",
+      "createAccount": "أنشئ حسابًا",
+      "welcome": "أهلًا بعودتك يا {{name}}!",
+      "failed": "تعذّر تسجيل دخولك. يرجى المحاولة مجددًا.",
+      "suspended": "هذا الحساب موقوف. تواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ."
+    },
+    "register": {
+      "title": "أنشئ حسابك",
+      "description": "ابدأ المحادثة في أقل من دقيقة.",
+      "method": "التسجيل باستخدام",
+      "phoneHint": "سنرسل إليك رمزًا للتأكد من أن الرقم لك.",
+      "confirm": "تأكيد كلمة المرور",
+      "submitEmail": "إنشاء الحساب",
+      "submitPhone": "متابعة",
+      "creating": "جارٍ إنشاء حسابك…",
+      "texting": "جارٍ إرسال الرمز…",
+      "haveAccount": "لديك حساب بالفعل؟",
+      "signIn": "سجّل الدخول",
+      "welcome": "أهلًا بك في ChatWave يا {{name}}!",
+      "failed": "تعذّر إنشاء حسابك. يرجى المحاولة مجددًا.",
+      "textFailed": "تعذّر إرسال الرمز إليك. يرجى المحاولة مجددًا.",
+      "verify": {
+        "changeNumber": "تغيير الرقم",
+        "title": "تحقّق من هاتفك",
+        "description": "أرسلنا رمزًا من 6 أرقام إلى <phone>{{phone}}</phone>. أدخله لإنشاء حسابك.",
+        "submit": "تحقّق وأنشئ الحساب",
+        "resendHint": "لم تصلك رسالة؟ انتظر دقيقة، أو",
+        "resent": "أرسلنا إليك رمزًا جديدًا.",
+        "goBack": "رجوع"
+      }
+    },
+    "code": {
+      "label": "رمز التحقق",
+      "digit": "الرقم {{n}} من {{total}}",
+      "allDigits": "أدخل أرقام الرمز الستة كاملة.",
+      "sendNew": "أرسل رمزًا جديدًا",
+      "sending": "جارٍ الإرسال…",
+      "resendIn": "إعادة الإرسال بعد {{time}}",
+      "dev": "وضع التطوير: لا تُرسَل الرسائل النصية. رمزك هو <code>{{code}}</code>.",
+      "useIt": "استخدمه",
+      "failed": "لم ينجح هذا الرمز. يرجى المحاولة مجددًا.",
+      "resendFailed": "تعذّر إرسال رمز جديد. يرجى المحاولة مجددًا."
+    },
+    "forgot": {
+      "step": "الخطوة {{n}} من {{total}}",
+      "contact": {
+        "title": "أعد تعيين كلمة المرور",
+        "description": "أدخل البريد الإلكتروني أو رقم الهاتف الذي سجّلت به، وسنرسل إليك رمزًا.",
+        "method": "إعادة التعيين باستخدام",
+        "submit": "إرسال الرمز",
+        "sending": "جارٍ إرسال الرمز…",
+        "haveCode": "لدي رمز بالفعل",
+        "failed": "تعذّر إرسال الرمز. يرجى المحاولة مجددًا."
+      },
+      "code": {
+        "titlePhone": "تحقّق من هاتفك",
+        "titleEmail": "تحقّق من بريدك",
+        "descriptionPhone": "إذا كان هناك حساب يستخدم <contact>{{contact}}</contact>، فقد أرسلنا إليه رمزًا من 6 أرقام.",
+        "descriptionEmail": "إذا كان هناك حساب يستخدم <contact>{{contact}}</contact>، فقد أرسلنا إليه رمزًا من 6 أرقام.",
+        "useOther": "استخدم وسيلة أخرى",
+        "submit": "تحقّق من الرمز",
+        "checking": "جارٍ التحقق…",
+        "resendHintPhone": "لم تصلك رسالة؟ انتظر دقيقة، أو",
+        "resendHintEmail": "لم يصلك؟ تحقّق من مجلد الرسائل غير المرغوب فيها، أو",
+        "resentPhone": "أرسلنا إليك رمزًا جديدًا.",
+        "resentEmail": "أرسلنا إليك رمزًا جديدًا."
+      },
+      "password": {
+        "title": "اختر كلمة مرور جديدة",
+        "description": "اختر كلمة لم تستخدمها هنا من قبل.",
+        "new": "كلمة المرور الجديدة",
+        "confirm": "تأكيد كلمة المرور الجديدة",
+        "submit": "تحديث كلمة المرور",
+        "updating": "جارٍ التحديث…",
+        "failed": "تعذّر تحديث كلمة المرور. يرجى المحاولة مجددًا."
+      },
+      "done": {
+        "title": "تم تحديث كلمة المرور",
+        "description": "حرصًا على أمانك، سُجّل خروجك من جميع الأجهزة. سجّل الدخول بكلمة المرور الجديدة للمتابعة.",
+        "back": "العودة إلى تسجيل الدخول"
+      },
+      "backToSignIn": "العودة إلى تسجيل الدخول"
+    },
+    "phone": {
+      "country": "رمز الدولة: {{country}} ({{code}})",
+      "search": "ابحث في الدول",
+      "searchPlaceholder": "ابحث عن دولة أو رمز",
+      "countries": "الدول",
+      "noMatch": "لا توجد دول تطابق \"{{query}}\"",
+      "placeholder": "رقم الهاتف"
+    }
+  },
+  "chat": {
+    "list": {
+      "label": "المحادثات",
+      "nav": "المحادثات",
+      "newChat": "محادثة جديدة ({{shortcut}})",
+      "hide": "إخفاء قائمة المحادثات",
+      "show": "إظهار قائمة المحادثات",
+      "search": "ابحث في المحادثات",
+      "loadFailed": "تعذّر تحميل محادثاتك.",
+      "noMatch": "لا توجد محادثات تطابق «{{query}}»",
+      "startInstead": "ابدأ محادثة جديدة بدلًا من ذلك",
+      "emptyTitle": "لا توجد محادثات بعد",
+      "emptyBody": "ابحث عن زميل باسمه أو ببريده الإلكتروني وابدأ الحديث.",
+      "startChat": "ابدأ محادثة",
+      "loading": "جارٍ تحميل المحادثات"
+    },
+    "item": {
+      "you": "أنت:",
+      "noMessages": "لا توجد رسائل بعد",
+      "unread": "غير مقروءة"
+    },
+    "empty": {
+      "title": "تابع إحدى محادثاتك",
+      "body": "اختر محادثة من القائمة، أو ابدأ محادثة جديدة مع أي شخص في فريقك.",
+      "newChat": "محادثة جديدة",
+      "orPress": "أو اضغط"
+    },
+    "thread": {
+      "notFound": "لم يتم العثور على المحادثة",
+      "notFoundBody": "ربما حُذفت، أو أنك لست مشاركًا فيها.",
+      "backToChats": "العودة إلى المحادثات",
+      "group": "مجموعة",
+      "online": "متصل الآن",
+      "tapForInfo": "اضغط لعرض معلومات جهة الاتصال",
+      "clickForInfo": "انقر لعرض معلومات جهة الاتصال",
+      "conversation": "محادثة",
+      "openInfo": "فتح معلومات جهة الاتصال",
+      "loading": "جارٍ تحميل المحادثة",
+      "contactInfo": "معلومات جهة الاتصال",
+      "close": "إغلاق المحادثة (Esc)",
+      "messagePlaceholder": "اكتب رسالة إلى {{name}}",
+      "writePlaceholder": "اكتب رسالة"
+    },
+    "blocked": {
+      "youBlocked": "لقد حظرت {{name}}. ألغِ الحظر لترسل رسالة.",
+      "unblock": "إلغاء الحظر",
+      "cantMessage": "لا يمكنك إرسال رسائل إلى {{name}}.",
+      "thisPerson": "هذا الشخص"
+    },
+    "messages": {
+      "label": "الرسائل",
+      "loadingOlder": "جارٍ تحميل الرسائل الأقدم",
+      "loading": "جارٍ تحميل الرسائل",
+      "furtherBack": "هذه الرسالة أقدم. مرِّر للأعلى لتحميلها.",
+      "jumpLatest": "الانتقال إلى الأحدث",
+      "jumpNew": "رسائل جديدة، الانتقال إلى الأحدث",
+      "newMessages": "رسائل جديدة",
+      "groupStart": "هذه بداية المجموعة.",
+      "privateStart": "هذه بداية محادثتك مع {{name}}."
+    },
+    "bubble": {
+      "reply": "رد",
+      "more": "المزيد من الإجراءات",
+      "copy": "نسخ النص",
+      "copied": "تم النسخ إلى الحافظة",
+      "copyFailed": "تعذّر نسخ الرسالة.",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "edited": "معدّلة",
+      "notSent": "لم تُرسَل.",
+      "retry": "إعادة المحاولة",
+      "discard": "تجاهل",
+      "you": "أنت"
+    },
+    "composer": {
+      "editing": "تعديل الرسالة",
+      "replyingTo": "الرد على {{name}}",
+      "replyingToSelf": "الرد على نفسك",
+      "cancelEdit": "إلغاء التعديل",
+      "cancelReply": "إلغاء الرد",
+      "label": "الرسالة",
+      "save": "حفظ التغييرات",
+      "send": "إرسال الرسالة",
+      "sendShort": "إرسال",
+      "charsLeft_zero": "لم يتبقَّ أي حرف",
+      "charsLeft_one": "تبقّى حرف واحد",
+      "charsLeft_two": "تبقّى حرفان",
+      "charsLeft_few": "تبقّت {{count, number}} أحرف",
+      "charsLeft_many": "تبقّى {{count, number}} حرفًا",
+      "charsLeft_other": "تبقّى {{count, number}} حرف",
+      "charsOver_zero": "تجاوزت الحد المسموح",
+      "charsOver_one": "تجاوزت الحد المسموح بحرف واحد",
+      "charsOver_two": "تجاوزت الحد المسموح بحرفين",
+      "charsOver_few": "تجاوزت الحد المسموح بـ{{count, number}} أحرف",
+      "charsOver_many": "تجاوزت الحد المسموح بـ{{count, number}} حرفًا",
+      "charsOver_other": "تجاوزت الحد المسموح بـ{{count, number}} حرف"
+    },
+    "newChat": {
+      "title": "محادثة جديدة",
+      "description": "ابحث عن شخص باسمه، أو ببريده الإلكتروني كاملًا، أو برقم هاتفه مع رمز الدولة.",
+      "search": "الاسم أو البريد الإلكتروني أو الهاتف",
+      "minChars": "اكتب حرفين على الأقل للبحث.",
+      "searchFailed": "البحث لا يعمل حاليًا. حاول مرة أخرى.",
+      "noMatch": "لا يوجد أحد يطابق «{{query}}».",
+      "noMatchHint": "جرّب بريده الإلكتروني كاملًا، أو رقم هاتفه بدءًا بالرمز + ثم رمز الدولة.",
+      "opening": "جارٍ فتح المحادثة",
+      "searching": "جارٍ البحث",
+      "startFailed": "تعذّر بدء هذه المحادثة."
+    },
+    "info": {
+      "title": "معلومات جهة الاتصال",
+      "close": "إغلاق معلومات جهة الاتصال",
+      "contact": "جهة اتصال",
+      "viewPhoto": "عرض صورة {{name}}",
+      "about": "نبذة",
+      "nothing": "لا يوجد شيء هنا بعد.",
+      "block": "حظر {{name}}",
+      "unblock": "إلغاء حظر {{name}}",
+      "blockTitle": "هل تريد حظر {{name}}؟",
+      "blockBody": "لن يتمكن {{name}} من مراسلتك أو معرفة متى تكون متصلًا، ولن تتمكن أنت من مراسلته. يمكنك إلغاء الحظر من هنا أو من الإعدادات › الخصوصية.",
+      "blockConfirm": "حظر",
+      "photo": "صورة {{name}}",
+      "photoAlt": "صورة الملف الشخصي لـ{{name}}",
+      "closePhoto": "إغلاق الصورة"
+    },
+    "blocks": {
+      "blocked": "لقد حظرت {{name}}",
+      "unblocked": "لقد ألغيت حظر {{name}}",
+      "blockFailed": "لم يتم حظر هذا الشخص.",
+      "unblockFailed": "لم يتم إلغاء حظر هذا الشخص."
+    },
+    "errors": {
+      "notSent": "لم تُرسَل رسالتك.",
+      "notSaved": "لم تُحفَظ تغييراتك.",
+      "notDeleted": "لم تُحذَف الرسالة."
+    },
+    "delete": {
+      "title": "هل تريد حذف هذه الرسالة؟",
+      "body": "ستُحذف لدى جميع المشاركين في المحادثة. لا يمكن التراجع عن ذلك."
+    },
+    "menu": {
+      "label": "الحساب والإعدادات",
+      "profile": "الملف الشخصي",
+      "settings": "الإعدادات",
+      "admin": "لوحة الإدارة",
+      "signOut": "تسجيل الخروج"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "backToSettings": "العودة إلى الإعدادات",
+    "editProfile": "تعديل ملفك الشخصي",
+    "categoriesLabel": "فئات الإعدادات",
+    "signOut": "تسجيل الخروج",
+    "homeBody": "اختر فئة لتغيير ملفك الشخصي والخصوصية واللغة والمظهر وغير ذلك.",
+    "categories": {
+      "profile": {
+        "title": "الملف الشخصي",
+        "description": "اسمك وصورتك ونبذة عنك"
+      },
+      "account": {
+        "title": "الحساب",
+        "description": "بيانات الدخول وكلمة المرور"
+      },
+      "privacy": {
+        "title": "الخصوصية",
+        "description": "إيصالات القراءة وحالة الاتصال والمحظورون"
+      },
+      "language": {
+        "title": "اللغة",
+        "description": "العربية أو English"
+      },
+      "appearance": {
+        "title": "المظهر",
+        "description": "سمة فاتحة أو داكنة"
+      },
+      "devices": {
+        "title": "الأجهزة",
+        "description": "الأجهزة التي سجّلت الدخول منها"
+      }
+    },
+    "profile": {
+      "uploading": "جارٍ رفع الصورة",
+      "changePhoto": "تغيير الصورة",
+      "uploadPhoto": "رفع صورة",
+      "remove": "إزالة",
+      "photoHint": "بصيغة JPG أو PNG أو WebP، بحجم أقصاه ٢ ميغابايت.",
+      "photoTooBig": "يجب ألا يتجاوز حجم الصورة ٢ ميغابايت.",
+      "displayName": "الاسم المعروض",
+      "about": "نبذة",
+      "aboutPlaceholder": "ما الذي تعمل عليه، أو كيف يمكن التواصل معك",
+      "aboutHint": "تظهر أسفل اسمك. {{count}}/{{max}}",
+      "aboutMax": "اجعلها في حدود {{max}} حرفًا.",
+      "saved": "تم حفظ الملف الشخصي",
+      "saveFailed": "لم يتم حفظ ملفك الشخصي.",
+      "photoUpdated": "تم تحديث الصورة",
+      "uploadFailed": "تعذّر رفع هذه الصورة.",
+      "photoRemoved": "تمت إزالة الصورة",
+      "removeFailed": "تعذّرت إزالة صورتك."
+    },
+    "account": {
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "emailDescription": "تستخدم هذا العنوان لتسجيل الدخول. لا يراه أحد غيرك.",
+      "phoneDescription": "تستخدم هذا الرقم لتسجيل الدخول. لا يراه أحد غيرك.",
+      "changePassword": "تغيير كلمة المرور",
+      "changePasswordDescription": "ستبقى مسجّلًا الدخول هنا، وسيتم تسجيل خروجك من أجهزتك الأخرى.",
+      "current": "كلمة المرور الحالية",
+      "new": "كلمة المرور الجديدة",
+      "confirm": "تأكيد كلمة المرور الجديدة",
+      "submit": "تحديث كلمة المرور",
+      "currentRequired": "أدخل كلمة المرور الحالية.",
+      "updated": "تم تحديث كلمة المرور.",
+      "updatedSignedOut_zero": "تم تحديث كلمة المرور.",
+      "updatedSignedOut_one": "تم تحديث كلمة المرور وتسجيل الخروج من جهاز آخر.",
+      "updatedSignedOut_two": "تم تحديث كلمة المرور وتسجيل الخروج من جهازين آخرين.",
+      "updatedSignedOut_few": "تم تحديث كلمة المرور وتسجيل الخروج من {{count, number}} أجهزة أخرى.",
+      "updatedSignedOut_many": "تم تحديث كلمة المرور وتسجيل الخروج من {{count, number}} جهازًا آخر.",
+      "updatedSignedOut_other": "تم تحديث كلمة المرور وتسجيل الخروج من {{count, number}} جهاز آخر.",
+      "failed": "لم يتم تغيير كلمة المرور."
+    },
+    "privacy": {
+      "receipts": {
+        "title": "إيصالات القراءة",
+        "label": "إرسال إيصالات القراءة",
+        "hint": "عند إيقافها، لن يرى الآخرون متى قرأت رسائلهم، ولن ترى أنت متى قرؤوا رسائلك. تبقى علامة التسليم ظاهرة.",
+        "locked": "دورك لا يسمح بإيقاف هذا الخيار.",
+        "on": "تم تشغيل إيصالات القراءة",
+        "off": "تم إيقاف إيصالات القراءة",
+        "noStatus": "حالة الرسائل غير مفعّلة لدورك، لذا لا تظهر علامات الحالة على رسائلك."
+      },
+      "online": {
+        "title": "حالة الاتصال",
+        "label": "إظهار حالة اتصالي",
+        "hint": "يرى من تتحدث معهم «متصل الآن» أو «آخر ظهور» أسفل اسمك. أوقف هذا الخيار لإخفاء الاثنين.",
+        "locked": "دورك لا يسمح بإخفاء هذا الخيار.",
+        "shown": "يمكن للآخرين رؤية حالة اتصالك",
+        "hidden": "حالة اتصالك مخفية"
+      },
+      "saveFailed": "لم يتم حفظ هذا الإعداد.",
+      "blocked": {
+        "title": "المحظورون",
+        "description": "لا يستطيع المحظورون مراسلتك أو معرفة متى تكون متصلًا.",
+        "loading": "جارٍ تحميل المحظورين",
+        "loadFailed": "تعذّر تحميل قائمة المحظورين. حاول لاحقًا.",
+        "empty": "لم تحظر أحدًا. لحظر شخص ما، افتح محادثتك معه واختر اسمه.",
+        "unblock": "إلغاء الحظر"
+      }
+    },
+    "language": {
+      "title": "اللغة",
+      "description": "اختر لغة ChatWave. تُستخدم أيضًا في الرسائل الإلكترونية والنصية التي نرسلها إليك.",
+      "ltr": "من اليسار إلى اليمين",
+      "rtl": "من اليمين إلى اليسار"
+    },
+    "appearance": {
+      "title": "السمة",
+      "description": "اختر مظهر ChatWave على هذا الجهاز.",
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "حسب الجهاز"
+    },
+    "devices": {
+      "title": "الأجهزة المسجّل دخولها",
+      "description": "سجّل الخروج من أي جهاز لا تعرفه.",
+      "loading": "جارٍ تحميل الأجهزة",
+      "loadFailed": "تعذّر تحميل أجهزتك. حاول لاحقًا.",
+      "activeNow": "نشط الآن",
+      "notUsed": "لم يُستخدم بعد",
+      "thisDevice": "هذا الجهاز",
+      "signedIn": "سُجّل الدخول {{date}}",
+      "signOut": "تسجيل الخروج",
+      "signOutOthers": "تسجيل الخروج من جميع الأجهزة الأخرى",
+      "signedOut": "تم تسجيل الخروج من ذلك الجهاز",
+      "signOutFailed": "لم يتم تسجيل الخروج من ذلك الجهاز.",
+      "signedOutOthers_zero": "لا توجد أجهزة أخرى",
+      "signedOutOthers_one": "تم تسجيل الخروج من جهاز آخر",
+      "signedOutOthers_two": "تم تسجيل الخروج من جهازين آخرين",
+      "signedOutOthers_few": "تم تسجيل الخروج من {{count, number}} أجهزة أخرى",
+      "signedOutOthers_many": "تم تسجيل الخروج من {{count, number}} جهازًا آخر",
+      "signedOutOthers_other": "تم تسجيل الخروج من {{count, number}} جهاز آخر",
+      "signOutOthersFailed": "لم يتم تسجيل الخروج من الأجهزة الأخرى."
+    }
+  },
+  "admin": {
+    "badge": "الإدارة",
+    "nav": {
+      "label": "الإدارة",
+      "overview": "نظرة عامة",
+      "people": "الأشخاص",
+      "roles": "الأدوار",
+      "activity": "النشاط",
+      "system": "النظام",
+      "backToChats": "العودة إلى المحادثات",
+      "chats": "المحادثات"
+    },
+    "pagination": {
+      "label": "الصفحات",
+      "previous": "السابق",
+      "next": "التالي",
+      "range": "{{from}}–{{to}} من {{total}}",
+      "newer": "الأحدث",
+      "older": "الأقدم"
+    },
+    "chart": {
+      "chart": "رسم بياني",
+      "table": "جدول",
+      "keys": "{{description}}. استخدم مفاتيح الأسهم لقراءة كل يوم."
+    },
+    "confirm": {
+      "optional": "(اختياري)",
+      "adminsOnly": "لا يراه إلا المسؤولون."
+    },
+    "roleNames": {
+      "admin": "مسؤول",
+      "member": "عضو"
+    },
+    "roleDescriptions": {
+      "admin": "كل الصلاحيات دائمًا. وحدهم المسؤولون يمكنهم منح هذا الدور أو سحبه.",
+      "member": "يتحدث مع فريقه. تحصل الحسابات الجديدة على هذا الدور."
+    },
+    "status": {
+      "suspended": "موقوف",
+      "online": "متصل",
+      "active": "نشط"
+    },
+    "units": {
+      "messages_zero": "رسالة",
+      "messages_one": "رسالة",
+      "messages_two": "رسالتان",
+      "messages_few": "رسائل",
+      "messages_many": "رسالة",
+      "messages_other": "رسالة",
+      "people_zero": "شخص",
+      "people_one": "شخص",
+      "people_two": "شخصان",
+      "people_few": "أشخاص",
+      "people_many": "شخصًا",
+      "people_other": "شخص",
+      "accounts_zero": "حساب",
+      "accounts_one": "حساب",
+      "accounts_two": "حسابان",
+      "accounts_few": "حسابات",
+      "accounts_many": "حسابًا",
+      "accounts_other": "حساب"
+    },
+    "days_zero": "{{count, number}} يوم",
+    "days_one": "يوم واحد",
+    "days_two": "يومان",
+    "days_few": "{{count, number}} أيام",
+    "days_many": "{{count, number}} يومًا",
+    "days_other": "{{count, number}} يوم",
+    "activity": {
+      "suspended": "أوقف <admin>{{admin}}</admin> حساب <target>{{target}}</target>",
+      "restored": "أعاد <admin>{{admin}}</admin> صلاحية الدخول إلى <target>{{target}}</target>",
+      "roleChanged": "غيّر <admin>{{admin}}</admin> دور <target>{{target}}</target>",
+      "signedOut": "سجّل <admin>{{admin}}</admin> خروج <target>{{target}}</target> من كل الأجهزة",
+      "roleCreated": "أنشأ <admin>{{admin}}</admin> الدور <role>{{role}}</role>",
+      "roleUpdated": "عدّل <admin>{{admin}}</admin> الدور <role>{{role}}</role>",
+      "roleDeleted": "حذف <admin>{{admin}}</admin> الدور <role>{{role}}</role>",
+      "other": "<admin>{{admin}}</admin>: {{action}} <target>{{target}}</target>",
+      "devices_zero": "لا أجهزة",
+      "devices_one": "جهاز واحد",
+      "devices_two": "جهازان",
+      "devices_few": "{{count, number}} أجهزة",
+      "devices_many": "{{count, number}} جهازًا",
+      "devices_other": "{{count, number}} جهاز",
+      "moved": "نُقلوا إلى دور العضو: {{count}}",
+      "added": "أُضيف: {{list}}",
+      "removed": "أُزيل: {{list}}",
+      "formerAdmin": "مسؤول سابق",
+      "deletedAccount": "حساب محذوف",
+      "empty": "لا يوجد شيء هنا بعد."
+    },
+    "overview": {
+      "title": "نظرة عامة",
+      "description": "كيف يستخدم الناس ChatWave.",
+      "rangeLabel": "الفترة الزمنية",
+      "last": "آخر {{period}}",
+      "refresh": "تحديث",
+      "timezone": "الأيام حسب منطقتك الزمنية ({{zone}}).",
+      "loadFailed": "تعذّر تحميل النظرة العامة.",
+      "vsPrevious": "مقارنةً بالـ{{period}} السابقة",
+      "noChange": "بلا تغيير",
+      "messagesLast": "الرسائل، آخر {{period}}",
+      "signUpsLast": "الحسابات الجديدة، آخر {{period}}",
+      "activeToday": "النشطون اليوم",
+      "onlineNow": "المتصلون الآن: {{count}}",
+      "people": "الأشخاص",
+      "peopleFootnote": "المسؤولون: {{admins}} · الموقوفون: {{suspended}}",
+      "messagesPerDay": "الرسائل يوميًا",
+      "messagesSummary": "الرسائل في آخر {{period}}: {{count}}",
+      "sendersTitle": "من أرسلوا رسائل",
+      "sendersSubtitle": "عدد من أرسلوا رسالة واحدة على الأقل في كل يوم",
+      "signUpsTitle": "الحسابات الجديدة",
+      "signUpsSubtitle": "الحسابات المُنشأة في كل يوم",
+      "dailyDescription": "{{title}} يوميًا، آخر {{period}}. أكثر الأيام نشاطًا: {{peak}}",
+      "columns": {
+        "day": "اليوم",
+        "messages": "الرسائل",
+        "people": "الأشخاص",
+        "accounts": "الحسابات",
+        "method": "طريقة الدخول",
+        "share": "النسبة"
+      },
+      "signInTitle": "طرق تسجيل الدخول",
+      "allAccounts": "كل الحسابات: {{count}}",
+      "byMethod": "الحسابات حسب طريقة الدخول",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "figures": {
+        "conversations": "المحادثات",
+        "online": "المتصلون الآن",
+        "admins": "المسؤولون",
+        "suspended": "الموقوفون"
+      },
+      "newest": "أحدث الحسابات",
+      "everyone": "الجميع",
+      "recentActivity": "أحدث إجراءات الإدارة",
+      "allActivity": "كل النشاط",
+      "noActions": "لا توجد إجراءات إدارية بعد.",
+      "loading": "جارٍ تحميل النظرة العامة"
+    },
+    "people": {
+      "title": "الأشخاص",
+      "description": "كل من لديه حساب",
+      "count_zero": "لا حسابات",
+      "count_one": "حساب واحد",
+      "count_two": "حسابان",
+      "count_few": "{{count, number}} حسابات",
+      "count_many": "{{count, number}} حسابًا",
+      "count_other": "{{count, number}} حساب",
+      "matching_zero": "لا حسابات مطابقة",
+      "matching_one": "حساب واحد مطابق",
+      "matching_two": "حسابان مطابقان",
+      "matching_few": "{{count, number}} حسابات مطابقة",
+      "matching_many": "{{count, number}} حسابًا مطابقًا",
+      "matching_other": "{{count, number}} حساب مطابق",
+      "search": "ابحث بالاسم أو البريد الإلكتروني أو الهاتف",
+      "statusLabel": "الحالة",
+      "statuses": {
+        "all": "الجميع",
+        "active": "النشطون",
+        "online": "المتصلون الآن",
+        "suspended": "الموقوفون"
+      },
+      "roleLabel": "الدور",
+      "anyRole": "أي دور",
+      "methodLabel": "طريقة الدخول",
+      "methods": {
+        "all": "البريد أو الهاتف",
+        "email": "البريد الإلكتروني",
+        "phone": "رقم الهاتف"
+      },
+      "loadFailed": "تعذّر تحميل قائمة الأشخاص.",
+      "noMatch": "لا أحد يطابق عوامل التصفية هذه",
+      "clearFilters": "مسح عوامل التصفية",
+      "columns": {
+        "person": "الشخص",
+        "role": "الدور",
+        "status": "الحالة",
+        "messages": "الرسائل",
+        "joined": "تاريخ الانضمام",
+        "lastActive": "آخر نشاط"
+      },
+      "never": "أبدًا",
+      "loading": "جارٍ تحميل الأشخاص"
+    },
+    "person": {
+      "loading": "جارٍ التحميل",
+      "gone": "هذا الحساب لم يعد موجودًا.",
+      "loadFailed": "تعذّر تحميل هذا الحساب.",
+      "suspendedOn": "موقوف منذ {{date}}.",
+      "reason": "السبب: {{reason}}",
+      "noReason": "لم يُذكر سبب.",
+      "cantSignIn": "لا يمكنه تسجيل الدخول حتى تُعاد صلاحيته.",
+      "restore": "إعادة صلاحية الدخول",
+      "you": "(أنت)",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "verified": "موثّق",
+      "joined": "تاريخ الانضمام",
+      "joinedOn": "انضم {{date}}",
+      "lastActive": "آخر نشاط",
+      "neverSignedIn": "لم يسجّل الدخول قط",
+      "changeRole": "تغيير الدور",
+      "signOutEverywhere": "تسجيل الخروج من كل الأجهزة",
+      "suspend": "إيقاف",
+      "notes": {
+        "me": "هذا حسابك. اطلب من مسؤول آخر تغيير دورك أو إيقافك، واستخدم الإعدادات لتسجيل الخروج من أجهزتك.",
+        "adminRole": "لا يمكن إيقاف من لديهم دور المسؤول. امنحهم دورًا آخر أولًا.",
+        "outranked": "وحدهم المسؤولون يمكنهم إدارة من يستطيعون فتح هذه اللوحة."
+      },
+      "stats": {
+        "messages": "الرسائل المُرسلة",
+        "conversations": "المحادثات",
+        "blockedBy": "محظور من قِبل",
+        "blocking": "حظر"
+      },
+      "devices": {
+        "title": "الأجهزة المسجّل دخولها",
+        "none": "غير مسجّل الدخول على أي جهاز."
+      },
+      "history": {
+        "title": "سجل الإدارة",
+        "empty": "لم يغيّر أي مسؤول حساب {{name}}."
+      },
+      "confirm": {
+        "suspendTitle": "هل تريد إيقاف {{name}}؟",
+        "suspendBody": "سيتم تسجيل خروج {{name}} من كل الأجهزة، ولن يتمكن من تسجيل الدخول حتى تعيد صلاحيته. تبقى رسائله كما هي.",
+        "suspendConfirm": "إيقاف {{name}}",
+        "reason": "السبب",
+        "restoreTitle": "هل تريد إعادة صلاحية دخول {{name}}؟",
+        "restoreBody": "سيتمكن {{name}} من تسجيل الدخول واستخدام ChatWave مجددًا.",
+        "signOutTitle": "هل تريد تسجيل خروج {{name}} من كل الأجهزة؟",
+        "signOutBody": "سيحتاج {{name}} إلى تسجيل الدخول من جديد على كل جهاز. هذا مفيد عند فقدان هاتف أو بعد استخدام جهاز مشترك."
+      },
+      "roleDialog": {
+        "title": "تغيير دور {{name}}",
+        "description": "يحدد الدور ما يمكن لـ{{name}} رؤيته وفعله في ChatWave.",
+        "dashboard": "يفتح لوحة الإدارة",
+        "notAllowed": "لا يمكنك منح هذا الدور",
+        "current": "الحالي",
+        "save": "حفظ الدور"
+      },
+      "toasts": {
+        "suspended": "تم إيقاف {{name}} وتسجيل خروجه من كل الأجهزة",
+        "suspendFailed": "لم يتم إيقاف هذا الحساب.",
+        "restored": "يمكن لـ{{name}} تسجيل الدخول مجددًا",
+        "restoreFailed": "لم تتم إعادة صلاحية هذا الحساب.",
+        "roleChanged": "أصبح دور {{name}}: {{role}}",
+        "roleFailed": "لم يتم تغيير الدور.",
+        "signedOut": "تم تسجيل خروج {{name}} من كل الأجهزة",
+        "signOutFailed": "لم يتم تسجيل الخروج."
+      }
+    },
+    "activityPage": {
+      "title": "النشاط",
+      "description": "كل ما قام به المسؤولون: الإيقاف وإعادة الصلاحية وتغيير الأدوار وتسجيل الخروج.",
+      "loading": "جارٍ تحميل النشاط",
+      "loadFailed": "تعذّر تحميل سجل النشاط.",
+      "empty": "لا توجد إجراءات إدارية بعد. ستظهر هنا عمليات الإيقاف وتغيير الأدوار وتسجيل الخروج."
+    },
+    "system": {
+      "title": "النظام",
+      "description": "الإعدادات وحالة النظام في لمحة، مع قائمة التحقق قبل التشغيل الفعلي.",
+      "checkAgain": "إعادة الفحص",
+      "loadFailed": "تعذّر فحص النظام.",
+      "health": "فحوصات الحالة",
+      "allGood": "كل شيء يبدو على ما يرام.",
+      "attention_zero": "لا شيء يحتاج إلى انتباه.",
+      "attention_one": "عنصر واحد يحتاج إلى انتباه.",
+      "attention_two": "عنصران يحتاجان إلى انتباه.",
+      "attention_few": "{{count, number}} عناصر تحتاج إلى انتباه.",
+      "attention_many": "{{count, number}} عنصرًا يحتاج إلى انتباه.",
+      "attention_other": "{{count, number}} عنصر يحتاج إلى انتباه.",
+      "statuses": {
+        "ok": "سليم",
+        "info": "ملاحظة",
+        "warning": "تحقّق",
+        "problem": "أصلِح"
+      },
+      "environment": "البيئة",
+      "rows": {
+        "environment": "البيئة",
+        "debug": "وضع التصحيح",
+        "laravel": "Laravel",
+        "php": "PHP",
+        "database": "قاعدة البيانات",
+        "queue": "قائمة المهام",
+        "failedJobs": "المهام الفاشلة",
+        "email": "البريد الإلكتروني",
+        "sms": "الرسائل النصية",
+        "photos": "صور الملفات الشخصية",
+        "timezone": "المنطقة الزمنية"
+      },
+      "on": "مفعّل",
+      "off": "متوقف",
+      "waiting": "في الانتظار: {{count}}"
+    },
+    "roles": {
+      "title": "الأدوار",
+      "description": "حدّد ما يمكن لكل دور رؤيته وفعله. لكل شخص دور واحد فقط.",
+      "new": "دور جديد",
+      "peopleCount_zero": "لا أحد",
+      "peopleCount_one": "شخص واحد",
+      "peopleCount_two": "شخصان",
+      "peopleCount_few": "{{count, number}} أشخاص",
+      "peopleCount_many": "{{count, number}} شخصًا",
+      "peopleCount_other": "{{count, number}} شخص",
+      "builtIn": "مدمج",
+      "locked": "يملك كل الصلاحيات دائمًا",
+      "yourRole": "دورك",
+      "ownRoleNote": "لا يمكنك تغيير الدور الذي تنتمي إليه. اطلب ذلك من مسؤول.",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "dashboardAccess": "يفتح لوحة الإدارة",
+      "noPermissions": "بلا صلاحيات",
+      "loadFailed": "تعذّر تحميل الأدوار.",
+      "loading": "جارٍ تحميل الأدوار",
+      "form": {
+        "createTitle": "دور جديد",
+        "editTitle": "تعديل {{name}}",
+        "intro": "اختر ما يمكن لأصحاب هذا الدور فعله. تُطبَّق التغييرات فورًا.",
+        "name": "الاسم",
+        "namePlaceholder": "مثال: فريق الدعم",
+        "nameBuiltIn": "تحتفظ الأدوار المدمجة بأسمائها.",
+        "nameRequired": "أدخل اسمًا للدور.",
+        "nameMin": "استخدم حرفين على الأقل.",
+        "description": "الوصف",
+        "descriptionPlaceholder": "لمن يُمنح هذا الدور، ولماذا",
+        "permissions": "الصلاحيات",
+        "cantGrant": "لا تملك هذه الصلاحية، لذا لا يمكنك منحها.",
+        "save": "حفظ الدور",
+        "create": "إنشاء الدور"
+      },
+      "groups": {
+        "messaging": "المراسلة والخصوصية",
+        "dashboard": "لوحة الإدارة"
+      },
+      "permissions": {
+        "messages": {
+          "status": {
+            "label": "رؤية حالة الرسائل",
+            "description": "تُظهر العلامات على رسائله متى سُلّمت كل رسالة ومتى قُرئت."
+          }
+        },
+        "receipts": {
+          "hide": {
+            "label": "إيقاف إيصالات القراءة",
+            "description": "يمكنه منع الآخرين من معرفة متى قرأ رسائلهم."
+          }
+        },
+        "presence": {
+          "hide": {
+            "label": "إخفاء حالة الاتصال",
+            "description": "يمكنه إخفاء «متصل الآن» و«آخر ظهور» عن الآخرين."
+          }
+        },
+        "admin": {
+          "overview": {
+            "label": "النظرة العامة",
+            "description": "رؤية أرقام الاستخدام والرسوم البيانية."
+          },
+          "people": {
+            "label": "الأشخاص",
+            "description": "رؤية حسابات الجميع وتفاصيلها."
+          },
+          "moderate": {
+            "label": "الإشراف",
+            "description": "إيقاف الأشخاص وإعادة صلاحيتهم وتسجيل خروجهم."
+          },
+          "roles": {
+            "label": "الأدوار",
+            "description": "إنشاء الأدوار وتعديلها ومنحها للأشخاص."
+          },
+          "activity": {
+            "label": "سجل النشاط",
+            "description": "رؤية كل ما قام به المسؤولون."
+          },
+          "system": {
+            "label": "النظام",
+            "description": "رؤية الإعدادات وفحوصات الحالة."
+          }
+        }
+      },
+      "deleteDialog": {
+        "title": "هل تريد حذف {{name}}؟",
+        "empty": "لا أحد لديه هذا الدور حاليًا.",
+        "people": "سيصبح أصحاب هذا الدور ({{count}}) أعضاءً.",
+        "confirm": "حذف الدور"
+      },
+      "toasts": {
+        "created": "تم إنشاء الدور",
+        "saved": "تم حفظ الدور",
+        "deleted": "تم حذف الدور",
+        "saveFailed": "لم يتم حفظ الدور.",
+        "deleteFailed": "لم يتم حذف الدور."
+      }
+    }
+  }
+}

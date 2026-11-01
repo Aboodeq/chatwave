@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
 import toast from "react-hot-toast";
+import i18n from "../i18n";
 import { useAuthStore } from "../stores/authStore";
 
 const api = axios.create({
@@ -11,6 +12,12 @@ api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // The API answers (errors, emails, texts) in the app's language.
+  config.headers["Accept-Language"] = i18n.resolvedLanguage ?? "en";
+  // Checks made from a background tab still deliver messages, but don't make you "online".
+  if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+    config.headers["X-Background"] = "1";
   }
   return config;
 });
@@ -27,7 +34,7 @@ api.interceptors.response.use(undefined, (error) => {
   if (isAxiosError<{ code?: string }>(error) && sentWithCurrentToken) {
     if (error.response?.status === 401) {
       clearSession("expired");
-      toast("Your session ended. Please sign in again.", { id: "session-ended" });
+      toast(i18n.t("errors.sessionEnded"), { id: "session-ended" });
     } else if (error.response?.status === 403 && error.response.data?.code === "account_suspended") {
       clearSession("suspended");
     }

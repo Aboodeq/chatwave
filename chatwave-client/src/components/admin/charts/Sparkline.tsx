@@ -9,7 +9,7 @@ export function Sparkline({ values, width = 112, height = 36 }: { values: number
   const last = values.length - 1;
 
   return (
-    <svg width={width} height={height} aria-hidden="true" className="shrink-0 overflow-visible">
+    <svg width={width} height={height} aria-hidden="true" className="shrink-0 overflow-visible rtl:-scale-x-100">
       <path d={path} fill="none" className="stroke-viz-muted" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
       <path
         d={`M${x(last - 1).toFixed(1)},${y(values[last - 1]).toFixed(1)}L${x(last).toFixed(1)},${y(values[last]).toFixed(1)}`}

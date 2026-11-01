@@ -2,7 +2,7 @@ import api from "../lib/axios";
 import type { User } from "../types/user";
 
 export async function updateProfile(
-  data: Partial<Pick<User, "name" | "status_text" | "show_online_status">>,
+  data: Partial<Pick<User, "name" | "status_text" | "show_online_status" | "read_receipts" | "locale">>,
 ): Promise<User> {
   const res = await api.patch("/profile", data);
   return res.data.user;

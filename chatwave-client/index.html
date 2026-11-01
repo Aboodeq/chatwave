@@ -8,6 +8,20 @@
     <meta name="theme-color" content="#ffffff" />
     <title>ChatWave</title>
     <script>
+      // Apply the language (and its direction) before first paint, so Arabic doesn't flash
+      // left to right. Same order as detectLanguage() in src/i18n/languages.ts.
+      (function () {
+        try {
+          var valid = function (value) {
+            return value === "ar" || value === "en";
+          };
+          var saved = localStorage.getItem("chatwave-language");
+          var account = localStorage.getItem("chatwave-account-language");
+          var language = valid(saved) ? saved : valid(account) ? account : /^ar/i.test(navigator.language || "") ? "ar" : "en";
+          document.documentElement.lang = language;
+          document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+        } catch (e) {}
+      })();
       // Apply the saved theme before first paint (light unless the user chose otherwise).
       (function () {
         try {

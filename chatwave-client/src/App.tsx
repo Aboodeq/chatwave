@@ -1,8 +1,10 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import { selectIsAuthenticated, useAuthStore } from "./stores/authStore";
+import { Direction } from "radix-ui";
+import { useTranslation } from "react-i18next";
+import { selectCanAccessAdmin, selectIsAuthenticated, useAuthStore } from "./stores/authStore";
 import { useApplyTheme } from "./hooks/useApplyTheme";
-import { LogoMark } from "./components/ui/Logo";
+import { FullScreenLoader } from "./components/ui/FullScreenLoader";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -23,10 +25,10 @@ function RequireAuth() {
   return <Outlet />;
 }
 
-/** The admin dashboard is for admins only (the API enforces this too). */
+/** The admin dashboard needs a role with an admin permission (the API enforces this too). */
 function RequireAdmin() {
-  const isAdmin = useAuthStore((s) => s.user?.role === "admin");
-  return isAdmin ? <AdminApp /> : <Navigate to="/chat" replace />;
+  const canAdmin = useAuthStore(selectCanAccessAdmin);
+  return canAdmin ? <AdminApp /> : <Navigate to="/chat" replace />;
 }
 
 /** Sign-in pages. Once signed in, continue to where the user was headed. */
@@ -42,38 +44,34 @@ function GuestOnly() {
   return <Outlet />;
 }
 
-function FullScreenLoader() {
-  return (
-    <div className="grid min-h-dvh place-items-center bg-canvas">
-      <LogoMark className="size-10 animate-pulse" />
-    </div>
-  );
-}
-
 export default function App() {
   useApplyTheme();
+  const { i18n } = useTranslation();
 
   return (
-    <BrowserRouter>
-      <Suspense fallback={<FullScreenLoader />}>
-        <Routes>
-          <Route element={<GuestOnly />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          </Route>
-          <Route element={<RequireAuth />}>
-            {/* One shell for all signed-in pages; it reads the URL to decide what to show. */}
-            <Route element={<ChatPage />}>
-              <Route path="/chat/:conversationId?" element={null} />
-              <Route path="/chat/:conversationId/info" element={null} />
-              <Route path="/settings/:section?" element={null} />
+    // Menus, radio groups and switches follow the language's direction (arrow keys too).
+    <Direction.Provider dir={i18n.dir()}>
+      <BrowserRouter>
+        <Suspense fallback={<FullScreenLoader />}>
+          <Routes>
+            <Route element={<GuestOnly />}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             </Route>
-            <Route path="/admin/*" element={<RequireAdmin />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/chat" replace />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+            <Route element={<RequireAuth />}>
+              {/* One shell for all signed-in pages; it reads the URL to decide what to show. */}
+              <Route element={<ChatPage />}>
+                <Route path="/chat/:conversationId?" element={null} />
+                <Route path="/chat/:conversationId/info" element={null} />
+                <Route path="/settings/:section?" element={null} />
+              </Route>
+              <Route path="/admin/*" element={<RequireAdmin />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/chat" replace />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </Direction.Provider>
   );
 }

@@ -1,12 +1,14 @@
 import { useState, type ReactNode } from "react";
 import { DropdownMenu } from "radix-ui";
 import toast from "react-hot-toast";
-import { CircleAlert, Clock3, Copy, MoreHorizontal, Pencil, Reply, RotateCcw, Trash2 } from "lucide-react";
+import { CircleAlert, Copy, MoreHorizontal, Pencil, Reply, RotateCcw, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn, formatTime } from "../../lib/utils";
 import type { PendingMessage } from "../../stores/outboxStore";
-import type { Message, ReplyTo } from "../../types/message";
+import type { Message, MessageStatus, ReplyTo } from "../../types/message";
 import { IconButton } from "../ui/IconButton";
 import { menuContent, menuItem, menuItemDanger, menuSeparator } from "../ui/menuStyles";
+import { MessageStatusIcon } from "./MessageStatusIcon";
 import { MessageText } from "./MessageText";
 
 interface Position {
@@ -18,6 +20,8 @@ interface Position {
 
 interface MessageBubbleProps extends Position {
   message: Message;
+  /** Ticks on your own messages (null where status isn't shown). */
+  status: MessageStatus | null;
   meId?: number;
   showSender: boolean;
   onReply: (message: Message) => void;
@@ -28,6 +32,7 @@ interface MessageBubbleProps extends Position {
 
 export function MessageBubble({
   message,
+  status,
   meId,
   mine,
   first,
@@ -38,15 +43,16 @@ export function MessageBubble({
   onDelete,
   onQuoteClick,
 }: MessageBubbleProps) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const canEdit = mine && message.type === "text";
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(message.body ?? "");
-      toast.success("Copied to clipboard");
+      toast.success(t("chat.bubble.copied"));
     } catch {
-      toast.error("Couldn't copy the message.");
+      toast.error(t("chat.bubble.copyFailed"));
     }
   };
 
@@ -59,25 +65,25 @@ export function MessageBubble({
         mine && "flex-row-reverse",
       )}
     >
-      <IconButton icon={Reply} label="Reply" size="sm" onClick={() => onReply(message)} />
+      <IconButton icon={Reply} label={t("chat.bubble.reply")} size="sm" className="rtl:[&_svg]:-scale-x-100" onClick={() => onReply(message)} />
       <DropdownMenu.Root onOpenChange={setMenuOpen}>
         <DropdownMenu.Trigger asChild>
-          <IconButton icon={MoreHorizontal} label="More actions" size="sm" />
+          <IconButton icon={MoreHorizontal} label={t("chat.bubble.more")} size="sm" />
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Content side="top" align={mine ? "end" : "start"} sideOffset={4} className={menuContent}>
             <DropdownMenu.Item className={menuItem} onSelect={() => onReply(message)}>
-              <Reply aria-hidden="true" />
-              Reply
+              <Reply aria-hidden="true" className="rtl:-scale-x-100" />
+              {t("chat.bubble.reply")}
             </DropdownMenu.Item>
             <DropdownMenu.Item className={menuItem} onSelect={() => void copy()}>
               <Copy aria-hidden="true" />
-              Copy text
+              {t("chat.bubble.copy")}
             </DropdownMenu.Item>
             {canEdit && (
               <DropdownMenu.Item className={menuItem} onSelect={() => onEdit(message)}>
                 <Pencil aria-hidden="true" />
-                Edit
+                {t("chat.bubble.edit")}
               </DropdownMenu.Item>
             )}
             {mine && (
@@ -85,7 +91,7 @@ export function MessageBubble({
                 <DropdownMenu.Separator className={menuSeparator} />
                 <DropdownMenu.Item className={cn(menuItem, menuItemDanger)} onSelect={() => onDelete(message)}>
                   <Trash2 aria-hidden="true" />
-                  Delete
+                  {t("chat.bubble.delete")}
                 </DropdownMenu.Item>
               </>
             )}
@@ -122,8 +128,9 @@ export function MessageBubble({
           onQuoteClick={onQuoteClick}
           meta={
             <>
-              {message.is_edited && <span>edited · </span>}
+              {message.is_edited && <span>{t("chat.bubble.edited")} · </span>}
               <time dateTime={message.created_at}>{formatTime(message.created_at)}</time>
+              {status && <MessageStatusIcon status={status} onBubble className="ms-1 align-[-0.2em]" />}
             </>
           }
         />
@@ -162,6 +169,7 @@ export function PendingBubble({
   onDiscard: (pending: PendingMessage) => void;
   onQuoteClick: (messageId: number) => void;
 }) {
+  const { t } = useTranslation();
   const failed = pending.status === "failed";
 
   return (
@@ -177,27 +185,27 @@ export function PendingBubble({
           onQuoteClick={onQuoteClick}
           meta={
             failed ? (
-              <CircleAlert className="inline size-3.5" aria-label="Not sent" />
+              <CircleAlert className="inline size-3.5 align-[-0.2em]" aria-label={t("status.failed")} />
             ) : (
-              <Clock3 className="inline size-3" aria-label="Sending" />
+              <MessageStatusIcon status="sending" onBubble className="align-[-0.2em]" />
             )
           }
         />
       </div>
       {failed && (
         <p className="mt-1 flex items-center gap-2 px-1 text-xs text-danger">
-          Not sent.
+          {t("chat.bubble.notSent")}
           <button
             type="button"
             onClick={() => onRetry(pending)}
             className="inline-flex items-center gap-1 font-semibold hover:underline"
           >
             <RotateCcw className="size-3" aria-hidden="true" />
-            Retry
+            {t("chat.bubble.retry")}
           </button>
           <span aria-hidden="true">·</span>
           <button type="button" onClick={() => onDiscard(pending)} className="font-semibold hover:underline">
-            Discard
+            {t("chat.bubble.discard")}
           </button>
         </p>
       )}
@@ -221,6 +229,7 @@ function Bubble({
   meta: ReactNode;
   onQuoteClick: (messageId: number) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn(
@@ -244,7 +253,7 @@ function Bubble({
           )}
         >
           <span className={cn("block font-semibold", mine ? "text-bubble-out-fg" : "text-primary")}>
-            {reply.sender.id === meId ? "You" : reply.sender.name}
+            {reply.sender.id === meId ? t("chat.bubble.you") : reply.sender.name}
           </span>
           <span dir="auto" className="line-clamp-2 opacity-80">
             {reply.body}

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FlaskConical } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { useCountdown } from "../../hooks/useCountdown";
-import { cn } from "../../lib/utils";
+import { cn, formatCountdown } from "../../lib/utils";
 import { Button } from "../ui/Button";
 import { OtpInput } from "../ui/OtpInput";
 import { textLinkStyles } from "../ui/TextLink";
@@ -38,6 +39,7 @@ export function VerificationCodeForm({
   resendHint,
   devCode,
 }: VerificationCodeFormProps) {
+  const { t } = useTranslation();
   const [code, setCode] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -59,7 +61,7 @@ export function VerificationCodeForm({
   const submit = (value: string) => {
     if (submitting) return;
     if (value.length < 6) {
-      setLocalError("Enter all 6 digits of the code.");
+      setLocalError(t("auth.code.allDigits"));
       setCode("");
       setShake((n) => n + 1);
       return;
@@ -103,8 +105,11 @@ export function VerificationCodeForm({
         <div className="flex items-center gap-3 rounded-xl border border-dashed border-line-strong bg-surface-2/60 px-3.5 py-3 text-[0.8125rem] text-fg-muted">
           <FlaskConical className="size-4 shrink-0 text-primary" aria-hidden="true" />
           <span className="min-w-0 flex-1">
-            Development mode: texts aren't sent. Your code is{" "}
-            <span className="font-semibold text-fg tabular-nums">{devCode}</span>.
+            <Trans
+              i18nKey="auth.code.dev"
+              values={{ code: devCode }}
+              components={{ code: <span dir="ltr" className="font-semibold text-fg tabular-nums" /> }}
+            />
           </span>
           <button
             type="button"
@@ -114,7 +119,7 @@ export function VerificationCodeForm({
             }}
             className={cn(textLinkStyles, "shrink-0")}
           >
-            Use it
+            {t("auth.code.useIt")}
           </button>
         </div>
       )}
@@ -127,11 +132,11 @@ export function VerificationCodeForm({
         {resendHint}{" "}
         {secondsLeft > 0 ? (
           <span className="font-medium text-fg-subtle tabular-nums">
-            resend in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
+            {t("auth.code.resendIn", { time: formatCountdown(secondsLeft) })}
           </span>
         ) : (
           <button type="button" onClick={onResend} disabled={resending} className={cn(textLinkStyles, "disabled:opacity-60")}>
-            {resending ? "sending…" : "send a new code"}
+            {resending ? t("auth.code.sending") : t("auth.code.sendNew")}
           </button>
         )}
       </p>

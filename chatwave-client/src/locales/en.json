@@ -1,0 +1,878 @@
+{
+  "common": {
+    "appName": "ChatWave",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save changes",
+    "back": "Back",
+    "retry": "Try again",
+    "loading": "Loading…",
+    "you": "You",
+    "yes": "Yes",
+    "no": "No",
+    "remove": "Remove",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "continue": "Continue",
+    "done": "Done",
+    "or": "or",
+    "copyright": "© {{year}} ChatWave",
+    "clearSearch": "Clear search",
+    "unknown": "Unknown"
+  },
+  "language": {
+    "label": "Language",
+    "switchTo": "Switch language",
+    "en": "English",
+    "ar": "العربية"
+  },
+  "theme": {
+    "toDark": "Switch to dark theme",
+    "toLight": "Switch to light theme"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "lastSeen": {
+      "justNow": "Last seen just now",
+      "relative": "Last seen {{relative}}",
+      "today": "Last seen today at {{time}}",
+      "yesterday": "Last seen yesterday at {{time}}",
+      "day": "Last seen {{day}}",
+      "date": "Last seen {{date}}"
+    },
+    "lastActive": {
+      "justNow": "Active just now",
+      "relative": "Last active {{relative}}",
+      "today": "Last active today at {{time}}",
+      "yesterday": "Last active yesterday at {{time}}",
+      "day": "Last active {{day}}",
+      "date": "Last active {{date}}"
+    },
+    "joined": {
+      "justNow": "Joined just now",
+      "relative": "Joined {{relative}}",
+      "today": "Joined today at {{time}}",
+      "yesterday": "Joined yesterday at {{time}}",
+      "day": "Joined {{day}}",
+      "date": "Joined {{date}}"
+    },
+    "plain": {
+      "justNow": "just now",
+      "relative": "{{relative}}",
+      "today": "today at {{time}}",
+      "yesterday": "yesterday at {{time}}",
+      "day": "{{day}}",
+      "date": "{{date}}"
+    }
+  },
+  "device": {
+    "notRecorded": "Device not recorded",
+    "unknown": "Unknown device",
+    "browserOn": "{{browser}} on {{os}}"
+  },
+  "errors": {
+    "offline": "Can't reach ChatWave. Check your connection and try again.",
+    "generic": "Something went wrong. Please try again.",
+    "sessionEnded": "Your session ended. Please sign in again."
+  },
+  "status": {
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "seen": "Seen",
+    "sending": "Sending",
+    "failed": "Not sent"
+  },
+  "auth": {
+    "intro": {
+      "eyebrow": "Messaging for teams",
+      "headline": "Conversations your team can count on.",
+      "body": "Know the moment a message is delivered and seen, sign in with your email or phone number, and use ChatWave in English or Arabic.",
+      "preview": {
+        "contact": "Lina Haddad",
+        "online": "Online",
+        "incoming": "Can you send the final slides before the call?",
+        "outgoing": "Sent them a minute ago. Take a look!",
+        "typing": "Lina is typing…",
+        "reply": "Got them, thank you! 🙌",
+        "label": "A conversation: your message goes from sent, to delivered, to seen."
+      },
+      "features": {
+        "status": "See when messages are delivered and seen",
+        "phone": "Sign in with your email or phone number",
+        "languages": "Available in English and Arabic"
+      }
+    },
+    "methods": {
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "fields": {
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "phone": "Phone number",
+      "password": "Password",
+      "name": "Full name",
+      "namePlaceholder": "Ada Lovelace"
+    },
+    "validation": {
+      "emailRequired": "Enter your email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "phoneRequired": "Enter your phone number.",
+      "phoneInvalid": "That doesn't look like a {{country}} number. Check it and try again.",
+      "passwordRequired": "Enter your password.",
+      "nameMin": "Name must be at least 2 characters.",
+      "nameMax": "Name is too long.",
+      "passwordMin": "Use at least 8 characters.",
+      "passwordMax": "Use 72 characters or fewer.",
+      "confirmRequired": "Confirm your password.",
+      "confirmNewRequired": "Confirm your new password.",
+      "mismatch": "Passwords don't match."
+    },
+    "strength": {
+      "label": "Password strength:",
+      "tooShort": "Too short",
+      "weak": "Weak",
+      "fair": "Fair",
+      "good": "Good",
+      "strong": "Strong"
+    },
+    "password": {
+      "show": "Show password",
+      "hide": "Hide password",
+      "hint": "Use 8 or more characters. Longer is stronger.",
+      "newPlaceholder": "At least 8 characters",
+      "again": "Type it again"
+    },
+    "login": {
+      "title": "Welcome back",
+      "description": "Sign in to pick up your conversations where you left off.",
+      "method": "Sign in with",
+      "passwordPlaceholder": "Your password",
+      "forgot": "Forgot password?",
+      "remember": "Keep me signed in for 30 days",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "New to ChatWave?",
+      "createAccount": "Create an account",
+      "welcome": "Welcome back, {{name}}!",
+      "failed": "We couldn't sign you in. Please try again.",
+      "suspended": "This account has been suspended. Contact your administrator if you think this is a mistake."
+    },
+    "register": {
+      "title": "Create your account",
+      "description": "Start chatting in less than a minute.",
+      "method": "Sign up with",
+      "phoneHint": "We'll text you a code to confirm it's yours.",
+      "confirm": "Confirm password",
+      "submitEmail": "Create account",
+      "submitPhone": "Continue",
+      "creating": "Creating your account…",
+      "texting": "Texting you a code…",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "welcome": "Welcome to ChatWave, {{name}}!",
+      "failed": "We couldn't create your account. Please try again.",
+      "textFailed": "We couldn't text you a code. Please try again.",
+      "verify": {
+        "changeNumber": "Change number",
+        "title": "Check your phone",
+        "description": "We texted a 6‑digit code to <phone>{{phone}}</phone>. Enter it to create your account.",
+        "submit": "Verify and create account",
+        "resendHint": "Didn't get a text? Give it a minute, or",
+        "resent": "We texted you a new code.",
+        "goBack": "Go back"
+      }
+    },
+    "code": {
+      "label": "Verification code",
+      "digit": "Digit {{n}} of {{total}}",
+      "allDigits": "Enter all 6 digits of the code.",
+      "sendNew": "send a new code",
+      "sending": "sending…",
+      "resendIn": "resend in {{time}}",
+      "dev": "Development mode: texts aren't sent. Your code is <code>{{code}}</code>.",
+      "useIt": "Use it",
+      "failed": "That code didn't work. Please try again.",
+      "resendFailed": "We couldn't send a new code. Please try again."
+    },
+    "forgot": {
+      "step": "Step {{n}} of {{total}}",
+      "contact": {
+        "title": "Reset your password",
+        "description": "Enter the email address or phone number you signed up with, and we'll send you a code.",
+        "method": "Reset with",
+        "submit": "Send code",
+        "sending": "Sending code…",
+        "haveCode": "I already have a code",
+        "failed": "We couldn't send a code. Please try again."
+      },
+      "code": {
+        "titlePhone": "Check your phone",
+        "titleEmail": "Check your inbox",
+        "descriptionPhone": "If an account uses <contact>{{contact}}</contact>, we texted it a 6‑digit code.",
+        "descriptionEmail": "If an account uses <contact>{{contact}}</contact>, we sent it a 6‑digit code.",
+        "useOther": "Use something else",
+        "submit": "Verify code",
+        "checking": "Checking…",
+        "resendHintPhone": "Didn't get a text? Give it a minute, or",
+        "resendHintEmail": "Didn't get it? Check your spam folder, or",
+        "resentPhone": "We texted you a new code.",
+        "resentEmail": "We sent you a new code."
+      },
+      "password": {
+        "title": "Choose a new password",
+        "description": "Pick something you haven't used here before.",
+        "new": "New password",
+        "confirm": "Confirm new password",
+        "submit": "Update password",
+        "updating": "Updating…",
+        "failed": "We couldn't update your password. Please try again."
+      },
+      "done": {
+        "title": "Password updated",
+        "description": "For your security, you've been signed out everywhere. Sign in with your new password to continue.",
+        "back": "Back to sign in"
+      },
+      "backToSignIn": "Back to sign in"
+    },
+    "phone": {
+      "country": "Country code: {{country}} ({{code}})",
+      "search": "Search countries",
+      "searchPlaceholder": "Search country or code",
+      "countries": "Countries",
+      "noMatch": "No countries match \"{{query}}\"",
+      "placeholder": "Phone number"
+    }
+  },
+  "chat": {
+    "list": {
+      "label": "Conversations",
+      "nav": "Chats",
+      "newChat": "New chat ({{shortcut}})",
+      "hide": "Hide chat list",
+      "show": "Show chat list",
+      "search": "Search chats",
+      "loadFailed": "We couldn't load your conversations.",
+      "noMatch": "No chats match \"{{query}}\"",
+      "startInstead": "Start a new chat instead",
+      "emptyTitle": "No conversations yet",
+      "emptyBody": "Find a teammate by name or email to say hello.",
+      "startChat": "Start a chat",
+      "loading": "Loading conversations"
+    },
+    "item": {
+      "you": "You:",
+      "noMessages": "No messages yet",
+      "unread": "unread"
+    },
+    "empty": {
+      "title": "Pick up a conversation",
+      "body": "Choose a chat from the list, or start a new one with anyone on your team.",
+      "newChat": "New chat",
+      "orPress": "or press"
+    },
+    "thread": {
+      "notFound": "Conversation not found",
+      "notFoundBody": "It may have been removed, or you're not part of it.",
+      "backToChats": "Back to chats",
+      "group": "Group",
+      "online": "Online",
+      "tapForInfo": "Tap for contact info",
+      "clickForInfo": "Click for contact info",
+      "conversation": "Conversation",
+      "openInfo": "Open contact info",
+      "loading": "Loading conversation",
+      "contactInfo": "Contact info",
+      "close": "Close chat (Esc)",
+      "messagePlaceholder": "Message {{name}}",
+      "writePlaceholder": "Write a message"
+    },
+    "blocked": {
+      "youBlocked": "You blocked {{name}}. Unblock them to send a message.",
+      "unblock": "Unblock",
+      "cantMessage": "You can't send messages to {{name}}.",
+      "thisPerson": "this person"
+    },
+    "messages": {
+      "label": "Messages",
+      "loadingOlder": "Loading older messages",
+      "loading": "Loading messages",
+      "furtherBack": "That message is further back. Scroll up to load it.",
+      "jumpLatest": "Jump to latest",
+      "jumpNew": "New messages, jump to latest",
+      "newMessages": "New messages",
+      "groupStart": "This is the beginning of the group.",
+      "privateStart": "This is the beginning of your conversation with {{name}}."
+    },
+    "bubble": {
+      "reply": "Reply",
+      "more": "More actions",
+      "copy": "Copy text",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Couldn't copy the message.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "edited": "edited",
+      "notSent": "Not sent.",
+      "retry": "Retry",
+      "discard": "Discard",
+      "you": "You"
+    },
+    "composer": {
+      "editing": "Editing message",
+      "replyingTo": "Replying to {{name}}",
+      "replyingToSelf": "Replying to yourself",
+      "cancelEdit": "Cancel editing",
+      "cancelReply": "Cancel reply",
+      "label": "Message",
+      "save": "Save changes",
+      "send": "Send message",
+      "sendShort": "Send",
+      "charsLeft_one": "{{count, number}} character left",
+      "charsLeft_other": "{{count, number}} characters left",
+      "charsOver_one": "{{count, number}} character over the limit",
+      "charsOver_other": "{{count, number}} characters over the limit"
+    },
+    "newChat": {
+      "title": "New chat",
+      "description": "Find someone by name, their full email address, or their phone number with the country code.",
+      "search": "Name, email or phone",
+      "minChars": "Type at least 2 characters to search.",
+      "searchFailed": "Search isn't working right now. Please try again.",
+      "noMatch": "No one matches \"{{query}}\".",
+      "noMatchHint": "Try their full email address, or their phone number starting with + and the country code.",
+      "opening": "Opening chat",
+      "searching": "Searching",
+      "startFailed": "We couldn't start that conversation."
+    },
+    "info": {
+      "title": "Contact info",
+      "close": "Close contact info",
+      "contact": "Contact",
+      "viewPhoto": "View {{name}}'s photo",
+      "about": "About",
+      "nothing": "Nothing here yet.",
+      "block": "Block {{name}}",
+      "unblock": "Unblock {{name}}",
+      "blockTitle": "Block {{name}}?",
+      "blockBody": "{{name}} won't be able to message you or see when you're online, and you won't be able to message them. You can unblock them here or in Settings › Privacy.",
+      "blockConfirm": "Block",
+      "photo": "{{name}}'s photo",
+      "photoAlt": "{{name}}'s profile photo",
+      "closePhoto": "Close photo"
+    },
+    "blocks": {
+      "blocked": "You blocked {{name}}",
+      "unblocked": "You unblocked {{name}}",
+      "blockFailed": "That person wasn't blocked.",
+      "unblockFailed": "That person wasn't unblocked."
+    },
+    "errors": {
+      "notSent": "Your message wasn't sent.",
+      "notSaved": "Your changes weren't saved.",
+      "notDeleted": "The message wasn't deleted."
+    },
+    "delete": {
+      "title": "Delete this message?",
+      "body": "It will be removed for everyone in the conversation. This can't be undone."
+    },
+    "menu": {
+      "label": "Account and settings",
+      "profile": "Profile",
+      "settings": "Settings",
+      "admin": "Admin dashboard",
+      "signOut": "Sign out"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "backToSettings": "Back to settings",
+    "editProfile": "Edit your profile",
+    "categoriesLabel": "Settings categories",
+    "signOut": "Sign out",
+    "homeBody": "Choose a category to change your profile, privacy, language, theme and more.",
+    "categories": {
+      "profile": {
+        "title": "Profile",
+        "description": "Your name, photo and about"
+      },
+      "account": {
+        "title": "Account",
+        "description": "Sign-in details and password"
+      },
+      "privacy": {
+        "title": "Privacy",
+        "description": "Read receipts, online status and blocked people"
+      },
+      "language": {
+        "title": "Language",
+        "description": "English or العربية"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "Light or dark theme"
+      },
+      "devices": {
+        "title": "Devices",
+        "description": "Where you're signed in"
+      }
+    },
+    "profile": {
+      "uploading": "Uploading photo",
+      "changePhoto": "Change photo",
+      "uploadPhoto": "Upload photo",
+      "remove": "Remove",
+      "photoHint": "JPG, PNG or WebP, up to 2 MB.",
+      "photoTooBig": "The photo must be 2 MB or smaller.",
+      "displayName": "Display name",
+      "about": "About",
+      "aboutPlaceholder": "What you're working on, or how to reach you",
+      "aboutHint": "Shown under your name. {{count}}/{{max}}",
+      "aboutMax": "Keep it under {{max}} characters.",
+      "saved": "Profile saved",
+      "saveFailed": "Your profile wasn't saved.",
+      "photoUpdated": "Photo updated",
+      "uploadFailed": "We couldn't upload that photo.",
+      "photoRemoved": "Photo removed",
+      "removeFailed": "We couldn't remove your photo."
+    },
+    "account": {
+      "email": "Email",
+      "phone": "Phone number",
+      "emailDescription": "You use this address to sign in. Only you can see it.",
+      "phoneDescription": "You use this number to sign in. Only you can see it.",
+      "changePassword": "Change password",
+      "changePasswordDescription": "You'll stay signed in here. Your other devices will be signed out.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Update password",
+      "currentRequired": "Enter your current password.",
+      "updated": "Password updated.",
+      "updatedSignedOut_one": "Password updated. Signed out of {{count, number}} other device.",
+      "updatedSignedOut_other": "Password updated. Signed out of {{count, number}} other devices.",
+      "failed": "Your password wasn't changed."
+    },
+    "privacy": {
+      "receipts": {
+        "title": "Read receipts",
+        "label": "Send read receipts",
+        "hint": "When this is off, people won't see when you've read their messages, and you won't see when they've read yours. Delivered ticks still show.",
+        "locked": "Your role doesn't allow turning this off.",
+        "on": "Read receipts are on",
+        "off": "Read receipts are off",
+        "noStatus": "Message status is turned off for your role, so your messages don't show ticks."
+      },
+      "online": {
+        "title": "Online status",
+        "label": "Show when I'm online",
+        "hint": "People you chat with see \"Online\" or \"Last seen\" under your name. Turn this off to keep both private.",
+        "locked": "Your role doesn't allow hiding this.",
+        "shown": "Others can see when you're online",
+        "hidden": "Your online status is hidden"
+      },
+      "saveFailed": "That setting wasn't saved.",
+      "blocked": {
+        "title": "Blocked people",
+        "description": "Blocked people can't message you or see when you're online.",
+        "loading": "Loading blocked people",
+        "loadFailed": "We couldn't load the people you blocked. Try again later.",
+        "empty": "You haven't blocked anyone. To block someone, open your chat with them and select their name.",
+        "unblock": "Unblock"
+      }
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose the language for ChatWave. Emails and text messages from ChatWave use it too.",
+      "ltr": "Left to right",
+      "rtl": "Right to left"
+    },
+    "appearance": {
+      "title": "Theme",
+      "description": "Choose how ChatWave looks on this device.",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "Match device"
+    },
+    "devices": {
+      "title": "Signed-in devices",
+      "description": "Sign out of any device you don't recognize.",
+      "loading": "Loading devices",
+      "loadFailed": "We couldn't load your devices. Try again later.",
+      "activeNow": "Active now",
+      "notUsed": "Not used yet",
+      "thisDevice": "This device",
+      "signedIn": "Signed in {{date}}",
+      "signOut": "Sign out",
+      "signOutOthers": "Sign out of all other devices",
+      "signedOut": "Signed out of that device",
+      "signOutFailed": "That device wasn't signed out.",
+      "signedOutOthers_one": "Signed out of {{count, number}} other device",
+      "signedOutOthers_other": "Signed out of {{count, number}} other devices",
+      "signOutOthersFailed": "Other devices weren't signed out."
+    }
+  },
+  "admin": {
+    "badge": "Admin",
+    "nav": {
+      "label": "Admin",
+      "overview": "Overview",
+      "people": "People",
+      "roles": "Roles",
+      "activity": "Activity",
+      "system": "System",
+      "backToChats": "Back to chats",
+      "chats": "Chats"
+    },
+    "pagination": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "range": "{{from}}–{{to}} of {{total}}",
+      "newer": "Newer",
+      "older": "Older"
+    },
+    "chart": {
+      "chart": "Chart",
+      "table": "Table",
+      "keys": "{{description}}. Use the arrow keys to read each day."
+    },
+    "confirm": {
+      "optional": "(optional)",
+      "adminsOnly": "Only admins see this."
+    },
+    "roleNames": {
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "roleDescriptions": {
+      "admin": "Everything, always. Only admins can give or take away this role.",
+      "member": "Chats with their team. New accounts get this role."
+    },
+    "status": {
+      "suspended": "Suspended",
+      "online": "Online",
+      "active": "Active"
+    },
+    "units": {
+      "messages_one": "message",
+      "messages_other": "messages",
+      "people_one": "person",
+      "people_other": "people",
+      "accounts_one": "account",
+      "accounts_other": "accounts"
+    },
+    "days_one": "{{count, number}} day",
+    "days_other": "{{count, number}} days",
+    "activity": {
+      "suspended": "<admin>{{admin}}</admin> suspended <target>{{target}}</target>",
+      "restored": "<admin>{{admin}}</admin> restored access for <target>{{target}}</target>",
+      "roleChanged": "<admin>{{admin}}</admin> changed the role of <target>{{target}}</target>",
+      "signedOut": "<admin>{{admin}}</admin> signed <target>{{target}}</target> out everywhere",
+      "roleCreated": "<admin>{{admin}}</admin> created the role <role>{{role}}</role>",
+      "roleUpdated": "<admin>{{admin}}</admin> changed the role <role>{{role}}</role>",
+      "roleDeleted": "<admin>{{admin}}</admin> deleted the role <role>{{role}}</role>",
+      "other": "<admin>{{admin}}</admin>: {{action}} <target>{{target}}</target>",
+      "devices_one": "{{count, number}} device",
+      "devices_other": "{{count, number}} devices",
+      "moved": "Moved to Member: {{count}}",
+      "added": "Added: {{list}}",
+      "removed": "Removed: {{list}}",
+      "formerAdmin": "A former admin",
+      "deletedAccount": "a deleted account",
+      "empty": "Nothing here yet."
+    },
+    "overview": {
+      "title": "Overview",
+      "description": "How people are using ChatWave.",
+      "rangeLabel": "Date range",
+      "last": "Last {{period}}",
+      "refresh": "Refresh",
+      "timezone": "Days follow your time zone ({{zone}}).",
+      "loadFailed": "We couldn't load the overview.",
+      "vsPrevious": "vs previous {{period}}",
+      "noChange": "No change",
+      "messagesLast": "Messages, last {{period}}",
+      "signUpsLast": "New accounts, last {{period}}",
+      "activeToday": "Active today",
+      "onlineNow": "{{count}} online now",
+      "people": "People",
+      "peopleFootnote": "Admins: {{admins}} · Suspended: {{suspended}}",
+      "messagesPerDay": "Messages per day",
+      "messagesSummary": "Messages in the last {{period}}: {{count}}",
+      "sendersTitle": "People who sent messages",
+      "sendersSubtitle": "Each day, people who sent at least one message",
+      "signUpsTitle": "New accounts",
+      "signUpsSubtitle": "Accounts created each day",
+      "dailyDescription": "{{title}} per day, last {{period}}. Busiest day: {{peak}}",
+      "columns": {
+        "day": "Day",
+        "messages": "Messages",
+        "people": "People",
+        "accounts": "Accounts",
+        "method": "Sign-in method",
+        "share": "Share"
+      },
+      "signInTitle": "How people sign in",
+      "allAccounts": "All accounts: {{count}}",
+      "byMethod": "Accounts by sign-in method",
+      "email": "Email",
+      "phone": "Phone number",
+      "figures": {
+        "conversations": "Conversations",
+        "online": "Online now",
+        "admins": "Admins",
+        "suspended": "Suspended"
+      },
+      "newest": "Newest accounts",
+      "everyone": "Everyone",
+      "recentActivity": "Recent admin activity",
+      "allActivity": "All activity",
+      "noActions": "No admin actions yet.",
+      "loading": "Loading the overview"
+    },
+    "people": {
+      "title": "People",
+      "description": "Everyone with an account",
+      "count_one": "{{count, number}} account",
+      "count_other": "{{count, number}} accounts",
+      "matching_one": "{{count, number}} account matches",
+      "matching_other": "{{count, number}} accounts match",
+      "search": "Search by name, email or phone",
+      "statusLabel": "Status",
+      "statuses": {
+        "all": "Everyone",
+        "active": "Active",
+        "online": "Online now",
+        "suspended": "Suspended"
+      },
+      "roleLabel": "Role",
+      "anyRole": "Any role",
+      "methodLabel": "Signs in with",
+      "methods": {
+        "all": "Email or phone",
+        "email": "Email",
+        "phone": "Phone number"
+      },
+      "loadFailed": "We couldn't load people.",
+      "noMatch": "No one matches these filters",
+      "clearFilters": "Clear filters",
+      "columns": {
+        "person": "Person",
+        "role": "Role",
+        "status": "Status",
+        "messages": "Messages",
+        "joined": "Joined",
+        "lastActive": "Last active"
+      },
+      "never": "Never",
+      "loading": "Loading people"
+    },
+    "person": {
+      "loading": "Loading",
+      "gone": "This account doesn't exist anymore.",
+      "loadFailed": "We couldn't load this account.",
+      "suspendedOn": "Suspended {{date}}.",
+      "reason": "Reason: {{reason}}",
+      "noReason": "No reason was given.",
+      "cantSignIn": "They can't sign in until restored.",
+      "restore": "Restore access",
+      "you": "(you)",
+      "email": "Email",
+      "phone": "Phone",
+      "verified": "Verified",
+      "joined": "Joined",
+      "joinedOn": "Joined {{date}}",
+      "lastActive": "Last active",
+      "neverSignedIn": "Never signed in",
+      "changeRole": "Change role",
+      "signOutEverywhere": "Sign out everywhere",
+      "suspend": "Suspend",
+      "notes": {
+        "me": "This is your account. Ask another admin to change your role or suspend you, and use Settings to sign out your own devices.",
+        "adminRole": "People with the Admin role can't be suspended. Give them another role first.",
+        "outranked": "Only admins can manage people who can open this dashboard."
+      },
+      "stats": {
+        "messages": "Messages sent",
+        "conversations": "Conversations",
+        "blockedBy": "Blocked by",
+        "blocking": "Has blocked"
+      },
+      "devices": {
+        "title": "Signed-in devices",
+        "none": "Not signed in anywhere."
+      },
+      "history": {
+        "title": "Admin history",
+        "empty": "No admin has changed {{name}}'s account."
+      },
+      "confirm": {
+        "suspendTitle": "Suspend {{name}}?",
+        "suspendBody": "{{name}} will be signed out on every device and won't be able to sign in until you restore access. Their messages stay.",
+        "suspendConfirm": "Suspend {{name}}",
+        "reason": "Reason",
+        "restoreTitle": "Restore {{name}}'s access?",
+        "restoreBody": "{{name}} will be able to sign in and use ChatWave again.",
+        "signOutTitle": "Sign {{name}} out everywhere?",
+        "signOutBody": "{{name}} will need to sign in again on every device. Useful after a lost phone or a shared computer."
+      },
+      "roleDialog": {
+        "title": "Change {{name}}'s role",
+        "description": "A role decides what {{name}} can see and do in ChatWave.",
+        "dashboard": "Opens the admin dashboard",
+        "notAllowed": "You can't give this role",
+        "current": "Current",
+        "save": "Save role"
+      },
+      "toasts": {
+        "suspended": "{{name}} is suspended and signed out everywhere",
+        "suspendFailed": "That account wasn't suspended.",
+        "restored": "{{name}} can sign in again",
+        "restoreFailed": "That account wasn't restored.",
+        "roleChanged": "{{name}}'s role is now {{role}}",
+        "roleFailed": "The role wasn't changed.",
+        "signedOut": "{{name}} is signed out on every device",
+        "signOutFailed": "They weren't signed out."
+      }
+    },
+    "activityPage": {
+      "title": "Activity",
+      "description": "Everything admins have done: suspensions, restored access, role changes and sign-outs.",
+      "loading": "Loading activity",
+      "loadFailed": "We couldn't load the activity log.",
+      "empty": "No admin actions yet. Suspensions, role changes and sign-outs will show up here."
+    },
+    "system": {
+      "title": "System",
+      "description": "Configuration and health at a glance, including the checklist for running in production.",
+      "checkAgain": "Check again",
+      "loadFailed": "We couldn't check the system.",
+      "health": "Health checks",
+      "allGood": "Everything looks good.",
+      "attention_one": "{{count, number}} item needs attention.",
+      "attention_other": "{{count, number}} items need attention.",
+      "statuses": {
+        "ok": "OK",
+        "info": "Note",
+        "warning": "Check",
+        "problem": "Fix"
+      },
+      "environment": "Environment",
+      "rows": {
+        "environment": "Environment",
+        "debug": "Debug mode",
+        "laravel": "Laravel",
+        "php": "PHP",
+        "database": "Database",
+        "queue": "Queue",
+        "failedJobs": "Failed jobs",
+        "email": "Email",
+        "sms": "Text messages",
+        "photos": "Profile photos",
+        "timezone": "Time zone"
+      },
+      "on": "On",
+      "off": "Off",
+      "waiting": "{{count}} waiting"
+    },
+    "roles": {
+      "title": "Roles",
+      "description": "Decide what each role can see and do. Everyone has exactly one role.",
+      "new": "New role",
+      "peopleCount_one": "{{count, number}} person",
+      "peopleCount_other": "{{count, number}} people",
+      "builtIn": "Built-in",
+      "locked": "Always has every permission",
+      "yourRole": "Your role",
+      "ownRoleNote": "You can't change the role you're in. Ask an admin.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "dashboardAccess": "Opens the admin dashboard",
+      "noPermissions": "No permissions",
+      "loadFailed": "We couldn't load the roles.",
+      "loading": "Loading roles",
+      "form": {
+        "createTitle": "New role",
+        "editTitle": "Edit {{name}}",
+        "intro": "Choose what people with this role can do. Changes apply right away.",
+        "name": "Name",
+        "namePlaceholder": "e.g. Support team",
+        "nameBuiltIn": "Built-in roles keep their names.",
+        "nameRequired": "Give the role a name.",
+        "nameMin": "Use at least 2 characters.",
+        "description": "Description",
+        "descriptionPlaceholder": "Who gets this role, and why",
+        "permissions": "Permissions",
+        "cantGrant": "You don't have this permission, so you can't give it.",
+        "save": "Save role",
+        "create": "Create role"
+      },
+      "groups": {
+        "messaging": "Messaging and privacy",
+        "dashboard": "Admin dashboard"
+      },
+      "permissions": {
+        "messages": {
+          "status": {
+            "label": "See message status",
+            "description": "Ticks on their messages show when each one is delivered and seen."
+          }
+        },
+        "receipts": {
+          "hide": {
+            "label": "Turn off read receipts",
+            "description": "Can stop others from seeing when they've read a message."
+          }
+        },
+        "presence": {
+          "hide": {
+            "label": "Hide online status",
+            "description": "Can hide \"Online\" and \"Last seen\" from others."
+          }
+        },
+        "admin": {
+          "overview": {
+            "label": "Overview",
+            "description": "See usage numbers and charts."
+          },
+          "people": {
+            "label": "People",
+            "description": "See everyone's accounts and details."
+          },
+          "moderate": {
+            "label": "Moderate",
+            "description": "Suspend people, restore them, and sign them out."
+          },
+          "roles": {
+            "label": "Roles",
+            "description": "Create and change roles, and give people roles."
+          },
+          "activity": {
+            "label": "Activity log",
+            "description": "See everything admins have done."
+          },
+          "system": {
+            "label": "System",
+            "description": "See configuration and health checks."
+          }
+        }
+      },
+      "deleteDialog": {
+        "title": "Delete {{name}}?",
+        "empty": "Nobody has this role right now.",
+        "people": "People with this role ({{count}}) will become Members.",
+        "confirm": "Delete role"
+      },
+      "toasts": {
+        "created": "Role created",
+        "saved": "Role saved",
+        "deleted": "Role deleted",
+        "saveFailed": "The role wasn't saved.",
+        "deleteFailed": "The role wasn't deleted."
+      }
+    }
+  }
+}

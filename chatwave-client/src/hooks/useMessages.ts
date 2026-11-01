@@ -9,8 +9,11 @@ import {
 } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { deleteMessage, editMessage, getMessages, markAsRead, sendMessage, type MessagePage } from "../api/messages";
+import i18n from "../i18n";
 import { getErrorMessage } from "../lib/errors";
+import { sameReceipts, statusOf } from "../lib/receipts";
 import { uid } from "../lib/utils";
+import { useAuthStore } from "../stores/authStore";
 import { useOutboxStore, type PendingMessage } from "../stores/outboxStore";
 import type { Message, ReplyTo } from "../types/message";
 import { bumpConversation, conversationKeys, patchConversation } from "./useConversations";
@@ -56,6 +59,7 @@ export function useMessageHistory(conversationId: number) {
           await queryClient.invalidateQueries({ queryKey: key, exact: true });
         }
       }
+      syncPreviewStatus(queryClient, conversationId, latest);
       return latest.messages[0]?.id ?? 0;
     },
     enabled: history.isSuccess,
@@ -76,7 +80,21 @@ export function useMessageHistory(conversationId: number) {
     return list.reverse();
   }, [history.data]);
 
-  return { ...history, messages };
+  // The newest page carries the newest receipts (it's the one that's polled).
+  const receipts = history.data?.pages[0]?.receipts;
+
+  return { ...history, messages, receipts };
+}
+
+/** Keeps the ticks on the chat list's preview in step with the open conversation. */
+function syncPreviewStatus(queryClient: QueryClient, conversationId: number, latest: MessagePage) {
+  const meId = useAuthStore.getState().user?.id;
+  patchConversation(queryClient, conversationId, (conversation) => {
+    const last = conversation.last_message;
+    if (!last || last.sender.id !== meId) return conversation;
+    const status = statusOf(last, latest.receipts, meId);
+    return status === (last.status ?? null) ? conversation : { ...conversation, last_message: { ...last, status } };
+  });
 }
 
 /**
@@ -88,7 +106,7 @@ function mergeNewestPage(cached: History, newest: MessagePage): History | null {
   if (!first) return null;
 
   if (newest.messages.length === 0) {
-    return { pages: [{ messages: [], next_cursor: null }], pageParams: [null] };
+    return { pages: [{ messages: [], next_cursor: null, receipts: newest.receipts }], pageParams: [null] };
   }
 
   const oldestInWindow = newest.messages[newest.messages.length - 1].id;
@@ -101,13 +119,16 @@ function mergeNewestPage(cached: History, newest: MessagePage): History | null {
   // older stays, so the first page's cursor still points at the right place.
   const merged = [...newest.messages, ...first.messages.filter((m) => m.id < oldestInWindow)];
   const unchanged =
+    sameReceipts(first.receipts, newest.receipts) &&
     merged.length === first.messages.length &&
     merged.every((m, i) => {
       const old = first.messages[i];
       return m.id === old.id && m.body === old.body && m.edited_at === old.edited_at;
     });
 
-  return unchanged ? cached : { ...cached, pages: [{ ...first, messages: merged }, ...rest] };
+  return unchanged
+    ? cached
+    : { ...cached, pages: [{ ...first, messages: merged, receipts: newest.receipts }, ...rest] };
 }
 
 function updateHistory(
@@ -140,7 +161,7 @@ export function useSendMessage(conversationId: number) {
     },
     onError: (error, pending) => {
       useOutboxStore.getState().setStatus(pending.clientId, "failed");
-      toast.error(getErrorMessage(error, "Your message wasn't sent."));
+      toast.error(getErrorMessage(error, i18n.t("chat.errors.notSent")));
     },
   });
 
@@ -178,7 +199,7 @@ export function useEditMessage(conversationId: number) {
         c.last_message?.id === message.id ? { ...c, last_message: message } : c,
       );
     },
-    onError: (error) => toast.error(getErrorMessage(error, "Your changes weren't saved.")),
+    onError: (error) => toast.error(getErrorMessage(error, i18n.t("chat.errors.notSaved"))),
   });
 }
 
@@ -191,11 +212,14 @@ export function useDeleteMessage(conversationId: number) {
       updateHistory(queryClient, conversationId, (messages) => messages.filter((m) => m.id !== id));
       void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
     },
-    onError: (error) => toast.error(getErrorMessage(error, "The message wasn't deleted.")),
+    onError: (error) => toast.error(getErrorMessage(error, i18n.t("chat.errors.notDeleted"))),
   });
 }
 
-/** Marks the conversation read while it's on screen and new messages come in. */
+/**
+ * Marks the conversation read while it's on screen and new messages come in, up to the
+ * newest message shown (so a message that arrives meanwhile isn't marked seen unseen).
+ */
 export function useMarkAsRead(conversationId: number, latestIncomingId: number | undefined, unreadCount: number) {
   const queryClient = useQueryClient();
   const visible = useDocumentVisible();
@@ -206,7 +230,7 @@ export function useMarkAsRead(conversationId: number, latestIncomingId: number |
     if (latestIncomingId <= lastMarked.current && unreadCount === 0) return;
 
     lastMarked.current = latestIncomingId;
-    markAsRead(conversationId)
+    markAsRead(conversationId, latestIncomingId)
       .then(() => patchConversation(queryClient, conversationId, (c) => ({ ...c, unread_count: 0 })))
       .catch(() => {
         lastMarked.current = 0; // try again next time

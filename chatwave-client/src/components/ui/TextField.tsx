@@ -11,6 +11,8 @@ export interface TextFieldProps extends ComponentProps<"input"> {
   labelAction?: ReactNode;
   /** Rendered inside the input, at the end (e.g. a show/hide button). */
   trailing?: ReactNode;
+  /** "ltr" keeps the box left to right in Arabic too (email addresses), icon included. */
+  dir?: "ltr" | "rtl" | "auto";
 }
 
 export function TextField({
@@ -22,6 +24,7 @@ export function TextField({
   trailing,
   id,
   className,
+  dir,
   ...props
 }: TextFieldProps) {
   const generatedId = useId();
@@ -38,7 +41,7 @@ export function TextField({
         </label>
         {labelAction}
       </div>
-      <div className="relative">
+      <div className="relative" dir={dir}>
         {Icon && (
           <Icon
             aria-hidden="true"

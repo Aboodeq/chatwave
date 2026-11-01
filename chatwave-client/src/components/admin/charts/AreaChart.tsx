@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { ChartTooltip } from "./ChartTooltip";
-import { formatCount, formatDay, labelIndexes, niceTicks, stepThrough, useElementWidth } from "./chartUtils";
+import { formatCount, formatDay, labelIndexes, niceTicks, stepThrough, useElementWidth, useIsRtl } from "./chartUtils";
 
 export interface DayValue {
   date: string;
@@ -10,6 +11,7 @@ export interface DayValue {
 /**
  * One series over time: a 2px line over a 10% wash, the last value labelled at its end.
  * A crosshair snaps to the nearest day on hover; arrow keys do the same from the keyboard.
+ * In Arabic the chart is mirrored (time runs right to left, the axis sits on the right).
  */
 export function AreaChart({
   points,
@@ -18,22 +20,26 @@ export function AreaChart({
   height = 240,
 }: {
   points: DayValue[];
-  /** "messages", used in the tooltip. */
-  seriesLabel: string;
-  /** Spoken summary, e.g. "1,284 messages in the last 30 days". */
+  /** The noun for a value, e.g. count => "messages", used in the tooltip. */
+  seriesLabel: (count: number) => string;
+  /** Spoken summary, e.g. "Messages in the last 30 days: 1,284". */
   description: string;
   height?: number;
 }) {
+  const { t } = useTranslation();
+  const rtl = useIsRtl();
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
 
   const ticks = niceTicks(Math.max(0, ...points.map((point) => point.value)));
   const top = ticks[ticks.length - 1];
-  const left = Math.max(...ticks.map((tick) => formatCount(tick).length)) * 7 + 12;
-  const margin = { top: 16, right: 40, bottom: 28, left };
-  const plotWidth = Math.max(0, width - margin.left - margin.right);
+  // Laid out from the start side (left in English, right in Arabic), then mirrored if needed.
+  const axis = Math.max(...ticks.map((tick) => formatCount(tick).length)) * 7 + 12;
+  const margin = { top: 16, end: 40, bottom: 28, start: axis };
+  const plotWidth = Math.max(0, width - margin.start - margin.end);
   const plotHeight = height - margin.top - margin.bottom;
-  const x = (i: number) => margin.left + (points.length <= 1 ? plotWidth / 2 : (i / (points.length - 1)) * plotWidth);
+  const side = (offset: number) => (rtl ? width - offset : offset);
+  const x = (i: number) => side(margin.start + (points.length <= 1 ? plotWidth / 2 : (i / (points.length - 1)) * plotWidth));
   const y = (value: number) => margin.top + plotHeight - (value / top) * plotHeight;
   const weekdays = points.length <= 7;
 
@@ -44,12 +50,12 @@ export function AreaChart({
   const onPointerMove = (event: PointerEvent<SVGSVGElement>) => {
     if (points.length === 0 || plotWidth === 0) return;
     const bounds = event.currentTarget.getBoundingClientRect();
-    const fraction = (event.clientX - bounds.left - margin.left) / plotWidth;
-    setActive(Math.min(last, Math.max(0, Math.round(fraction * last))));
+    const fromStart = side(event.clientX - bounds.left) - margin.start;
+    setActive(Math.min(last, Math.max(0, Math.round((fromStart / plotWidth) * last))));
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    const next = stepThrough(event.key, active, points.length);
+    const next = stepThrough(event.key, active, points.length, rtl);
     if (next === undefined) return;
     event.preventDefault();
     setActive(next);
@@ -60,18 +66,26 @@ export function AreaChart({
       ref={ref}
       tabIndex={0}
       role="group"
-      aria-label={`${description}. Use the arrow keys to read each day.`}
+      aria-label={t("admin.chart.keys", { description })}
       onKeyDown={onKeyDown}
       onBlur={() => setActive(null)}
       className="relative rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
       style={{ height }}
     >
       {width > 0 && (
-        <svg width={width} height={height} onPointerMove={onPointerMove} onPointerLeave={() => setActive(null)} aria-hidden="true">
+        <svg
+          width={width}
+          height={height}
+          onPointerMove={onPointerMove}
+          onPointerLeave={() => setActive(null)}
+          aria-hidden="true"
+          // Text anchors follow the direction, so "end" stays on the axis side.
+          style={{ direction: rtl ? "rtl" : "ltr" }}
+        >
           {ticks.map((tick) => (
             <g key={tick}>
-              <line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} className="stroke-line" strokeWidth={1} shapeRendering="crispEdges" />
-              <text x={margin.left - 10} y={y(tick)} dy="0.32em" textAnchor="end" className="fill-fg-subtle text-[11px] tabular-nums">
+              <line x1={side(margin.start)} x2={side(width - margin.end)} y1={y(tick)} y2={y(tick)} className="stroke-line" strokeWidth={1} shapeRendering="crispEdges" />
+              <text x={side(margin.start - 10)} y={y(tick)} dy="0.32em" textAnchor="end" className="fill-fg-subtle text-[11px] tabular-nums">
                 {formatCount(tick)}
               </text>
             </g>
@@ -92,7 +106,7 @@ export function AreaChart({
           {last >= 0 && (
             <>
               <circle cx={x(last)} cy={y(points[last].value)} r={4} className="fill-viz-1 stroke-surface" strokeWidth={2} />
-              <text x={x(last) + 9} y={y(points[last].value)} dy="0.32em" className="fill-fg text-[12px] font-semibold tabular-nums">
+              <text x={x(last) + (rtl ? -9 : 9)} y={y(points[last].value)} dy="0.32em" className="fill-fg text-[12px] font-semibold tabular-nums">
                 {formatCount(points[last].value)}
               </text>
             </>
@@ -109,7 +123,14 @@ export function AreaChart({
           y={y(points[active].value)}
           width={width}
           title={formatDay(points[active].date, "long")}
-          rows={[{ key: "value", value: formatCount(points[active].value), label: seriesLabel, swatch: "bg-viz-1" }]}
+          rows={[
+            {
+              key: "value",
+              value: formatCount(points[active].value),
+              label: seriesLabel(points[active].value),
+              swatch: "bg-viz-1",
+            },
+          ]}
         />
       )}
     </div>

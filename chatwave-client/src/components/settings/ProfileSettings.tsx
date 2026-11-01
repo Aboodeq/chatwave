@@ -5,10 +5,13 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Camera, Loader2, UserRound } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 import { removeAvatar, updateProfile, uploadAvatar } from "../../api/profile";
 import { useUpdateCurrentUser } from "../../hooks/useSession";
 import { conversationKeys } from "../../hooks/useConversations";
 import { getErrorMessage, getFieldErrors } from "../../lib/errors";
+import { formatNumber } from "../../lib/utils";
 import { useAuthStore } from "../../stores/authStore";
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
@@ -19,14 +22,22 @@ const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 const ABOUT_MAX = 160;
 
 const schema = z.object({
-  name: z.string().trim().min(2, "Name must be at least 2 characters.").max(100, "Name is too long."),
-  status_text: z.string().trim().max(ABOUT_MAX, `Keep it under ${ABOUT_MAX} characters.`),
+  name: z
+    .string()
+    .trim()
+    .min(2, { error: () => i18n.t("auth.validation.nameMin") })
+    .max(100, { error: () => i18n.t("auth.validation.nameMax") }),
+  status_text: z
+    .string()
+    .trim()
+    .max(ABOUT_MAX, { error: () => i18n.t("settings.profile.aboutMax", { max: formatNumber(ABOUT_MAX) }) }),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 /** Settings › Profile: photo, display name and about. */
 export function ProfileSettings() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const updateUser = useUpdateCurrentUser();
   const queryClient = useQueryClient();
@@ -55,13 +66,13 @@ export function ProfileSettings() {
       updateUser(updated);
       reset({ name: updated.name, status_text: updated.status_text });
       refreshConversations();
-      toast.success("Profile saved");
+      toast.success(t("settings.profile.saved"));
     },
     onError: (error) => {
       const fields = getFieldErrors(error);
       if (fields.name) setError("name", { message: fields.name });
       if (fields.status_text) setError("status_text", { message: fields.status_text });
-      if (!fields.name && !fields.status_text) toast.error(getErrorMessage(error, "Your profile wasn't saved."));
+      if (!fields.name && !fields.status_text) toast.error(getErrorMessage(error, t("settings.profile.saveFailed")));
     },
   });
 
@@ -70,9 +81,9 @@ export function ProfileSettings() {
     onSuccess: (updated) => {
       updateUser(updated);
       refreshConversations();
-      toast.success("Photo updated");
+      toast.success(t("settings.profile.photoUpdated"));
     },
-    onError: (error) => toast.error(getErrorMessage(error, "We couldn't upload that photo.")),
+    onError: (error) => toast.error(getErrorMessage(error, t("settings.profile.uploadFailed"))),
   });
 
   const remove = useMutation({
@@ -80,9 +91,9 @@ export function ProfileSettings() {
     onSuccess: (updated) => {
       updateUser(updated);
       refreshConversations();
-      toast.success("Photo removed");
+      toast.success(t("settings.profile.photoRemoved"));
     },
-    onError: (error) => toast.error(getErrorMessage(error, "We couldn't remove your photo.")),
+    onError: (error) => toast.error(getErrorMessage(error, t("settings.profile.removeFailed"))),
   });
 
   return (
@@ -92,7 +103,7 @@ export function ProfileSettings() {
           <Avatar name={user?.name} src={user?.avatar} size="xl" />
           {upload.isPending && (
             <span className="absolute inset-0 grid place-items-center rounded-full bg-black/45">
-              <Loader2 className="size-5 animate-spin text-white" aria-label="Uploading photo" />
+              <Loader2 className="size-5 animate-spin text-white" aria-label={t("settings.profile.uploading")} />
             </span>
           )}
         </div>
@@ -105,15 +116,15 @@ export function ProfileSettings() {
               disabled={upload.isPending || remove.isPending}
             >
               <Camera className="size-4" aria-hidden="true" />
-              {user?.avatar ? "Change photo" : "Upload photo"}
+              {user?.avatar ? t("settings.profile.changePhoto") : t("settings.profile.uploadPhoto")}
             </Button>
             {user?.avatar && (
               <Button variant="ghost" size="sm" onClick={() => remove.mutate()} loading={remove.isPending}>
-                Remove
+                {t("settings.profile.remove")}
               </Button>
             )}
           </div>
-          <p className="mt-2 text-xs text-fg-subtle">JPG, PNG or WebP, up to 2 MB.</p>
+          <p className="mt-2 text-xs text-fg-subtle">{t("settings.profile.photoHint")}</p>
         </div>
         <input
           ref={fileInput}
@@ -125,7 +136,7 @@ export function ProfileSettings() {
             event.target.value = ""; // choosing the same file again should still upload
             if (!file) return;
             if (file.size > MAX_PHOTO_BYTES) {
-              toast.error("The photo must be 2 MB or smaller.");
+              toast.error(t("settings.profile.photoTooBig"));
               return;
             }
             upload.mutate(file);
@@ -139,27 +150,27 @@ export function ProfileSettings() {
         onSubmit={handleSubmit((values) => save.mutate(values))}
       >
         <TextField
-          label="Display name"
+          label={t("settings.profile.displayName")}
           icon={UserRound}
           autoComplete="name"
           error={errors.name?.message}
           {...register("name")}
         />
         <TextField
-          label="About"
-          placeholder="What you're working on, or how to reach you"
+          label={t("settings.profile.about")}
+          placeholder={t("settings.profile.aboutPlaceholder")}
           maxLength={ABOUT_MAX}
           error={errors.status_text?.message}
-          hint={`Shown under your name. ${about.length}/${ABOUT_MAX}`}
+          hint={t("settings.profile.aboutHint", { count: formatNumber(about.length), max: formatNumber(ABOUT_MAX) })}
           {...register("status_text")}
         />
         <div className="flex items-center gap-3">
           <Button type="submit" loading={save.isPending} disabled={!isDirty}>
-            Save changes
+            {t("common.save")}
           </Button>
           {isDirty && !save.isPending && (
             <Button variant="ghost" onClick={() => reset()}>
-              Cancel
+              {t("common.cancel")}
             </Button>
           )}
         </div>

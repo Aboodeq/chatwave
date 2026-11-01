@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { ChevronRight, Loader2, UserRoundSearch, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { createConversation } from "../../api/conversations";
 import { searchUsers } from "../../api/users";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
@@ -21,6 +22,7 @@ interface NewChatDialogProps {
 }
 
 export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -47,7 +49,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
       close();
       navigate(`/chat/${conversation.id}`);
     },
-    onError: (error) => toast.error(getErrorMessage(error, "We couldn't start that conversation.")),
+    onError: (error) => toast.error(getErrorMessage(error, t("chat.newChat.startFailed"))),
   });
 
   const people = ready ? results.data : undefined;
@@ -59,27 +61,25 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
         <Dialog.Content className="fixed inset-x-3 top-[10vh] z-50 mx-auto flex max-h-[80vh] max-w-md animate-pop flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-pop outline-none">
           <div className="flex items-start justify-between gap-4 px-5 pt-5">
             <div>
-              <Dialog.Title className="font-display text-lg font-semibold">New chat</Dialog.Title>
-              <Dialog.Description className="mt-1 text-sm text-fg-muted">
-                Find someone by name, their full email address, or their phone number with the country code.
-              </Dialog.Description>
+              <Dialog.Title className="font-display text-lg font-semibold">{t("chat.newChat.title")}</Dialog.Title>
+              <Dialog.Description className="mt-1 text-sm text-fg-muted">{t("chat.newChat.description")}</Dialog.Description>
             </div>
             <Dialog.Close asChild>
-              <IconButton icon={X} label="Close" size="sm" className="-me-1.5" />
+              <IconButton icon={X} label={t("common.close")} size="sm" className="-me-1.5" />
             </Dialog.Close>
           </div>
 
           <div className="px-5 pt-4 pb-3">
-            <SearchInput value={search} onChange={setSearch} label="Name, email or phone" autoFocus />
+            <SearchInput value={search} onChange={setSearch} label={t("chat.newChat.search")} autoFocus />
           </div>
 
           <div className="scrollbar-thin min-h-40 overflow-y-auto border-t border-line p-2" aria-live="polite">
             {!ready ? (
-              <Hint>Type at least 2 characters to search.</Hint>
+              <Hint>{t("chat.newChat.minChars")}</Hint>
             ) : results.isPending ? (
               <ResultsSkeleton />
             ) : results.isError ? (
-              <Hint>{getErrorMessage(results.error, "Search isn't working right now. Please try again.")}</Hint>
+              <Hint>{getErrorMessage(results.error, t("chat.newChat.searchFailed"))}</Hint>
             ) : people && people.length > 0 ? (
               <ul className="space-y-0.5">
                 {people.map((person) => (
@@ -100,7 +100,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
                         </span>
                       </span>
                       {start.isPending && start.variables?.id === person.id ? (
-                        <Loader2 className="size-4 animate-spin text-fg-subtle" aria-label="Opening chat" />
+                        <Loader2 className="size-4 animate-spin text-fg-subtle" aria-label={t("chat.newChat.opening")} />
                       ) : (
                         <ChevronRight
                           aria-hidden="true"
@@ -113,9 +113,9 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
               </ul>
             ) : (
               <Hint>
-                No one matches "{term}".
+                {t("chat.newChat.noMatch", { query: term })}
                 <br />
-                Try their full email address, or their phone number starting with + and the country code.
+                {t("chat.newChat.noMatchHint")}
               </Hint>
             )}
           </div>
@@ -135,8 +135,9 @@ function Hint({ children }: { children: ReactNode }) {
 }
 
 function ResultsSkeleton() {
+  const { t } = useTranslation();
   return (
-    <ul aria-label="Searching" className="space-y-0.5">
+    <ul aria-label={t("chat.newChat.searching")} className="space-y-0.5">
       {[0, 1, 2].map((i) => (
         <li key={i} className="flex items-center gap-3 px-3 py-2.5">
           <Skeleton className="size-10 rounded-full" />

@@ -10,10 +10,20 @@ export interface Message {
   /** Not included in a conversation's last_message preview. */
   media?: MessageMedia[];
   reactions?: MessageReaction[];
+  /** On your own messages: whether it has reached the other person, and whether they've read it. */
+  status?: MessageStatus | null;
   is_edited: boolean;
   edited_at: string | null;
   created_at: string;
   deleted_at: string | null;
+}
+
+export type MessageStatus = "sent" | "delivered" | "seen";
+
+/** How far the other person in a private chat has got (null parts are hidden from you). */
+export interface Receipts {
+  delivered_up_to: number | null;
+  read_up_to: number | null;
 }
 
 export interface ReplyTo {

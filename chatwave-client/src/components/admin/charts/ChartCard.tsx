@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { BarChart3, Table2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "../../../lib/utils";
+import { formatCount } from "./chartUtils";
 
 /**
  * A chart with its title, and a switch to the same numbers as a table (the accessible twin
@@ -21,6 +23,7 @@ export function ChartCard({
   dimmed?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const [showTable, setShowTable] = useState(false);
 
   return (
@@ -37,7 +40,7 @@ export function ChartCard({
           className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-fg-muted outline-none hover:bg-surface-2 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring"
         >
           {showTable ? <BarChart3 className="size-3.5" aria-hidden="true" /> : <Table2 className="size-3.5" aria-hidden="true" />}
-          {showTable ? "Chart" : "Table"}
+          {showTable ? t("admin.chart.chart") : t("admin.chart.table")}
         </button>
       </header>
       <div className={cn("mt-4 transition-opacity", dimmed && "opacity-55")}>{showTable ? table : chart}</div>
@@ -64,7 +67,7 @@ export function ValueTable({ columns, rows }: { columns: string[]; rows: (string
             <tr key={String(row[0])}>
               {row.map((cell, i) => (
                 <td key={i} className={cn("px-3 py-1.5", i === 0 ? "text-fg-muted" : "text-end font-medium text-fg tabular-nums")}>
-                  {cell}
+                  {typeof cell === "number" ? formatCount(cell) : cell}
                 </td>
               ))}
             </tr>

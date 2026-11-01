@@ -1,9 +1,11 @@
 import api from '../lib/axios';
-import type { Message } from '../types/message';
+import type { Message, Receipts } from '../types/message';
 
 export interface MessagePage {
   messages: Message[];
   next_cursor: string | null;
+  /** How far the other person has got (private chats; null where status isn't shown). */
+  receipts?: Receipts | null;
 }
 
 /** One page of history, newest first. Pass next_cursor to get older messages. */
@@ -39,6 +41,7 @@ export async function deleteMessage(messageId: number): Promise<void> {
   await api.delete(`/messages/${messageId}`);
 }
 
-export async function markAsRead(conversationId: number): Promise<void> {
-  await api.post(`/conversations/${conversationId}/read`);
+/** Marks messages read, up to the given one (the newest on screen). */
+export async function markAsRead(conversationId: number, upToMessageId?: number): Promise<void> {
+  await api.post(`/conversations/${conversationId}/read`, upToMessageId ? { message_id: upToMessageId } : {});
 }

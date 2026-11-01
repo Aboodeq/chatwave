@@ -1,11 +1,12 @@
 import { useRef, type KeyboardEvent } from "react";
 import { Mail, Smartphone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "../../lib/utils";
 import type { ContactMethod } from "./contact";
 
 const options = [
-  { value: "email", label: "Email", icon: Mail },
-  { value: "phone", label: "Phone", icon: Smartphone },
+  { value: "email", icon: Mail },
+  { value: "phone", icon: Smartphone },
 ] as const;
 
 /**
@@ -24,6 +25,7 @@ export function MethodSwitch({
   label: string;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const refs = useRef<Partial<Record<ContactMethod, HTMLButtonElement | null>>>({});
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -49,7 +51,7 @@ export function MethodSwitch({
           value === "phone" && "translate-x-full rtl:-translate-x-full",
         )}
       />
-      {options.map(({ value: option, label: optionLabel, icon: Icon }) => (
+      {options.map(({ value: option, icon: Icon }) => (
         <button
           key={option}
           ref={(element) => {
@@ -66,7 +68,7 @@ export function MethodSwitch({
           )}
         >
           <Icon className="size-4" aria-hidden="true" />
-          {optionLabel}
+          {t(`auth.methods.${option}`)}
         </button>
       ))}
     </div>

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import type { User } from "../types/user";
+import { rememberAccountLanguage } from "../i18n/languages";
+import type { Permission, User } from "../types/user";
 
 interface AuthState {
   token: string | null;
@@ -52,7 +53,10 @@ export const useAuthStore = create<AuthState>()(
       endedBy: null,
       startSession: ({ token, user }, remember) => set({ token, user, remember, endedBy: null }),
       setUser: (user) => set({ user }),
-      clearSession: (reason = "signed-out") => set({ token: null, user: null, remember: false, endedBy: reason }),
+      clearSession: (reason = "signed-out") => {
+        rememberAccountLanguage(null);
+        set({ token: null, user: null, remember: false, endedBy: reason });
+      },
     }),
     {
       name: "chatwave-auth",
@@ -63,3 +67,11 @@ export const useAuthStore = create<AuthState>()(
 );
 
 export const selectIsAuthenticated = (state: AuthState) => state.token !== null;
+
+/** Whether the signed-in user's role allows something (the API checks this too). */
+export const selectCan = (permission: Permission) => (state: AuthState) =>
+  state.user?.permissions?.includes(permission) ?? false;
+
+/** Any admin permission opens the dashboard; each page needs its own. */
+export const selectCanAccessAdmin = (state: AuthState) =>
+  state.user?.permissions?.some((permission) => permission.startsWith("admin.")) ?? false;

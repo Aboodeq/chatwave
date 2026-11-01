@@ -1,4 +1,5 @@
 import { z } from "zod";
+import i18n from "../../i18n";
 import type { Contact } from "../../api/auth";
 import type { CountryCode } from "../../lib/phone";
 
@@ -29,20 +30,20 @@ export async function checkContact(values: ContactValues, ctx: z.RefinementCtx) 
   if (values.method === "email") {
     const email = values.email.trim();
     if (!email) {
-      ctx.addIssue({ code: "custom", path: ["email"], message: "Enter your email address." });
+      ctx.addIssue({ code: "custom", path: ["email"], message: i18n.t("auth.validation.emailRequired") });
     } else if (!z.email().safeParse(email).success) {
-      ctx.addIssue({ code: "custom", path: ["email"], message: "Enter a valid email address." });
+      ctx.addIssue({ code: "custom", path: ["email"], message: i18n.t("auth.validation.emailInvalid") });
     }
     return;
   }
   if (!values.phone.trim()) {
-    ctx.addIssue({ code: "custom", path: ["phone"], message: "Enter your phone number." });
+    ctx.addIssue({ code: "custom", path: ["phone"], message: i18n.t("auth.validation.phoneRequired") });
     return;
   }
   const { toE164, getCountry } = await phoneTools();
   if (!toE164(values.phone, values.country)) {
-    const { name } = getCountry(values.country);
-    ctx.addIssue({ code: "custom", path: ["phone"], message: `That doesn't look like a ${name} number. Check it and try again.` });
+    const { name } = getCountry(values.country, i18n.resolvedLanguage);
+    ctx.addIssue({ code: "custom", path: ["phone"], message: i18n.t("auth.validation.phoneInvalid", { country: name }) });
   }
 }
 

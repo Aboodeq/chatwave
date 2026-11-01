@@ -1,6 +1,17 @@
 import api from "../lib/axios";
-import type { AdminActionEntry, AdminUser, Overview, Paginated, PeopleQuery, PersonDetail, RangeDays, SystemInfo } from "../types/admin";
-import type { Role } from "../types/user";
+import type {
+  AdminActionEntry,
+  AdminRole,
+  AdminUser,
+  Overview,
+  Paginated,
+  PeopleQuery,
+  PersonDetail,
+  RangeDays,
+  RoleInput,
+  RolesResponse,
+  SystemInfo,
+} from "../types/admin";
 
 export async function getOverview(days: RangeDays, timezone: string): Promise<Overview> {
   const res = await api.get("/admin/overview", { params: { days, timezone } });
@@ -28,9 +39,30 @@ export async function restorePerson(id: number): Promise<AdminUser> {
   return res.data.user;
 }
 
-export async function setRole(id: number, role: Role): Promise<AdminUser> {
-  const res = await api.put(`/admin/users/${id}/role`, { role });
+export async function setRole(id: number, roleId: number): Promise<AdminUser> {
+  const res = await api.put(`/admin/users/${id}/role`, { role_id: roleId });
   return res.data.user;
+}
+
+export async function getRoles(): Promise<RolesResponse> {
+  const res = await api.get("/admin/roles");
+  return res.data;
+}
+
+export async function createRole(input: RoleInput): Promise<AdminRole> {
+  const res = await api.post("/admin/roles", input);
+  return res.data.role;
+}
+
+export async function updateRole(id: number, input: RoleInput): Promise<AdminRole> {
+  const res = await api.put(`/admin/roles/${id}`, input);
+  return res.data.role;
+}
+
+/** Deletes a role; its people become Members. Returns how many moved. */
+export async function deleteRole(id: number): Promise<number> {
+  const res = await api.delete(`/admin/roles/${id}`);
+  return res.data.moved_to_member;
 }
 
 export async function signOutEverywhere(id: number): Promise<AdminUser> {

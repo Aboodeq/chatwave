@@ -1,34 +1,56 @@
+import type { ReactNode } from "react";
 import { Link, Navigate, NavLink, Outlet, Route, Routes } from "react-router-dom";
-import { ArrowLeft, History, LayoutDashboard, Server, Users, type LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, History, KeyRound, LayoutDashboard, Server, Users, type LucideIcon } from "lucide-react";
 import { useSession } from "../../hooks/useSession";
 import { signInIdentifier } from "../../lib/account";
 import { cn } from "../../lib/utils";
 import { useAuthStore } from "../../stores/authStore";
+import type { Permission } from "../../types/user";
 import { Avatar } from "../../components/ui/Avatar";
+import { LanguageToggle } from "../../components/ui/LanguageToggle";
 import { Logo } from "../../components/ui/Logo";
 import ActivityPage from "./ActivityPage";
 import OverviewPage from "./OverviewPage";
 import PeoplePage from "./PeoplePage";
 import PersonPage from "./PersonPage";
+import RolesPage from "./RolesPage";
 import SystemPage from "./SystemPage";
 
-const sections: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
-  { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
-  { to: "/admin/people", label: "People", icon: Users },
-  { to: "/admin/activity", label: "Activity", icon: History },
-  { to: "/admin/system", label: "System", icon: Server },
+type SectionId = "overview" | "people" | "roles" | "activity" | "system";
+
+/** Each area of the dashboard needs its own permission (the API checks the same ones). */
+const sections: { id: SectionId; to: string; icon: LucideIcon; permission: Permission; end?: boolean }[] = [
+  { id: "overview", to: "/admin", icon: LayoutDashboard, permission: "admin.overview", end: true },
+  { id: "people", to: "/admin/people", icon: Users, permission: "admin.people" },
+  { id: "roles", to: "/admin/roles", icon: KeyRound, permission: "admin.roles" },
+  { id: "activity", to: "/admin/activity", icon: History, permission: "admin.activity" },
+  { id: "system", to: "/admin/system", icon: Server, permission: "admin.system" },
 ];
 
-/** The admin dashboard (admins only; App.tsx guards the route). */
+function useAllowedSections() {
+  const permissions = useAuthStore((s) => s.user?.permissions);
+  return sections.filter((section) => permissions?.includes(section.permission));
+}
+
+/** Shows a page only to people whose role allows it; others go to the first page they can see. */
+function Allowed({ permission, children }: { permission: Permission; children: ReactNode }) {
+  const allowed = useAllowedSections();
+  if (allowed.some((section) => section.permission === permission)) return <>{children}</>;
+  return <Navigate to={allowed[0]?.to ?? "/chat"} replace />;
+}
+
+/** The admin dashboard (App.tsx lets in roles with at least one admin permission). */
 export default function AdminApp() {
   return (
     <Routes>
       <Route element={<AdminLayout />}>
-        <Route index element={<OverviewPage />} />
-        <Route path="people" element={<PeoplePage />} />
-        <Route path="people/:id" element={<PersonPage />} />
-        <Route path="activity" element={<ActivityPage />} />
-        <Route path="system" element={<SystemPage />} />
+        <Route index element={<Allowed permission="admin.overview"><OverviewPage /></Allowed>} />
+        <Route path="people" element={<Allowed permission="admin.people"><PeoplePage /></Allowed>} />
+        <Route path="people/:id" element={<Allowed permission="admin.people"><PersonPage /></Allowed>} />
+        <Route path="roles" element={<Allowed permission="admin.roles"><RolesPage /></Allowed>} />
+        <Route path="activity" element={<Allowed permission="admin.activity"><ActivityPage /></Allowed>} />
+        <Route path="system" element={<Allowed permission="admin.system"><SystemPage /></Allowed>} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
     </Routes>
@@ -36,7 +58,9 @@ export default function AdminApp() {
 }
 
 function AdminLayout() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const allowed = useAllowedSections();
   // Keeps the role fresh: someone who loses admin access is sent back to the chat.
   useSession();
 
@@ -47,8 +71,8 @@ function AdminLayout() {
           <Logo />
           <AdminPill />
         </div>
-        <nav aria-label="Admin" className="flex-1 space-y-0.5 px-3 pt-2">
-          {sections.map(({ to, label, icon: Icon, end }) => (
+        <nav aria-label={t("admin.nav.label")} className="flex-1 space-y-0.5 px-3 pt-2">
+          {allowed.map(({ id, to, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -61,23 +85,28 @@ function AdminLayout() {
               }
             >
               <Icon className="size-[1.125rem]" aria-hidden="true" />
-              {label}
+              {t(`admin.nav.${id}`)}
             </NavLink>
           ))}
         </nav>
         <div className="space-y-1 border-t border-line p-3">
+          <LanguageToggle className="mb-1 w-full justify-center ring-0 hover:ring-1" />
           <Link
             to="/chat"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-fg-muted outline-none hover:bg-surface-2 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ArrowLeft className="size-[1.125rem] rtl:rotate-180" aria-hidden="true" />
-            Back to chats
+            {t("admin.nav.backToChats")}
           </Link>
           <div className="flex items-center gap-3 px-3 py-2">
             <Avatar name={user?.name} src={user?.avatar} size="sm" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-fg">{user?.name}</p>
-              <p className="truncate text-xs text-fg-subtle">{signInIdentifier(user)}</p>
+              <p dir="auto" className="truncate text-sm font-medium text-fg">
+                {user?.name}
+              </p>
+              <p className="truncate text-xs text-fg-subtle">
+                <span dir="ltr">{signInIdentifier(user)}</span>
+              </p>
             </div>
           </div>
         </div>
@@ -91,16 +120,19 @@ function AdminLayout() {
               <Logo />
               <AdminPill />
             </div>
-            <Link
-              to="/chat"
-              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-fg-muted hover:bg-surface-2 hover:text-fg"
-            >
-              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-              Chats
-            </Link>
+            <div className="flex items-center gap-1">
+              <LanguageToggle compact className="h-9 gap-1.5 px-2.5 ring-0" />
+              <Link
+                to="/chat"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-fg-muted hover:bg-surface-2 hover:text-fg"
+              >
+                <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
+                {t("admin.nav.chats")}
+              </Link>
+            </div>
           </div>
-          <nav aria-label="Admin" className="scrollbar-thin flex gap-1 overflow-x-auto px-3 pb-2">
-            {sections.map(({ to, label, icon: Icon, end }) => (
+          <nav aria-label={t("admin.nav.label")} className="scrollbar-thin flex gap-1 overflow-x-auto px-3 pb-2">
+            {allowed.map(({ id, to, icon: Icon, end }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -113,7 +145,7 @@ function AdminLayout() {
                 }
               >
                 <Icon className="size-4" aria-hidden="true" />
-                {label}
+                {t(`admin.nav.${id}`)}
               </NavLink>
             ))}
           </nav>
@@ -128,9 +160,10 @@ function AdminLayout() {
 }
 
 function AdminPill() {
+  const { t } = useTranslation();
   return (
     <span className="rounded-md bg-primary-soft px-1.5 py-0.5 text-[0.6875rem] font-semibold tracking-wide text-primary-soft-fg uppercase">
-      Admin
+      {t("admin.badge")}
     </span>
   );
 }

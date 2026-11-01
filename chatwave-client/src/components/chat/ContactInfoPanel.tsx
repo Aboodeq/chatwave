@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { AlertDialog, Dialog } from "radix-ui";
 import { ArrowLeft, Ban, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useBlockActions } from "../../hooks/useBlocks";
 import { useNow } from "../../hooks/useNow";
-import { cn, formatLastSeen } from "../../lib/utils";
+import { cn, formatMoment } from "../../lib/utils";
 import type { Conversation } from "../../types/conversation";
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
@@ -15,8 +16,9 @@ import { IconButton } from "../ui/IconButton";
  * Full screen on phones, a drawer over the chat on medium screens, a column beside it on wide ones.
  */
 export function ContactInfoPanel({ conversation, onClose }: { conversation: Conversation; onClose: () => void }) {
+  const { t } = useTranslation();
   const person = conversation.participant;
-  const name = conversation.name ?? person?.name ?? "Contact";
+  const name = conversation.name ?? person?.name ?? t("chat.info.contact");
   const firstName = name.split(" ")[0];
   const now = useNow(30_000);
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -24,14 +26,14 @@ export function ContactInfoPanel({ conversation, onClose }: { conversation: Conv
   const { block, unblock } = useBlockActions();
 
   const presence = conversation.is_online
-    ? "Online"
+    ? t("chat.thread.online")
     : conversation.last_seen_at
-      ? formatLastSeen(conversation.last_seen_at, now)
+      ? formatMoment(conversation.last_seen_at, now, "lastSeen")
       : null;
 
   return (
     <aside
-      aria-label="Contact info"
+      aria-label={t("chat.info.title")}
       className={cn(
         "absolute inset-y-0 end-0 z-20 flex w-full animate-fade-in flex-col bg-surface",
         // Medium screens: a drawer over the chat. Wide screens: a column beside it.
@@ -43,12 +45,12 @@ export function ContactInfoPanel({ conversation, onClose }: { conversation: Conv
         {/* Phones treat the panel as a screen of its own, so it gets a back arrow. */}
         <IconButton
           icon={ArrowLeft}
-          label="Close contact info"
+          label={t("chat.info.close")}
           className="md:hidden rtl:[&_svg]:rotate-180"
           onClick={onClose}
         />
-        <IconButton icon={X} label="Close contact info" className="hidden md:inline-grid" onClick={onClose} />
-        <h2 className="text-[0.9375rem] font-semibold">Contact info</h2>
+        <IconButton icon={X} label={t("chat.info.close")} className="hidden md:inline-grid" onClick={onClose} />
+        <h2 className="text-[0.9375rem] font-semibold">{t("chat.info.title")}</h2>
       </header>
 
       <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto bg-canvas">
@@ -60,7 +62,7 @@ export function ContactInfoPanel({ conversation, onClose }: { conversation: Conv
               className="rounded-full transition-opacity outline-none hover:opacity-90 focus-visible:ring-4 focus-visible:ring-ring"
             >
               <Avatar name={name} src={person.avatar} size="2xl" />
-              <span className="sr-only">View {name}'s photo</span>
+              <span className="sr-only">{t("chat.info.viewPhoto", { name })}</span>
             </button>
           ) : (
             <Avatar name={name} size="2xl" />
@@ -76,9 +78,9 @@ export function ContactInfoPanel({ conversation, onClose }: { conversation: Conv
         </section>
 
         <section className="mt-2 bg-surface px-6 py-5">
-          <h4 className="text-xs font-semibold tracking-wide text-fg-subtle uppercase">About</h4>
+          <h4 className="text-xs font-semibold tracking-wide text-fg-subtle uppercase">{t("chat.info.about")}</h4>
           <p dir="auto" className="mt-2 text-[0.9375rem] leading-relaxed text-fg">
-            {person?.status_text || <span className="text-fg-subtle">Nothing here yet.</span>}
+            {person?.status_text || <span className="text-fg-subtle">{t("chat.info.nothing")}</span>}
           </p>
         </section>
 
@@ -89,10 +91,10 @@ export function ContactInfoPanel({ conversation, onClose }: { conversation: Conv
                 onClick={() => unblock.mutate({ id: person.id, name: firstName })}
                 disabled={unblock.isPending}
               >
-                Unblock {firstName}
+                {t("chat.info.unblock", { name: firstName })}
               </ActionButton>
             ) : (
-              <ActionButton onClick={() => setConfirmBlock(true)}>Block {firstName}</ActionButton>
+              <ActionButton onClick={() => setConfirmBlock(true)}>{t("chat.info.block", { name: firstName })}</ActionButton>
             )}
           </section>
         )}
@@ -107,14 +109,15 @@ export function ContactInfoPanel({ conversation, onClose }: { conversation: Conv
           <AlertDialog.Portal>
             <AlertDialog.Overlay className="fixed inset-0 z-40 animate-fade-in bg-[#04121a]/45 backdrop-blur-[2px]" />
             <AlertDialog.Content className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 animate-pop rounded-2xl border border-line bg-surface p-6 shadow-pop outline-none">
-              <AlertDialog.Title className="font-display text-lg font-semibold">Block {firstName}?</AlertDialog.Title>
+              <AlertDialog.Title className="font-display text-lg font-semibold">
+                {t("chat.info.blockTitle", { name: firstName })}
+              </AlertDialog.Title>
               <AlertDialog.Description className="mt-2 text-sm leading-relaxed text-fg-muted">
-                {firstName} won't be able to message you or see when you're online, and you won't be able to message
-                them. You can unblock them here or in Settings › Privacy.
+                {t("chat.info.blockBody", { name: firstName })}
               </AlertDialog.Description>
               <div className="mt-6 flex justify-end gap-2">
                 <AlertDialog.Cancel asChild>
-                  <Button variant="secondary">Cancel</Button>
+                  <Button variant="secondary">{t("common.cancel")}</Button>
                 </AlertDialog.Cancel>
                 <Button
                   variant="danger"
@@ -123,7 +126,7 @@ export function ContactInfoPanel({ conversation, onClose }: { conversation: Conv
                     block.mutate({ id: person.id, name: firstName }, { onSettled: () => setConfirmBlock(false) })
                   }
                 >
-                  Block
+                  {t("chat.info.blockConfirm")}
                 </Button>
               </div>
             </AlertDialog.Content>
@@ -160,6 +163,7 @@ function PhotoViewer({
   src: string;
   name: string;
 }) {
+  const { t } = useTranslation();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -169,15 +173,15 @@ function PhotoViewer({
           onClick={() => onOpenChange(false)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 outline-none sm:p-10"
         >
-          <Dialog.Title className="sr-only">{name}'s photo</Dialog.Title>
+          <Dialog.Title className="sr-only">{t("chat.info.photo", { name })}</Dialog.Title>
           <img
             src={src}
-            alt={`${name}'s profile photo`}
+            alt={t("chat.info.photoAlt", { name })}
             onClick={(event) => event.stopPropagation()}
             className="max-h-full w-[min(100%,32rem)] animate-pop rounded-2xl object-contain shadow-2xl"
           />
           <Dialog.Close
-            aria-label="Close photo"
+            aria-label={t("chat.info.closePhoto")}
             className="absolute end-4 top-4 grid size-10 place-items-center rounded-full bg-white/10 text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white"
           >
             <X className="size-5" aria-hidden="true" />

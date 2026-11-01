@@ -1,17 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Monitor, Smartphone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getSessions, revokeOtherSessions, revokeSession } from "../../api/sessions";
 import { useNow } from "../../hooks/useNow";
 import { describeDevice } from "../../lib/device";
 import { getErrorMessage } from "../../lib/errors";
-import { formatLastSeen, formatShortDate } from "../../lib/utils";
+import { formatMoment, formatShortDate } from "../../lib/utils";
 import { Button } from "../ui/Button";
 import { Skeleton } from "../ui/Skeleton";
 import { SettingsCard } from "./SettingsCard";
 
 /** Settings › Devices: where the account is signed in, with sign-out per device. */
 export function DevicesSettings() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const now = useNow(60_000);
   const { data: sessions, isPending, isError } = useQuery({ queryKey: ["sessions"], queryFn: getSessions });
@@ -22,26 +24,26 @@ export function DevicesSettings() {
     mutationFn: revokeSession,
     onSuccess: () => {
       refresh();
-      toast.success("Signed out of that device");
+      toast.success(t("settings.devices.signedOut"));
     },
-    onError: (error) => toast.error(getErrorMessage(error, "That device wasn't signed out.")),
+    onError: (error) => toast.error(getErrorMessage(error, t("settings.devices.signOutFailed"))),
   });
 
   const revokeOthers = useMutation({
     mutationFn: revokeOtherSessions,
     onSuccess: (count) => {
       refresh();
-      toast.success(`Signed out of ${count} other ${count === 1 ? "device" : "devices"}`);
+      toast.success(t("settings.devices.signedOutOthers", { count }));
     },
-    onError: (error) => toast.error(getErrorMessage(error, "Other devices weren't signed out.")),
+    onError: (error) => toast.error(getErrorMessage(error, t("settings.devices.signOutOthersFailed"))),
   });
 
   const others = sessions?.filter((session) => !session.current).length ?? 0;
 
   return (
-    <SettingsCard title="Signed-in devices" description="Sign out of any device you don't recognize.">
+    <SettingsCard title={t("settings.devices.title")} description={t("settings.devices.description")}>
       {isPending ? (
-        <div className="space-y-4" aria-label="Loading devices">
+        <div className="space-y-4" aria-label={t("settings.devices.loading")}>
           {[0, 1].map((i) => (
             <div key={i} className="flex items-center gap-4">
               <Skeleton className="size-10 rounded-xl" />
@@ -53,17 +55,17 @@ export function DevicesSettings() {
           ))}
         </div>
       ) : isError || !sessions ? (
-        <p className="text-sm text-fg-muted">We couldn't load your devices. Try again later.</p>
+        <p className="text-sm text-fg-muted">{t("settings.devices.loadFailed")}</p>
       ) : (
         <ul className="divide-y divide-line">
           {sessions.map((session) => {
             const device = describeDevice(session.user_agent);
             const Icon = device.mobile ? Smartphone : Monitor;
             const activity = session.current
-              ? "Active now"
+              ? t("settings.devices.activeNow")
               : session.last_used_at
-                ? formatLastSeen(session.last_used_at, now, "Last active")
-                : "Not used yet";
+                ? formatMoment(session.last_used_at, now, "lastActive")
+                : t("settings.devices.notUsed");
 
             return (
               <li key={session.id} className="flex items-center gap-4 py-3.5 first:pt-0 last:pb-0">
@@ -75,13 +77,13 @@ export function DevicesSettings() {
                     {device.label}
                     {session.current && (
                       <span className="rounded-full bg-success-soft px-2 py-0.5 text-[0.6875rem] font-semibold text-success">
-                        This device
+                        {t("settings.devices.thisDevice")}
                       </span>
                     )}
                   </p>
                   <p className="mt-0.5 text-xs text-fg-subtle">
                     {activity}
-                    {session.created_at && ` · Signed in ${formatShortDate(session.created_at)}`}
+                    {session.created_at && ` · ${t("settings.devices.signedIn", { date: formatShortDate(session.created_at) })}`}
                   </p>
                 </div>
                 {!session.current && (
@@ -92,7 +94,7 @@ export function DevicesSettings() {
                     loading={revoke.isPending && revoke.variables === session.id}
                     onClick={() => revoke.mutate(session.id)}
                   >
-                    Sign out
+                    {t("settings.devices.signOut")}
                   </Button>
                 )}
               </li>
@@ -104,7 +106,7 @@ export function DevicesSettings() {
       {others > 0 && (
         <div className="mt-5 border-t border-line pt-5">
           <Button variant="secondary" size="sm" loading={revokeOthers.isPending} onClick={() => revokeOthers.mutate()}>
-            Sign out of all other devices
+            {t("settings.devices.signOutOthers")}
           </Button>
         </div>
       )}

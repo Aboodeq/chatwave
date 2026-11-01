@@ -1,15 +1,19 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../stores/authStore";
-import { cn, formatListTime } from "../../lib/utils";
+import { cn, formatListTime, formatNumber } from "../../lib/utils";
 import type { Conversation } from "../../types/conversation";
 import { Avatar } from "../ui/Avatar";
+import { MessageStatusIcon } from "./MessageStatusIcon";
 
 export function ConversationItem({ conversation, active }: { conversation: Conversation; active: boolean }) {
+  const { t } = useTranslation();
   const meId = useAuthStore((s) => s.user?.id);
   const last = conversation.last_message;
   // The open conversation is being read right now, so don't badge it.
   const unread = active ? 0 : conversation.unread_count;
-  const name = conversation.name ?? "Unknown";
+  const name = conversation.name ?? t("common.unknown");
+  const mine = last?.sender.id === meId;
 
   return (
     <li>
@@ -37,23 +41,23 @@ export function ConversationItem({ conversation, active }: { conversation: Conve
             )}
           </div>
           <div className="mt-0.5 flex items-center justify-between gap-3">
-            <p
-              dir="auto"
-              className={cn("truncate text-sm", unread ? "text-fg" : "text-fg-muted", !last && "text-fg-subtle italic")}
-            >
+            <p className={cn("flex min-w-0 items-center gap-1 text-sm", unread ? "text-fg" : "text-fg-muted", !last && "text-fg-subtle italic")}>
               {last ? (
                 <>
-                  {last.sender.id === meId && <span className="text-fg-subtle">You: </span>}
-                  {last.body}
+                  {/* Your own last message: its ticks, or "You:" where status isn't shown. */}
+                  {mine && (last.status ? <MessageStatusIcon status={last.status} /> : <span className="shrink-0 text-fg-subtle">{t("chat.item.you")}</span>)}
+                  <span dir="auto" className="truncate">
+                    {last.body}
+                  </span>
                 </>
               ) : (
-                "No messages yet"
+                t("chat.item.noMessages")
               )}
             </p>
             {unread > 0 && (
               <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[0.6875rem] font-semibold text-primary-fg">
-                {unread > 99 ? "99+" : unread}
-                <span className="sr-only"> unread</span>
+                {unread > 99 ? `${formatNumber(99)}+` : formatNumber(unread)}
+                <span className="sr-only"> {t("chat.item.unread")}</span>
               </span>
             )}
           </div>

@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type Key
 import { isSupportedCountry } from "libphonenumber-js/min";
 import { Popover } from "radix-ui";
 import { Check, ChevronDown, CircleAlert, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   examplePhone,
   formatInternationalAsYouType,
@@ -51,6 +52,7 @@ export function PhoneField({
   onBlur,
   inputRef,
 }: PhoneFieldProps) {
+  const { t } = useTranslation();
   // The guessed country might be one without phone numbers (e.g. Antarctica).
   const country = isSupportedCountry(requestedCountry) ? requestedCountry : "US";
   useEffect(() => {
@@ -98,7 +100,9 @@ export function PhoneField({
       <label htmlFor={inputId} className="text-sm font-medium text-fg">
         {label}
       </label>
+      {/* Phone numbers read left to right in every language, country code first. */}
       <div
+        dir="ltr"
         className={cn(
           "flex h-12 rounded-xl border bg-surface shadow-soft transition-[border-color,box-shadow] duration-150",
           "border-line-strong hover:border-fg-subtle/50 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/15",
@@ -122,7 +126,7 @@ export function PhoneField({
             if (value && !value.startsWith("+")) onChange(formatPhoneInput(value, country));
             onBlur?.();
           }}
-          placeholder={examplePhone(country)}
+          placeholder={examplePhone(country) || t("auth.phone.placeholder")}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy || undefined}
           className="h-full min-w-0 flex-1 rounded-e-xl bg-transparent px-3.5 text-base text-fg tabular-nums outline-none placeholder:text-fg-subtle/80"
@@ -159,10 +163,10 @@ function CountryTile({ code }: { code: CountryCode }) {
 function matches(country: Country, query: string): number {
   if (!query) return 1;
   const q = query.toLowerCase().replace(/^\+/, "");
-  const name = country.name.toLowerCase();
-  if (name.startsWith(q) || country.code.toLowerCase() === q) return 3;
+  const names = [country.name.toLowerCase(), country.englishName.toLowerCase()];
+  if (names.some((name) => name.startsWith(q)) || country.code.toLowerCase() === q) return 3;
   if (/^\d+$/.test(q) && country.dialCode.slice(1).startsWith(q)) return 2;
-  return name.includes(q) ? 1 : 0;
+  return names.some((name) => name.includes(q)) ? 1 : 0;
 }
 
 function CountryPicker({
@@ -174,22 +178,24 @@ function CountryPicker({
   onChange: (code: CountryCode) => void;
   disabled?: boolean;
 }) {
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? "en";
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLUListElement>(null);
   const listboxId = useId();
-  const current = getCountry(value);
+  const current = getCountry(value, language);
 
   const results = useMemo(() => {
-    const all = getCountryList();
+    const all = getCountryList(language);
     if (!query.trim()) return all;
     return all
       .map((country) => ({ country, score: matches(country, query.trim()) }))
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score)
       .map((entry) => entry.country);
-  }, [query]);
+  }, [query, language]);
 
   useEffect(() => {
     if (!open) return;
@@ -223,14 +229,14 @@ function CountryPicker({
         setOpen(next);
         if (next) {
           setQuery("");
-          setActive(Math.max(0, getCountryList().findIndex((country) => country.code === value)));
+          setActive(Math.max(0, getCountryList(language).findIndex((country) => country.code === value)));
         }
       }}
     >
       <Popover.Trigger
         type="button"
         disabled={disabled}
-        aria-label={`Country code: ${current.name} (${current.dialCode})`}
+        aria-label={t("auth.phone.country", { country: current.name, code: current.dialCode })}
         className="flex h-full shrink-0 items-center gap-2 rounded-s-[11px] border-e border-line ps-3 pe-2.5 text-fg outline-none transition-colors hover:bg-surface-2 focus-visible:bg-surface-2 data-[state=open]:bg-surface-2"
       >
         <CountryTile code={value} />
@@ -239,13 +245,15 @@ function CountryPicker({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          align="start"
+          // The field is always left to right, so line the list up with its left edge.
+          align={i18n.dir(language) === "rtl" ? "end" : "start"}
           sideOffset={8}
           collisionPadding={16}
           onOpenAutoFocus={(event) => {
             event.preventDefault();
             (event.currentTarget as HTMLElement).querySelector("input")?.focus();
           }}
+          dir={i18n.dir(language)}
           className="z-50 w-[min(21rem,calc(100vw-2rem))] animate-pop rounded-2xl bg-surface p-1.5 shadow-pop ring-1 ring-line outline-none"
         >
           <div className="relative p-1">
@@ -255,7 +263,7 @@ function CountryPicker({
             />
             <input
               role="combobox"
-              aria-label="Search countries"
+              aria-label={t("auth.phone.search")}
               aria-expanded="true"
               aria-controls={listboxId}
               aria-autocomplete="list"
@@ -266,7 +274,7 @@ function CountryPicker({
                 setActive(0);
               }}
               onKeyDown={onKeyDown}
-              placeholder="Search country or code"
+              placeholder={t("auth.phone.searchPlaceholder")}
               autoComplete="off"
               spellCheck={false}
               className="h-10 w-full rounded-xl bg-surface-2 ps-9 pe-3 text-base text-fg outline-none placeholder:text-fg-subtle focus:ring-2 focus:ring-primary/30 md:text-sm"
@@ -276,7 +284,7 @@ function CountryPicker({
             ref={listRef}
             id={listboxId}
             role="listbox"
-            aria-label="Countries"
+            aria-label={t("auth.phone.countries")}
             className="scrollbar-thin mt-1 max-h-72 overflow-y-auto px-0.5 pb-0.5"
           >
             {results.map((country, index) => (
@@ -295,7 +303,9 @@ function CountryPicker({
               >
                 <CountryTile code={country.code} />
                 <span className="min-w-0 flex-1 truncate text-fg">{country.name}</span>
-                <span className="text-fg-subtle tabular-nums">{country.dialCode}</span>
+                <span dir="ltr" className="text-fg-subtle tabular-nums">
+                  {country.dialCode}
+                </span>
                 <Check
                   className={cn("size-4 shrink-0 text-primary", country.code !== value && "invisible")}
                   aria-hidden="true"
@@ -304,7 +314,7 @@ function CountryPicker({
             ))}
             {results.length === 0 && (
               <li role="presentation" className="px-3 py-8 text-center text-sm text-fg-subtle">
-                No countries match "{query.trim()}"
+                {t("auth.phone.noMatch", { query: query.trim() })}
               </li>
             )}
           </ul>

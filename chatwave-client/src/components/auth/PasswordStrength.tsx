@@ -1,12 +1,13 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "../../lib/utils";
 
 const levels = [
-  { label: "Too short", bar: "bg-danger", text: "text-danger" },
-  { label: "Weak", bar: "bg-danger", text: "text-danger" },
-  { label: "Fair", bar: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" },
-  { label: "Good", bar: "bg-primary", text: "text-primary" },
-  { label: "Strong", bar: "bg-success", text: "text-success" },
-];
+  { label: "tooShort", bar: "bg-danger", text: "text-danger" },
+  { label: "weak", bar: "bg-danger", text: "text-danger" },
+  { label: "fair", bar: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" },
+  { label: "good", bar: "bg-primary", text: "text-primary" },
+  { label: "strong", bar: "bg-success", text: "text-success" },
+] as const;
 
 /** Rough guide only: length matters most, variety helps. The server enforces the real rules. */
 function scorePassword(password: string): number {
@@ -19,6 +20,7 @@ function scorePassword(password: string): number {
 }
 
 export function PasswordStrength({ password }: { password: string }) {
+  const { t } = useTranslation();
   if (!password) return null;
   const score = scorePassword(password);
   const level = levels[score];
@@ -36,9 +38,9 @@ export function PasswordStrength({ password }: { password: string }) {
           />
         ))}
       </div>
-      <span className={cn("w-16 text-end text-xs font-medium", level.text)}>
-        <span className="sr-only">Password strength: </span>
-        {level.label}
+      <span className={cn("min-w-16 text-end text-xs font-medium", level.text)}>
+        <span className="sr-only">{t("auth.strength.label")} </span>
+        {t(`auth.strength.${level.label}`)}
       </span>
     </div>
   );

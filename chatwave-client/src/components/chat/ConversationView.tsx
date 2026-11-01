@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 import { ArrowLeft, Ban, Info, PanelLeftOpen, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useBlockActions } from "../../hooks/useBlocks";
 import { useConversation } from "../../hooks/useConversations";
 import {
@@ -13,7 +14,7 @@ import {
   useSendMessage,
 } from "../../hooks/useMessages";
 import { getDraft, setDraft } from "../../lib/drafts";
-import { cn, formatLastSeen, isTouchDevice } from "../../lib/utils";
+import { cn, formatMoment, isTouchDevice } from "../../lib/utils";
 import { useNow } from "../../hooks/useNow";
 import { useAuthStore } from "../../stores/authStore";
 import { useOutboxStore } from "../../stores/outboxStore";
@@ -31,6 +32,7 @@ import { DeleteMessageDialog } from "./DeleteMessageDialog";
 import { MessageList } from "./MessageList";
 
 export function ConversationView({ conversationId, infoOpen }: { conversationId: number; infoOpen: boolean }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const meId = useAuthStore((s) => s.user?.id);
@@ -151,10 +153,10 @@ export function ConversationView({ conversationId, infoOpen }: { conversationId:
   if (notFound) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-        <h1 className="font-display text-xl font-semibold">Conversation not found</h1>
-        <p className="mt-2 max-w-xs text-sm text-fg-muted">It may have been removed, or you're not part of it.</p>
+        <h1 className="font-display text-xl font-semibold">{t("chat.thread.notFound")}</h1>
+        <p className="mt-2 max-w-xs text-sm text-fg-muted">{t("chat.thread.notFoundBody")}</p>
         <Link to="/chat" className={buttonStyles({ variant: "secondary", className: "mt-6" })}>
-          Back to chats
+          {t("chat.thread.backToChats")}
         </Link>
       </div>
     );
@@ -172,6 +174,7 @@ export function ConversationView({ conversationId, infoOpen }: { conversationId:
         <MessageList
           conversation={conversation}
           messages={history.messages}
+          receipts={history.receipts}
           pending={pending}
           meId={meId}
           isLoading={history.isPending}
@@ -197,7 +200,7 @@ export function ConversationView({ conversationId, infoOpen }: { conversationId:
             replyTo={replyTo}
             editing={editing?.message ?? null}
             meId={meId}
-            placeholder={firstName ? `Message ${firstName}` : "Write a message"}
+            placeholder={firstName ? t("chat.thread.messagePlaceholder", { name: firstName }) : t("chat.thread.writePlaceholder")}
             textareaRef={textareaRef}
           />
         )}
@@ -232,6 +235,7 @@ function ThreadHeader({
   onOpenInfo: () => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   // Re-render periodically so "Last seen 2 minutes ago" keeps counting.
   const now = useNow(30_000);
   const chatListHidden = useUIStore((s) => s.chatListHidden);
@@ -241,20 +245,20 @@ function ThreadHeader({
 
   let subtitle = "";
   if (conversation?.type === "group") {
-    subtitle = conversation.group?.description ?? "Group";
+    subtitle = conversation.group?.description ?? t("chat.thread.group");
   } else if (online) {
-    subtitle = "Online";
+    subtitle = t("chat.thread.online");
   } else if (conversation?.last_seen_at) {
-    subtitle = formatLastSeen(conversation.last_seen_at, now);
+    subtitle = formatMoment(conversation.last_seen_at, now, "lastSeen");
   } else if (isPrivate) {
-    subtitle = isTouchDevice() ? "Tap for contact info" : "Click for contact info";
+    subtitle = isTouchDevice() ? t("chat.thread.tapForInfo") : t("chat.thread.clickForInfo");
   }
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-1 border-b border-line bg-surface px-2 md:gap-2 md:px-4">
       <Link
         to="/chat"
-        aria-label="Back to chats"
+        aria-label={t("chat.thread.backToChats")}
         className="grid size-10 shrink-0 place-items-center rounded-full text-fg-muted outline-none hover:bg-surface-2 hover:text-fg focus-visible:ring-2 focus-visible:ring-ring md:hidden"
       >
         <ArrowLeft className="size-5 rtl:rotate-180" aria-hidden="true" />
@@ -262,8 +266,8 @@ function ThreadHeader({
       {chatListHidden && (
         <IconButton
           icon={PanelLeftOpen}
-          label="Show chat list"
-          className="hidden md:inline-grid"
+          label={t("chat.list.show")}
+          className="hidden md:inline-grid rtl:[&_svg]:-scale-x-100"
           onClick={() => setChatListHidden(false)}
         />
       )}
@@ -278,7 +282,7 @@ function ThreadHeader({
           <Avatar name={conversation.name} src={conversation.avatar} online={conversation.is_online} />
           <span className="min-w-0">
             <span dir="auto" className="block truncate text-[0.9375rem] font-semibold">
-              {conversation.name ?? "Conversation"}
+              {conversation.name ?? t("chat.thread.conversation")}
             </span>
             {subtitle && (
               <span
@@ -288,11 +292,11 @@ function ThreadHeader({
                 {subtitle}
               </span>
             )}
-            {isPrivate && <span className="sr-only">. Open contact info</span>}
+            {isPrivate && <span className="sr-only">. {t("chat.thread.openInfo")}</span>}
           </span>
         </button>
       ) : (
-        <div className="flex flex-1 items-center gap-3 px-2" aria-label="Loading conversation">
+        <div className="flex flex-1 items-center gap-3 px-2" aria-label={t("chat.thread.loading")}>
           <Skeleton className="size-10 rounded-full" />
           <div className="space-y-1.5">
             <Skeleton className="h-3.5 w-32" />
@@ -302,8 +306,8 @@ function ThreadHeader({
       )}
 
       <div className="ms-auto flex shrink-0 items-center">
-        {isPrivate && <IconButton icon={Info} label="Contact info" onClick={onOpenInfo} />}
-        <IconButton icon={X} label="Close chat (Esc)" className="hidden md:inline-grid" onClick={onClose} />
+        {isPrivate && <IconButton icon={Info} label={t("chat.thread.contactInfo")} onClick={onOpenInfo} />}
+        <IconButton icon={X} label={t("chat.thread.close")} className="hidden md:inline-grid" onClick={onClose} />
       </div>
     </header>
   );
@@ -311,8 +315,9 @@ function ThreadHeader({
 
 /** Replaces the message box when either person in a private chat blocked the other. */
 function BlockedNotice({ conversation }: { conversation: Conversation }) {
+  const { t } = useTranslation();
   const { unblock } = useBlockActions();
-  const name = conversation.name ?? "this person";
+  const name = conversation.name ?? t("chat.blocked.thisPerson");
   const firstName = name.split(" ")[0];
   const person = conversation.participant;
 
@@ -322,7 +327,7 @@ function BlockedNotice({ conversation }: { conversation: Conversation }) {
         <Ban className="size-4 shrink-0" aria-hidden="true" />
         {conversation.is_blocked ? (
           <>
-            <span className="min-w-0 flex-1">You blocked {firstName}. Unblock them to send a message.</span>
+            <span className="min-w-0 flex-1">{t("chat.blocked.youBlocked", { name: firstName })}</span>
             {person && (
               <Button
                 variant="secondary"
@@ -330,12 +335,12 @@ function BlockedNotice({ conversation }: { conversation: Conversation }) {
                 loading={unblock.isPending}
                 onClick={() => unblock.mutate({ id: person.id, name: firstName })}
               >
-                Unblock
+                {t("chat.blocked.unblock")}
               </Button>
             )}
           </>
         ) : (
-          <span>You can't send messages to {firstName}.</span>
+          <span>{t("chat.blocked.cantMessage", { name: firstName })}</span>
         )}
       </div>
     </div>

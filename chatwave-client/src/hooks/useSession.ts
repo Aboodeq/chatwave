@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe, logout } from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 import type { User } from "../types/user";
+import { useAccountLanguage } from "./useLanguage";
 
 /**
  * Refreshes the signed-in user's profile. An expired or revoked token comes back as a 401,
@@ -15,6 +16,8 @@ export function useSession() {
   useEffect(() => {
     if (data) setUser(data);
   }, [data, setUser]);
+
+  useAccountLanguage();
 }
 
 /** Puts an updated profile everywhere the signed-in user is shown. */

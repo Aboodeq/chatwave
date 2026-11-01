@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "../../lib/utils";
-import { formatCount } from "./charts/chartUtils";
+import { formatCount, formatPercent } from "./charts/chartUtils";
 import { Sparkline } from "./charts/Sparkline";
 
 interface Delta {
@@ -41,14 +42,15 @@ export function StatTile({
 }
 
 function DeltaText({ delta }: { delta: Delta }) {
+  const { t } = useTranslation();
   const change = delta.current - delta.previous;
   const Icon = change > 0 ? TrendingUp : change < 0 ? TrendingDown : Minus;
   const amount =
     delta.previous > 0
-      ? `${change > 0 ? "+" : change < 0 ? "−" : ""}${Math.abs(Math.round((change / delta.previous) * 100))}%`
+      ? formatPercent(Math.round((change / delta.previous) * 100) / 100, true)
       : change > 0
         ? `+${formatCount(change)}`
-        : "No change";
+        : t("admin.overview.noChange");
 
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -58,8 +60,8 @@ function DeltaText({ delta }: { delta: Delta }) {
           change > 0 ? "text-success" : change < 0 ? "text-danger" : "text-fg-muted",
         )}
       >
-        <Icon className="size-3.5" aria-hidden="true" />
-        {amount}
+        <Icon className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
+        <bdi>{amount}</bdi>
       </span>
       <span>{delta.period}</span>
     </span>

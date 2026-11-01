@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useMatch } from "react-router-dom";
 import { useConversations } from "../hooks/useConversations";
 import { useSession } from "../hooks/useSession";
-import { cn } from "../lib/utils";
+import { cn, formatNumber } from "../lib/utils";
 import { useUIStore } from "../stores/uiStore";
 import { ConversationView } from "../components/chat/ConversationView";
 import { EmptyThread } from "../components/chat/EmptyThread";
@@ -93,7 +93,7 @@ function useUnreadTitle(activeId: number | null) {
   const unread = conversations?.reduce((sum, c) => sum + (c.id === activeId ? 0 : c.unread_count), 0) ?? 0;
 
   useEffect(() => {
-    document.title = unread > 0 ? `(${unread}) ChatWave` : "ChatWave";
+    document.title = unread > 0 ? `(${formatNumber(unread)}) ChatWave` : "ChatWave";
     return () => {
       document.title = "ChatWave";
     };

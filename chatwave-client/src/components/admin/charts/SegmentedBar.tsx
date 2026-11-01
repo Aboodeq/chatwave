@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { formatLocale } from "../../../i18n";
 import { cn } from "../../../lib/utils";
 import { ChartTooltip } from "./ChartTooltip";
-import { formatCount, useElementWidth } from "./chartUtils";
+import { formatCount, formatPercent, useElementWidth, useIsRtl } from "./chartUtils";
 
 export interface Part {
   key: string;
@@ -18,15 +19,18 @@ export interface Part {
  * printed inside when it fits (white, which reads best on these fills), names in the legend.
  */
 export function SegmentedBar({ parts, label }: { parts: Part[]; label: string }) {
+  const rtl = useIsRtl();
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
   const total = parts.reduce((sum, part) => sum + part.value, 0);
   const visible = parts.filter((part) => part.value > 0);
   const gaps = Math.max(0, visible.length - 1) * 2;
-  const share = (value: number) => (total ? Math.round((value / total) * 100) : 0);
-  const summary = parts.map((part) => `${part.label} ${formatCount(part.value)} (${share(part.value)}%)`).join(", ");
+  const share = (value: number) => formatPercent(total ? Math.round((value / total) * 100) / 100 : 0);
+  const summary = new Intl.ListFormat(formatLocale(), { style: "narrow", type: "unit" }).format(
+    parts.map((part) => `${part.label} ${formatCount(part.value)} (${share(part.value)})`),
+  );
 
-  // Where each block starts, for placing the tooltip.
+  // Where each block starts (from the start side: the right in Arabic), for the tooltip.
   const blocks = visible.reduce<{ part: Part; start: number; width: number }[]>((list, part) => {
     const previous = list.at(-1);
     const start = previous ? previous.start + previous.width + 2 : 0;
@@ -40,13 +44,13 @@ export function SegmentedBar({ parts, label }: { parts: Part[]; label: string })
           <div className="flex-1 rounded bg-surface-2" />
         ) : (
           blocks.map(({ part, width: blockWidth }, index) => {
-            const text = `${share(part.value)}%`;
+            const text = share(part.value);
             const fits = blockWidth >= text.length * 7.5 + 16;
             return (
               <div
                 key={part.key}
                 tabIndex={0}
-                aria-label={`${part.label}: ${formatCount(part.value)} ${part.unit}, ${share(part.value)}%`}
+                aria-label={`${part.label}: ${formatCount(part.value)} ${part.unit}, ${share(part.value)}`}
                 onPointerEnter={() => setActive(index)}
                 onPointerLeave={() => setActive(null)}
                 onFocus={() => setActive(index)}
@@ -65,14 +69,14 @@ export function SegmentedBar({ parts, label }: { parts: Part[]; label: string })
         )}
         {active !== null && blocks[active] && (
           <ChartTooltip
-            x={blocks[active].start + blocks[active].width / 2}
+            x={rtl ? width - (blocks[active].start + blocks[active].width / 2) : blocks[active].start + blocks[active].width / 2}
             y={0}
             width={width}
             title={blocks[active].part.label}
             rows={[
               {
                 key: "value",
-                value: `${formatCount(blocks[active].part.value)} · ${share(blocks[active].part.value)}%`,
+                value: `${formatCount(blocks[active].part.value)} · ${share(blocks[active].part.value)}`,
                 label: blocks[active].part.unit,
                 swatch: blocks[active].part.color,
               },

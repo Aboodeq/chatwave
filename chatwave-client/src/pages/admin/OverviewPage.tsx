@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 import { useOverview } from "../../hooks/useAdmin";
 import { useNow } from "../../hooks/useNow";
 import { signInIdentifier } from "../../lib/account";
-import { cn, formatLastSeen } from "../../lib/utils";
+import { cn, formatMoment } from "../../lib/utils";
 import type { Overview, RangeDays } from "../../types/admin";
 import { ActivityList } from "../../components/admin/ActivityList";
 import { PageHeader } from "../../components/admin/PageHeader";
@@ -13,59 +15,64 @@ import { AreaChart } from "../../components/admin/charts/AreaChart";
 import { ChartCard, ValueTable } from "../../components/admin/charts/ChartCard";
 import { ColumnChart } from "../../components/admin/charts/ColumnChart";
 import { SegmentedBar } from "../../components/admin/charts/SegmentedBar";
-import { formatCount, formatDay } from "../../components/admin/charts/chartUtils";
+import { formatCount, formatDay, formatPercent } from "../../components/admin/charts/chartUtils";
 import { Avatar } from "../../components/ui/Avatar";
 import { Button } from "../../components/ui/Button";
 import { Skeleton } from "../../components/ui/Skeleton";
 
-const RANGES: { days: RangeDays; label: string }[] = [
-  { days: 7, label: "7 days" },
-  { days: 30, label: "30 days" },
-  { days: 90, label: "90 days" },
-];
+const RANGES: RangeDays[] = [7, 30, 90];
+
+/** "30 days", with the right plural in each language. */
+const period = (days: number) => i18n.t("admin.days", { count: days });
+const unit = (noun: "messages" | "people" | "accounts") => (count: number) => i18n.t(`admin.units.${noun}`, { count });
 
 export default function OverviewPage() {
+  const { t } = useTranslation();
   const [days, setDays] = useState<RangeDays>(30);
   const { data, isPending, isError, isFetching, isPlaceholderData, refetch } = useOverview(days);
   const dimmed = isPlaceholderData || (isFetching && !isPending);
 
   return (
     <>
-      <PageHeader title="Overview" description="How people are using ChatWave." />
+      <PageHeader title={t("admin.overview.title")} description={t("admin.overview.description")} />
 
       {/* One filter row above everything it scopes. */}
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div role="radiogroup" aria-label="Date range" className="inline-flex rounded-xl bg-surface p-1 shadow-soft ring-1 ring-line">
+        <div role="radiogroup" aria-label={t("admin.overview.rangeLabel")} className="inline-flex rounded-xl bg-surface p-1 shadow-soft ring-1 ring-line">
           {RANGES.map((range) => (
             <button
-              key={range.days}
+              key={range}
               type="button"
               role="radio"
-              aria-checked={days === range.days}
-              onClick={() => setDays(range.days)}
+              aria-checked={days === range}
+              onClick={() => setDays(range)}
               className={cn(
                 "rounded-lg px-3 py-1.5 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                days === range.days ? "bg-primary text-primary-fg shadow-soft" : "text-fg-muted hover:text-fg",
+                days === range ? "bg-primary text-primary-fg shadow-soft" : "text-fg-muted hover:text-fg",
               )}
             >
-              Last {range.label}
+              {t("admin.overview.last", { period: period(range) })}
             </button>
           ))}
         </div>
         <Button variant="ghost" size="sm" onClick={() => void refetch()} loading={isFetching && !isPending}>
           <RefreshCw className="size-3.5" aria-hidden="true" />
-          Refresh
+          {t("admin.overview.refresh")}
         </Button>
-        {data && <p className="text-xs text-fg-subtle">Days follow your time zone ({data.range.timezone}).</p>}
+        {data && (
+          <p className="text-xs text-fg-subtle">
+            {t("admin.overview.timezone", { zone: data.range.timezone })}
+          </p>
+        )}
       </div>
 
       {isPending ? (
         <OverviewSkeleton />
       ) : isError || !data ? (
         <div className="rounded-2xl bg-surface p-10 text-center shadow-soft ring-1 ring-line">
-          <p className="text-sm text-fg-muted">We couldn't load the overview.</p>
+          <p className="text-sm text-fg-muted">{t("admin.overview.loadFailed")}</p>
           <Button variant="secondary" size="sm" className="mt-4" onClick={() => void refetch()}>
-            Try again
+            {t("common.retry")}
           </Button>
         </div>
       ) : (
@@ -76,14 +83,14 @@ export default function OverviewPage() {
             <AccountsCard data={data} />
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
-            <DailyCard data={data} field="senders" title="People who sent messages" seriesLabel="people" />
-            <DailyCard data={data} field="sign_ups" title="New accounts" seriesLabel="new accounts" />
+            <DailyCard data={data} field="senders" />
+            <DailyCard data={data} field="sign_ups" />
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
             <RecentSignUps data={data} />
             <section className="rounded-2xl bg-surface p-5 shadow-soft ring-1 ring-line sm:p-6">
-              <ListHeader title="Recent admin activity" to="/admin/activity" linkLabel="All activity" />
-              <ActivityList entries={data.recent_activity} empty="No admin actions yet." />
+              <ListHeader title={t("admin.overview.recentActivity")} to="/admin/activity" linkLabel={t("admin.overview.allActivity")} />
+              <ActivityList entries={data.recent_activity} empty={t("admin.overview.noActions")} />
             </section>
           </div>
         </div>
@@ -93,80 +100,80 @@ export default function OverviewPage() {
 }
 
 function Totals({ data }: { data: Overview }) {
+  const { t } = useTranslation();
   const { totals, range, series } = data;
-  const period = `vs previous ${range.days} days`;
+  const vs = t("admin.overview.vsPrevious", { period: period(range.days) });
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <StatTile
-        label={`Messages, last ${range.days} days`}
+        label={t("admin.overview.messagesLast", { period: period(range.days) })}
         value={totals.messages}
-        delta={{ current: totals.messages, previous: totals.messages_previous, period }}
+        delta={{ current: totals.messages, previous: totals.messages_previous, period: vs }}
         trend={series.map((day) => day.messages)}
       />
       <StatTile
-        label={`New accounts, last ${range.days} days`}
+        label={t("admin.overview.signUpsLast", { period: period(range.days) })}
         value={totals.sign_ups}
-        delta={{ current: totals.sign_ups, previous: totals.sign_ups_previous, period }}
+        delta={{ current: totals.sign_ups, previous: totals.sign_ups_previous, period: vs }}
         trend={series.map((day) => day.sign_ups)}
       />
       <StatTile
-        label="Active today"
+        label={t("admin.overview.activeToday")}
         value={totals.active_today}
         footnote={
           <span className="inline-flex items-center gap-1.5">
             <span className="size-2 rounded-full bg-success" aria-hidden="true" />
-            {formatCount(totals.online_now)} online now
+            {t("admin.overview.onlineNow", { count: formatCount(totals.online_now) })}
           </span>
         }
       />
       <StatTile
-        label="People"
+        label={t("admin.overview.people")}
         value={totals.people}
-        footnote={`${formatCount(totals.admins)} ${totals.admins === 1 ? "admin" : "admins"} · ${formatCount(totals.suspended)} suspended`}
+        footnote={t("admin.overview.peopleFootnote", { admins: formatCount(totals.admins), suspended: formatCount(totals.suspended) })}
       />
     </div>
   );
 }
 
 function MessagesCard({ data, className }: { data: Overview; className?: string }) {
+  const { t } = useTranslation();
   const points = data.series.map((day) => ({ date: day.date, value: day.messages }));
-  const description = `${formatCount(data.totals.messages)} messages in the last ${data.range.days} days`;
+  const description = t("admin.overview.messagesSummary", { period: period(data.range.days), count: formatCount(data.totals.messages) });
 
   return (
     <ChartCard
       className={className}
-      title="Messages per day"
+      title={t("admin.overview.messagesPerDay")}
       subtitle={description}
-      chart={<AreaChart points={points} seriesLabel="messages" description={description} height={260} />}
-      table={<ValueTable columns={["Day", "Messages"]} rows={points.map((point) => [formatDay(point.date, "long"), point.value])} />}
+      chart={<AreaChart points={points} seriesLabel={unit("messages")} description={description} height={260} />}
+      table={
+        <ValueTable
+          columns={[t("admin.overview.columns.day"), t("admin.overview.columns.messages")]}
+          rows={points.map((point) => [formatDay(point.date, "long"), point.value])}
+        />
+      }
     />
   );
 }
 
-function DailyCard({
-  data,
-  field,
-  title,
-  seriesLabel,
-}: {
-  data: Overview;
-  field: "senders" | "sign_ups";
-  title: string;
-  seriesLabel: string;
-}) {
+function DailyCard({ data, field }: { data: Overview; field: "senders" | "sign_ups" }) {
+  const { t } = useTranslation();
+  const senders = field === "senders";
+  const title = senders ? t("admin.overview.sendersTitle") : t("admin.overview.signUpsTitle");
   const points = data.series.map((day) => ({ date: day.date, value: day[field] }));
   const peak = Math.max(0, ...points.map((point) => point.value));
-  const description = `${title} per day, last ${data.range.days} days. Busiest day: ${formatCount(peak)}`;
+  const description = t("admin.overview.dailyDescription", { title, period: period(data.range.days), peak: formatCount(peak) });
 
   return (
     <ChartCard
       title={title}
-      subtitle={field === "senders" ? "Each day, people who sent at least one message" : "Accounts created each day"}
-      chart={<ColumnChart points={points} seriesLabel={seriesLabel} description={description} />}
+      subtitle={senders ? t("admin.overview.sendersSubtitle") : t("admin.overview.signUpsSubtitle")}
+      chart={<ColumnChart points={points} seriesLabel={unit(senders ? "people" : "accounts")} description={description} />}
       table={
         <ValueTable
-          columns={["Day", field === "senders" ? "People" : "Accounts"]}
+          columns={[t("admin.overview.columns.day"), senders ? t("admin.overview.columns.people") : t("admin.overview.columns.accounts")]}
           rows={points.map((point) => [formatDay(point.date, "long"), point.value])}
         />
       }
@@ -175,32 +182,39 @@ function DailyCard({
 }
 
 function AccountsCard({ data }: { data: Overview }) {
+  const { t } = useTranslation();
   const { totals } = data;
   const email = totals.people - totals.phone_accounts;
   const parts = [
-    { key: "email", label: "Email", value: email, color: "bg-viz-1", unit: "people" },
-    { key: "phone", label: "Phone number", value: totals.phone_accounts, color: "bg-viz-2", unit: "people" },
+    { key: "email", label: t("admin.overview.email"), value: email, color: "bg-viz-1", unit: unit("people")(email) },
+    {
+      key: "phone",
+      label: t("admin.overview.phone"),
+      value: totals.phone_accounts,
+      color: "bg-viz-2",
+      unit: unit("people")(totals.phone_accounts),
+    },
   ];
-  const share = (value: number) => (totals.people ? `${Math.round((value / totals.people) * 100)}%` : "0%");
+  const share = (value: number) => formatPercent(totals.people ? Math.round((value / totals.people) * 100) / 100 : 0);
 
   return (
     <ChartCard
-      title="How people sign in"
-      subtitle={`All ${formatCount(totals.people)} accounts`}
+      title={t("admin.overview.signInTitle")}
+      subtitle={t("admin.overview.allAccounts", { count: formatCount(totals.people) })}
       chart={
         <div className="flex h-full flex-col">
-          <SegmentedBar parts={parts} label="Accounts by sign-in method" />
+          <SegmentedBar parts={parts} label={t("admin.overview.byMethod")} />
           <dl className="mt-6 grid grid-cols-2 gap-3 border-t border-line pt-5">
-            <Figure label="Conversations" value={totals.conversations} />
-            <Figure label="Online now" value={totals.online_now} />
-            <Figure label="Admins" value={totals.admins} />
-            <Figure label="Suspended" value={totals.suspended} />
+            <Figure label={t("admin.overview.figures.conversations")} value={totals.conversations} />
+            <Figure label={t("admin.overview.figures.online")} value={totals.online_now} />
+            <Figure label={t("admin.overview.figures.admins")} value={totals.admins} />
+            <Figure label={t("admin.overview.figures.suspended")} value={totals.suspended} />
           </dl>
         </div>
       }
       table={
         <ValueTable
-          columns={["Sign-in method", "People", "Share"]}
+          columns={[t("admin.overview.columns.method"), t("admin.overview.columns.people"), t("admin.overview.columns.share")]}
           rows={parts.map((part) => [part.label, part.value, share(part.value)])}
         />
       }
@@ -218,11 +232,12 @@ function Figure({ label, value }: { label: string; value: number }) {
 }
 
 function RecentSignUps({ data }: { data: Overview }) {
+  const { t } = useTranslation();
   const now = useNow(60_000);
 
   return (
     <section className="rounded-2xl bg-surface p-5 shadow-soft ring-1 ring-line sm:p-6">
-      <ListHeader title="Newest accounts" to="/admin/people" linkLabel="Everyone" />
+      <ListHeader title={t("admin.overview.newest")} to="/admin/people" linkLabel={t("admin.overview.everyone")} />
       <ul className="space-y-0.5">
         {data.recent_sign_ups.map((person) => (
           <li key={person.id}>
@@ -233,9 +248,11 @@ function RecentSignUps({ data }: { data: Overview }) {
               <Avatar name={person.name} src={person.avatar} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-fg">{person.name}</p>
-                <p className="truncate text-xs text-fg-subtle">{signInIdentifier(person)}</p>
+                <p className="truncate text-xs text-fg-subtle">
+                  <span dir="ltr">{signInIdentifier(person)}</span>
+                </p>
               </div>
-              <span className="shrink-0 text-xs text-fg-subtle">{formatLastSeen(person.created_at, now, "Joined")}</span>
+              <span className="shrink-0 text-xs text-fg-subtle">{formatMoment(person.created_at, now, "joined")}</span>
             </Link>
           </li>
         ))}
@@ -257,8 +274,9 @@ function ListHeader({ title, to, linkLabel }: { title: string; to: string; linkL
 }
 
 function OverviewSkeleton() {
+  const { t } = useTranslation();
   return (
-    <div className="space-y-5" aria-label="Loading the overview">
+    <div className="space-y-5" aria-label={t("admin.overview.loading")}>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-[8.5rem] rounded-2xl" />

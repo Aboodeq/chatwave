@@ -1,5 +1,6 @@
 import { useLayoutEffect, type KeyboardEvent, type RefObject } from "react";
 import { Check, Pencil, Reply, SendHorizontal, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn, isTouchDevice } from "../../lib/utils";
 import type { Message } from "../../types/message";
 import { IconButton } from "../ui/IconButton";
@@ -35,6 +36,7 @@ export function Composer({
   placeholder,
   textareaRef,
 }: ComposerProps) {
+  const { t } = useTranslation();
   const canSend = value.trim().length > 0 && value.length <= MAX_MESSAGE_LENGTH;
   const remaining = MAX_MESSAGE_LENGTH - value.length;
   const context = editing ?? replyTo;
@@ -73,19 +75,26 @@ export function Composer({
             {editing ? (
               <Pencil className="size-4 shrink-0 text-primary" aria-hidden="true" />
             ) : (
-              <Reply className="size-4 shrink-0 text-primary" aria-hidden="true" />
+              <Reply className="size-4 shrink-0 text-primary rtl:-scale-x-100" aria-hidden="true" />
             )}
             <div className="min-w-0 flex-1 border-s-2 border-primary ps-2.5">
               <p className="text-xs font-semibold text-primary">
                 {editing
-                  ? "Editing message"
-                  : `Replying to ${replyTo?.sender.id === meId ? "yourself" : replyTo?.sender.name}`}
+                  ? t("chat.composer.editing")
+                  : replyTo?.sender.id === meId
+                    ? t("chat.composer.replyingToSelf")
+                    : t("chat.composer.replyingTo", { name: replyTo?.sender.name })}
               </p>
               <p dir="auto" className="truncate text-sm text-fg-muted">
                 {context.body}
               </p>
             </div>
-            <IconButton icon={X} size="sm" label={editing ? "Cancel editing" : "Cancel reply"} onClick={onCancel} />
+            <IconButton
+              icon={X}
+              size="sm"
+              label={editing ? t("chat.composer.cancelEdit") : t("chat.composer.cancelReply")}
+              onClick={onCancel}
+            />
           </div>
         )}
 
@@ -103,7 +112,7 @@ export function Composer({
             onChange={(event) => onChange(event.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            aria-label="Message"
+            aria-label={t("chat.composer.label")}
             dir="auto"
             className={cn(
               "scrollbar-thin min-h-11 flex-1 resize-none overflow-y-hidden rounded-[1.375rem] border border-line-strong bg-canvas px-4 py-2.5 text-base leading-6 text-fg md:text-[0.9375rem]",
@@ -115,8 +124,8 @@ export function Composer({
           <button
             type="submit"
             disabled={!canSend}
-            aria-label={editing ? "Save changes" : "Send message"}
-            title={editing ? "Save changes" : "Send"}
+            aria-label={editing ? t("chat.composer.save") : t("chat.composer.send")}
+            title={editing ? t("chat.composer.save") : t("chat.composer.sendShort")}
             className={cn(
               "grid size-11 shrink-0 place-items-center rounded-full bg-primary text-primary-fg shadow-soft transition-[background-color,transform] outline-none",
               "hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:scale-95",
@@ -133,7 +142,9 @@ export function Composer({
 
         {remaining < 500 && (
           <p className={cn("mt-1.5 text-end text-xs", remaining < 0 ? "text-danger" : "text-fg-subtle")} aria-live="polite">
-            {remaining < 0 ? `${-remaining} characters over the limit` : `${remaining} characters left`}
+            {remaining < 0
+              ? t("chat.composer.charsOver", { count: -remaining })
+              : t("chat.composer.charsLeft", { count: remaining })}
           </p>
         )}
       </div>

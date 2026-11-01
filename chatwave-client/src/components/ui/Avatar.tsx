@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn, hashString, initials } from "../../lib/utils";
 
 // Full class names so Tailwind can see them.
@@ -30,6 +31,7 @@ interface AvatarProps {
 }
 
 export function Avatar({ name, src, size = "md", online, className }: AvatarProps) {
+  const { t } = useTranslation();
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const palette = palettes[hashString(name ?? "") % palettes.length];
 
@@ -52,7 +54,7 @@ export function Avatar({ name, src, size = "md", online, className }: AvatarProp
       )}
       {online && (
         <span className="absolute end-0 bottom-0 size-3 rounded-full border-2 border-surface bg-success">
-          <span className="sr-only">Online</span>
+          <span className="sr-only">{t("chat.thread.online")}</span>
         </span>
       )}
     </span>

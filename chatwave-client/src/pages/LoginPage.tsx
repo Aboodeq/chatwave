@@ -5,13 +5,15 @@ import { z } from "zod";
 import { useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, Mail } from "lucide-react";
+import i18n from "../i18n";
 import { login } from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 import { getErrorMessage } from "../lib/errors";
 import type { CountryCode } from "../lib/phone";
 import { guessCountry } from "../lib/phoneCountry";
-import { Accent, AuthHeading, AuthLayout } from "../components/auth/AuthLayout";
+import { AuthHeading, AuthLayout } from "../components/auth/AuthLayout";
 import { MethodSwitch } from "../components/auth/MethodSwitch";
 import {
   checkContact,
@@ -21,7 +23,6 @@ import {
   savedContactMethod,
   type ContactMethod,
 } from "../components/auth/contact";
-import { sendWave } from "../components/auth/waveSignal";
 import { Alert } from "../components/ui/Alert";
 import { Button } from "../components/ui/Button";
 import { Checkbox } from "../components/ui/Checkbox";
@@ -34,7 +35,7 @@ const schema = z
   .object({
     ...contactFields,
     // No length rule here: that's for choosing a password, not for entering one.
-    password: z.string().min(1, "Enter your password."),
+    password: z.string().min(1, { error: () => i18n.t("auth.validation.passwordRequired") }),
     remember: z.boolean(),
   })
   .superRefine(checkContact);
@@ -50,13 +51,12 @@ export interface LoginPrefill {
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   const startSession = useAuthStore((s) => s.startSession);
   const suspended = useAuthStore((s) => s.endedBy === "suspended");
   const prefill = (location.state as LoginPrefill | null) ?? {};
-  const [formError, setFormError] = useState<string | null>(
-    suspended ? "This account has been suspended. Contact your administrator if you think this is a mistake." : null,
-  );
+  const [formError, setFormError] = useState<string | null>(suspended ? t("auth.login.suspended") : null);
 
   const {
     register,
@@ -97,10 +97,10 @@ export default function LoginPage() {
       rememberContactMethod(used);
       // The route guard takes it from here and opens the chat.
       startSession(session, remember);
-      toast.success(`Welcome back, ${session.user.name.split(" ")[0]}!`);
+      toast.success(t("auth.login.welcome", { name: session.user.name.split(" ")[0] }));
     },
     onError: (error) => {
-      setFormError(getErrorMessage(error, "We couldn't sign you in. Please try again."));
+      setFormError(getErrorMessage(error, t("auth.login.failed")));
       setFocus("password");
     },
   });
@@ -109,24 +109,14 @@ export default function LoginPage() {
     setValue("method", next);
     clearErrors();
     setFormError(null);
-    sendWave(0.8);
     // Clicking a method moves on to its field; arrow keys stay on the switch.
     setFocusPhone(source === "pointer" && next === "phone");
     if (source === "pointer" && next === "email") requestAnimationFrame(() => setFocus("email"));
   };
 
   return (
-    <AuthLayout
-      headline={
-        <>
-          Every word
-          <br />
-          sends a <Accent>wave.</Accent>
-        </>
-      }
-      intro="Pick up every conversation right where you left it, on any device, with your email address or phone number."
-    >
-      <AuthHeading title="Welcome back" description="Sign in to pick up your conversations where you left off." />
+    <AuthLayout>
+      <AuthHeading title={t("auth.login.title")} description={t("auth.login.description")} />
 
       <form
         noValidate
@@ -136,17 +126,18 @@ export default function LoginPage() {
           mutation.mutate(values);
         })}
       >
-        <MethodSwitch value={method} onChange={switchMethod} label="Sign in with" />
+        <MethodSwitch value={method} onChange={switchMethod} label={t("auth.login.method")} />
 
         {formError && <Alert>{formError}</Alert>}
 
         <div key={method} className="animate-fade-in">
           {method === "email" ? (
             <TextField
-              label="Email"
+              label={t("auth.fields.email")}
               type="email"
+              dir="ltr"
               icon={Mail}
-              placeholder="you@company.com"
+              placeholder={t("auth.fields.emailPlaceholder")}
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
@@ -159,7 +150,7 @@ export default function LoginPage() {
               name="phone"
               render={({ field }) => (
                 <PhoneField
-                  label="Phone number"
+                  label={t("auth.fields.phone")}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -176,8 +167,8 @@ export default function LoginPage() {
         </div>
 
         <PasswordField
-          label="Password"
-          placeholder="Your password"
+          label={t("auth.fields.password")}
+          placeholder={t("auth.login.passwordPlaceholder")}
           autoComplete="current-password"
           error={errors.password?.message}
           labelAction={
@@ -186,20 +177,20 @@ export default function LoginPage() {
               state={{ method, email, phone, country } satisfies LoginPrefill}
               className="text-[0.8125rem]"
             >
-              Forgot password?
+              {t("auth.login.forgot")}
             </TextLink>
           }
           {...register("password")}
         />
 
-        <Checkbox label="Keep me signed in for 30 days" {...register("remember")} />
+        <Checkbox label={t("auth.login.remember")} {...register("remember")} />
 
         <Button type="submit" size="lg" loading={mutation.isPending} className="group w-full">
           {mutation.isPending ? (
-            "Signing in…"
+            t("auth.login.submitting")
           ) : (
             <>
-              Sign in
+              {t("auth.login.submit")}
               <ArrowRight
                 className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
                 aria-hidden="true"
@@ -210,7 +201,7 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-7 border-t border-line pt-6 text-center text-sm text-fg-muted">
-        New to ChatWave? <TextLink to="/register">Create an account</TextLink>
+        {t("auth.login.noAccount")} <TextLink to="/register">{t("auth.login.createAccount")}</TextLink>
       </p>
     </AuthLayout>
   );

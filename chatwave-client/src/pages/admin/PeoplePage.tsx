@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Mail, Smartphone, UsersRound } from "lucide-react";
-import { usePeople } from "../../hooks/useAdmin";
+import { useTranslation } from "react-i18next";
+import { usePeople, useRoles } from "../../hooks/useAdmin";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { useNow } from "../../hooks/useNow";
 import { signInIdentifier } from "../../lib/account";
-import { cn, formatLastSeen, formatShortDate } from "../../lib/utils";
+import { roleName } from "../../lib/roles";
+import { cn, formatMoment, formatShortDate } from "../../lib/utils";
 import type { AdminUser, PeopleQuery } from "../../types/admin";
 import { RoleBadge, StatusBadge } from "../../components/admin/Badges";
 import { PageHeader } from "../../components/admin/PageHeader";
@@ -15,19 +17,16 @@ import { Button } from "../../components/ui/Button";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { Skeleton } from "../../components/ui/Skeleton";
 
-const STATUSES = [
-  { value: "all", label: "Everyone" },
-  { value: "active", label: "Active" },
-  { value: "online", label: "Online now" },
-  { value: "suspended", label: "Suspended" },
-] as const;
+const STATUSES = ["all", "active", "online", "suspended"] as const;
 
 const select =
   "h-10 rounded-xl border border-line-strong bg-surface ps-3 pe-8 text-sm text-fg shadow-soft outline-none focus:border-primary focus:ring-4 focus:ring-primary/15";
 
 /** Everyone with an account: search, filter, sort, and open a person. */
 export default function PeoplePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const roles = useRoles();
   const now = useNow(60_000);
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState(params.get("q") ?? "");
@@ -36,7 +35,7 @@ export default function PeoplePage() {
   const query: PeopleQuery = {
     search: debouncedSearch,
     status: (params.get("status") as PeopleQuery["status"]) ?? "all",
-    role: (params.get("role") as PeopleQuery["role"]) ?? "all",
+    role: params.get("role") ?? "all",
     method: (params.get("method") as PeopleQuery["method"]) ?? "all",
     sort: params.get("sort") ?? "-created_at",
     page: Number(params.get("page") ?? 1),
@@ -58,8 +57,12 @@ export default function PeoplePage() {
   return (
     <>
       <PageHeader
-        title="People"
-        description={data ? `${formatCount(data.meta.total)} ${data.meta.total === 1 ? "account" : "accounts"}${filtered ? " match" : ""}` : "Everyone with an account"}
+        title={t("admin.people.title")}
+        description={
+          data
+            ? t(filtered ? "admin.people.matching" : "admin.people.count", { count: data.meta.total })
+            : t("admin.people.description")
+        }
       />
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -70,35 +73,38 @@ export default function PeoplePage() {
               setSearch(value);
               update({ q: value.trim() || null });
             }}
-            label="Search by name, email or phone"
+            label={t("admin.people.search")}
           />
         </div>
-        <div role="radiogroup" aria-label="Status" className="inline-flex rounded-xl bg-surface p-1 shadow-soft ring-1 ring-line">
+        <div role="radiogroup" aria-label={t("admin.people.statusLabel")} className="inline-flex rounded-xl bg-surface p-1 shadow-soft ring-1 ring-line">
           {STATUSES.map((status) => (
             <button
-              key={status.value}
+              key={status}
               type="button"
               role="radio"
-              aria-checked={query.status === status.value}
-              onClick={() => update({ status: status.value })}
+              aria-checked={query.status === status}
+              onClick={() => update({ status })}
               className={cn(
                 "rounded-lg px-3 py-1.5 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                query.status === status.value ? "bg-primary text-primary-fg shadow-soft" : "text-fg-muted hover:text-fg",
+                query.status === status ? "bg-primary text-primary-fg shadow-soft" : "text-fg-muted hover:text-fg",
               )}
             >
-              {status.label}
+              {t(`admin.people.statuses.${status}`)}
             </button>
           ))}
         </div>
-        <select aria-label="Role" value={query.role} onChange={(event) => update({ role: event.target.value })} className={select}>
-          <option value="all">Any role</option>
-          <option value="admin">Admins</option>
-          <option value="user">Members</option>
+        <select aria-label={t("admin.people.roleLabel")} value={query.role} onChange={(event) => update({ role: event.target.value })} className={select}>
+          <option value="all">{t("admin.people.anyRole")}</option>
+          {roles.data?.roles.map((role) => (
+            <option key={role.id} value={String(role.id)}>
+              {roleName(role)}
+            </option>
+          ))}
         </select>
-        <select aria-label="Signs in with" value={query.method} onChange={(event) => update({ method: event.target.value })} className={select}>
-          <option value="all">Email or phone</option>
-          <option value="email">Email</option>
-          <option value="phone">Phone number</option>
+        <select aria-label={t("admin.people.methodLabel")} value={query.method} onChange={(event) => update({ method: event.target.value })} className={select}>
+          <option value="all">{t("admin.people.methods.all")}</option>
+          <option value="email">{t("admin.people.methods.email")}</option>
+          <option value="phone">{t("admin.people.methods.phone")}</option>
         </select>
       </div>
 
@@ -107,15 +113,15 @@ export default function PeoplePage() {
           <TableSkeleton />
         ) : isError || !data ? (
           <div className="p-10 text-center">
-            <p className="text-sm text-fg-muted">We couldn't load people.</p>
+            <p className="text-sm text-fg-muted">{t("admin.people.loadFailed")}</p>
             <Button variant="secondary" size="sm" className="mt-4" onClick={() => void refetch()}>
-              Try again
+              {t("common.retry")}
             </Button>
           </div>
         ) : data.data.length === 0 ? (
           <div className="flex flex-col items-center px-6 py-14 text-center">
             <UsersRound className="size-7 text-fg-subtle" aria-hidden="true" />
-            <p className="mt-3 text-sm font-medium text-fg">No one matches these filters</p>
+            <p className="mt-3 text-sm font-medium text-fg">{t("admin.people.noMatch")}</p>
             <Button
               variant="secondary"
               size="sm"
@@ -125,23 +131,23 @@ export default function PeoplePage() {
                 setParams(new URLSearchParams(), { replace: true });
               }}
             >
-              Clear filters
+              {t("admin.people.clearFilters")}
             </Button>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b border-line bg-surface-2/60 text-xs text-fg-muted">
               <tr>
-                <SortHeader label="Person" column="name" sort={query.sort!} onSort={(sort) => update({ sort })} />
+                <SortHeader label={t("admin.people.columns.person")} column="name" sort={query.sort!} onSort={(sort) => update({ sort })} />
                 <th scope="col" className="hidden px-4 py-3 text-start font-medium md:table-cell">
-                  Role
+                  {t("admin.people.columns.role")}
                 </th>
                 <th scope="col" className="hidden px-4 py-3 text-start font-medium sm:table-cell">
-                  Status
+                  {t("admin.people.columns.status")}
                 </th>
-                <SortHeader label="Messages" column="messages_count" sort={query.sort!} onSort={(sort) => update({ sort })} align="end" className="hidden lg:table-cell" />
-                <SortHeader label="Joined" column="created_at" sort={query.sort!} onSort={(sort) => update({ sort })} className="hidden lg:table-cell" />
-                <SortHeader label="Last active" column="last_seen_at" sort={query.sort!} onSort={(sort) => update({ sort })} className="hidden md:table-cell" />
+                <SortHeader label={t("admin.people.columns.messages")} column="messages_count" sort={query.sort!} onSort={(sort) => update({ sort })} align="end" className="hidden lg:table-cell" />
+                <SortHeader label={t("admin.people.columns.joined")} column="created_at" sort={query.sort!} onSort={(sort) => update({ sort })} className="hidden lg:table-cell" />
+                <SortHeader label={t("admin.people.columns.lastActive")} column="last_seen_at" sort={query.sort!} onSort={(sort) => update({ sort })} className="hidden md:table-cell" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -154,17 +160,21 @@ export default function PeoplePage() {
       </div>
 
       {data && data.meta.last_page > 1 && (
-        <nav aria-label="Pages" className="mt-4 flex items-center justify-between gap-3 text-sm text-fg-muted">
+        <nav aria-label={t("admin.pagination.label")} className="mt-4 flex items-center justify-between gap-3 text-sm text-fg-muted">
           <p>
-            {formatCount(data.meta.from ?? 0)}–{formatCount(data.meta.to ?? 0)} of {formatCount(data.meta.total)}
+            {t("admin.pagination.range", {
+              from: formatCount(data.meta.from ?? 0),
+              to: formatCount(data.meta.to ?? 0),
+              total: formatCount(data.meta.total),
+            })}
           </p>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" disabled={data.meta.current_page <= 1} onClick={() => update({ page: String(data.meta.current_page - 1) })}>
               <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-              Previous
+              {t("admin.pagination.previous")}
             </Button>
             <Button variant="secondary" size="sm" disabled={data.meta.current_page >= data.meta.last_page} onClick={() => update({ page: String(data.meta.current_page + 1) })}>
-              Next
+              {t("admin.pagination.next")}
               <ChevronRight className="size-4 rtl:rotate-180" aria-hidden="true" />
             </Button>
           </div>
@@ -213,6 +223,7 @@ function SortHeader({
 }
 
 function PersonRow({ person, now, onOpen }: { person: AdminUser; now: number; onOpen: () => void }) {
+  const { t } = useTranslation();
   const MethodIcon = person.sign_up_method === "phone" ? Smartphone : Mail;
 
   return (
@@ -229,14 +240,16 @@ function PersonRow({ person, now, onOpen }: { person: AdminUser; now: number; on
               {person.name}
             </Link>
             <p className="flex items-center gap-1.5 truncate text-xs text-fg-subtle">
-              <MethodIcon className="size-3 shrink-0" aria-label={person.sign_up_method === "phone" ? "Phone" : "Email"} />
-              <span className="truncate tabular-nums">{signInIdentifier(person)}</span>
+              <MethodIcon className="size-3 shrink-0" aria-label={person.sign_up_method === "phone" ? t("admin.person.phone") : t("admin.person.email")} />
+              <span dir="ltr" className="truncate tabular-nums">
+                {signInIdentifier(person)}
+              </span>
             </p>
           </div>
         </div>
       </td>
       <td className="hidden px-4 py-3 md:table-cell">
-        <RoleBadge role={person.role} />
+        <RoleBadge role={person.role} adminAccess={person.has_admin_access} />
       </td>
       <td className="hidden px-4 py-3 sm:table-cell">
         <StatusBadge user={person} />
@@ -244,15 +257,16 @@ function PersonRow({ person, now, onOpen }: { person: AdminUser; now: number; on
       <td className="hidden px-4 py-3 text-end font-medium text-fg tabular-nums lg:table-cell">{formatCount(person.messages_count ?? 0)}</td>
       <td className="hidden px-4 py-3 text-fg-muted lg:table-cell">{formatShortDate(person.created_at)}</td>
       <td className="hidden px-4 py-3 text-fg-muted md:table-cell">
-        {person.last_seen_at ? formatLastSeen(person.last_seen_at, now, "").trim() : "Never"}
+        {person.last_seen_at ? formatMoment(person.last_seen_at, now, "plain") : t("admin.people.never")}
       </td>
     </tr>
   );
 }
 
 function TableSkeleton() {
+  const { t } = useTranslation();
   return (
-    <div className="divide-y divide-line" aria-label="Loading people">
+    <div className="divide-y divide-line" aria-label={t("admin.people.loading")}>
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className="flex items-center gap-3 px-4 py-3.5">
           <Skeleton className="size-10 rounded-full" />
