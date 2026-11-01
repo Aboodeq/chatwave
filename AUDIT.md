@@ -220,7 +220,9 @@ These are missing features or larger design decisions rather than bugs.
    new chat and no longer sees your online status or last seen. Block from a chat's
    contact info; unblock there or in Settings › Privacy.
 6. **Groups.** Schema exists; there's no API to create or manage groups.
-7. **Email verification** on sign-up.
+7. **Email verification** on sign-up. (Phone numbers are verified: signing up with one
+   requires the code texted to it.) Until email is verified the same way, anyone can sign
+   up with an address they don't own and keep its owner from registering it.
 8. **"Delete chat for me"** for private conversations (needs a per-participant hidden or
    cleared marker), replacing the "leave" that is now blocked (B11).
 9. **Token storage.** Bearer tokens live in browser storage, so any XSS bug would expose
@@ -230,8 +232,11 @@ These are missing features or larger design decisions rather than bugs.
     subquery per conversation. Fine today; a `last_read_message_id` watermark would scale
     better.
 11. **Security logging.** Failed sign-ins, lockouts and password resets aren't logged.
+    (Admin actions are: suspensions, restored access, role changes and sign-outs go to an
+    audit log shown on the admin dashboard.)
 12. **Production checklist.** `APP_DEBUG=false`, `CORS_ALLOWED_ORIGINS` set to the client's
     origin, a queue worker (reset emails depend on it), the scheduler cron, HTTPS.
+    Admin › System now checks most of these and flags what's missing.
 
 ---
 
