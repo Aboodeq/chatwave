@@ -38,15 +38,15 @@ class RegisterRequest extends FormRequest
     {
         return [
             ...$this->contactMessages(),
-            'name.required' => 'Name is required.',
-            'name.min' => 'Name must be at least 2 characters.',
-            'email.unique' => 'This email is already registered.',
-            'phone.unique' => 'This phone number is already registered.',
-            'otp.required_with' => 'Enter the 6-digit code we texted you.',
-            'otp.digits' => 'The code has 6 digits.',
-            'password.required' => 'Password is required.',
-            'password.min' => 'Password must be at least 8 characters.',
-            'password.confirmed' => 'Passwords do not match.',
+            'name.required' => __('Name is required.'),
+            'name.min' => __('Name must be at least 2 characters.'),
+            'email.unique' => __('This email is already registered.'),
+            'phone.unique' => __('This phone number is already registered.'),
+            'otp.required_with' => __('Enter the 6-digit code we texted you.'),
+            'otp.digits' => __('The code has 6 digits.'),
+            'password.required' => __('Password is required.'),
+            'password.min' => __('Password must be at least 8 characters.'),
+            'password.confirmed' => __('Passwords do not match.'),
         ];
     }
 }

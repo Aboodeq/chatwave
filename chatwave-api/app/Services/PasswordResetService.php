@@ -11,6 +11,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Traits\Localizable;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -21,6 +22,8 @@ use Illuminate\Validation\ValidationException;
  */
 class PasswordResetService
 {
+    use Localizable;
+
     public function __construct(
         private readonly VerificationCodeService $codes,
         private readonly SmsSender $sms,
@@ -30,7 +33,7 @@ class PasswordResetService
      * Issue a new code and send it, if an account uses this email or phone number. Runs on
      * the queue (see SendPasswordResetCode) so response times don't reveal who has an account.
      */
-    public function send(string $identifier): void
+    public function send(string $identifier, string $locale = 'en'): void
     {
         $user = $this->findUser($identifier);
 
@@ -42,15 +45,15 @@ class PasswordResetService
         $minutes = VerificationCodeService::TTL_MINUTES;
 
         if (Phone::isValid($identifier)) {
-            $this->sms->send(
+            $this->withLocale($locale, fn () => $this->sms->send(
                 $identifier,
-                "{$code} is your ChatWave password reset code. It expires in {$minutes} minutes. If you didn't ask for it, ignore this message.",
-            );
+                __(":code is your ChatWave password reset code. It expires in :minutes minutes. If you didn't ask for it, ignore this message.", ['code' => $code, 'minutes' => $minutes]),
+            ));
 
             return;
         }
 
-        Mail::to($user)->send(new PasswordResetOtpMail($code, $minutes));
+        Mail::to($user)->locale($locale)->send(new PasswordResetOtpMail($code, $minutes));
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserRole;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -24,8 +24,8 @@ class DatabaseSeeder extends Seeder
         );
 
         // Someone has to be able to open the admin dashboard.
-        if (! User::where('role', UserRole::Admin)->exists()) {
-            $testUser->forceFill(['role' => UserRole::Admin])->save();
+        if (! User::where('role_id', Role::admin()->id)->exists()) {
+            $testUser->forceFill(['role_id' => Role::admin()->id])->save();
         }
 
         // Sample people and conversations, so the chat UI has something to show.

@@ -34,7 +34,7 @@ class LoginRequest extends FormRequest
     {
         return [
             ...$this->contactMessages(),
-            'password.required' => 'Password is required.',
+            'password.required' => __('Password is required.'),
         ];
     }
 
@@ -61,10 +61,10 @@ class LoginRequest extends FormRequest
         if (! $guard->validate($credentials)) {
             RateLimiter::hit($this->throttleKey(), 60);
 
-            $what = $field === 'phone' ? 'phone number' : 'email';
-
             throw ValidationException::withMessages([
-                $field => "That {$what} and password don't match. Check them and try again.",
+                $field => $field === 'phone'
+                    ? __("That phone number and password don't match. Check them and try again.")
+                    : __("That email and password don't match. Check them and try again."),
             ]);
         }
 

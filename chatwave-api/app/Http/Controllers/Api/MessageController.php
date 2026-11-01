@@ -9,6 +9,7 @@ use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\ConversationService;
+use App\Support\MessageReceipts;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,9 @@ class MessageController extends Controller
 
     public function index(Request $request, Conversation $conversation): JsonResponse
     {
+        // Fetching messages means the viewer's app has them.
+        $this->conversationService->markDelivered($request->user(), $conversation);
+
         // Paginate on the unique, ever-increasing id. Paginating on created_at alone
         // skipped messages that shared a timestamp (common: second-level precision).
         $messages = $conversation->messages()
@@ -29,9 +33,13 @@ class MessageController extends Controller
             ->orderByDesc('id')
             ->cursorPaginate(30);
 
+        $receipts = MessageReceipts::for($conversation->load('participants'), $request->user());
+
         return response()->json([
-            'messages' => MessageResource::collection($messages->items()),
+            'messages' => collect($messages->items())->map(fn (Message $message) => (new MessageResource($message))->withReceipts($receipts)),
             'next_cursor' => $messages->nextCursor()?->encode(),
+            // Lets the app update the status of older messages it already has.
+            'receipts' => $receipts?->toArray(),
         ]);
     }
 
@@ -52,9 +60,10 @@ class MessageController extends Controller
         });
 
         $message->load(Message::RESOURCE_RELATIONS);
+        $receipts = MessageReceipts::for($conversation->load('participants'), $request->user());
 
         return response()->json([
-            'message' => new MessageResource($message),
+            'message' => (new MessageResource($message))->withReceipts($receipts),
         ], 201);
     }
 
@@ -78,16 +87,20 @@ class MessageController extends Controller
         $message->delete();
 
         return response()->json([
-            'message' => 'Message deleted successfully.',
+            'message' => __('Message deleted successfully.'),
         ]);
     }
 
     public function markAsRead(Request $request, Conversation $conversation): JsonResponse
     {
-        $this->conversationService->markAsRead($conversation, $request->user());
+        $upTo = $request->validate([
+            'message_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
+        ])['message_id'] ?? null;
+
+        $this->conversationService->markAsRead($conversation, $request->user(), $upTo);
 
         return response()->json([
-            'message' => 'Messages marked as read.',
+            'message' => __('Messages marked as read.'),
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Contact;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -50,7 +51,7 @@ class AdminUsersTest extends TestCase
         User::factory()->create(['name' => 'Regular Rita']);
 
         $this->getJson('/api/admin/users?status=suspended')->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Suspended Sam');
-        $this->getJson('/api/admin/users?role=admin')->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Ada Admin');
+        $this->getJson('/api/admin/users?role='.Role::admin()->id)->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Ada Admin');
         $this->getJson('/api/admin/users?method=phone')->assertJsonCount(1, 'data')->assertJsonPath('data.0.sign_up_method', 'phone');
         $this->getJson('/api/admin/users?status=active')->assertJsonCount(3, 'data');
     }

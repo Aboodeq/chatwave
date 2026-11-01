@@ -35,7 +35,7 @@ class ProfileController extends Controller
         $request->validate([
             'avatar' => ['required', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max('2mb')],
         ], [
-            'avatar.max' => 'The photo must be 2 MB or smaller.',
+            'avatar.max' => __('The photo must be 2 MB or smaller.'),
         ]);
 
         $user = $request->user();
@@ -75,7 +75,7 @@ class ProfileController extends Controller
             ->delete();
 
         return response()->json([
-            'message' => 'Password updated.',
+            'message' => __('Password updated.'),
             'signed_out_sessions' => $signedOut,
         ]);
     }

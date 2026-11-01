@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\UserRole;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\Phone;
 use Illuminate\Console\Attributes\Description;
@@ -10,7 +10,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
-#[Signature('chatwave:make-admin {account : The email address or phone number of the account} {--revoke : Remove admin access instead}')]
+#[Signature('chatwave:make-admin {account : The email address or phone number of the account} {--revoke : Make them a Member instead}')]
 #[Description('Give an account admin access to the dashboard (or take it away)')]
 class MakeAdmin extends Command
 {
@@ -29,10 +29,10 @@ class MakeAdmin extends Command
             return self::FAILURE;
         }
 
-        $role = $this->option('revoke') ? UserRole::User : UserRole::Admin;
-        $user->forceFill(['role' => $role])->save();
+        $role = $this->option('revoke') ? Role::member() : Role::admin();
+        $user->forceFill(['role_id' => $role->id])->save();
 
-        $this->components->info($role === UserRole::Admin
+        $this->components->info($role->isAdmin()
             ? "{$user->name} is now an admin."
             : "{$user->name} is no longer an admin.");
 

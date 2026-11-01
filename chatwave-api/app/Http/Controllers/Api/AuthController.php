@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\UserRole;
 use App\Enums\VerificationPurpose;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\SendRegistrationCodeRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Sms\SmsException;
 use App\Services\Sms\SmsSender;
@@ -34,18 +34,18 @@ class AuthController extends Controller
         $minutes = VerificationCodeService::TTL_MINUTES;
 
         try {
-            $sms->send($phone, "{$code} is your ChatWave verification code. It expires in {$minutes} minutes.");
+            $sms->send($phone, __(':code is your ChatWave verification code. It expires in :minutes minutes.', ['code' => $code, 'minutes' => $minutes]));
         } catch (SmsException $e) {
             report($e);
             $this->codes->consume(VerificationPurpose::Registration, $phone);
 
             return response()->json([
-                'message' => "We couldn't send a text message right now. Please try again in a few minutes.",
+                'message' => __("We couldn't send a text message right now. Please try again in a few minutes."),
             ], 503);
         }
 
         $response = [
-            'message' => 'We texted a 6-digit code to your phone.',
+            'message' => __('We texted a 6-digit code to your phone.'),
             'expires_in' => $minutes * 60,
         ];
 
@@ -76,7 +76,9 @@ class AuthController extends Controller
             $user->forceFill([
                 'phone_verified_at' => $phone !== null ? now() : null,
                 // The very first account administers the system.
-                'role' => User::query()->exists() ? UserRole::User : UserRole::Admin,
+                'role_id' => User::query()->exists() ? Role::member()->id : Role::admin()->id,
+                'locale' => app()->getLocale(),
+                'status_text' => __('Hey there! I am using ChatWave.'),
             ])->save();
 
             return $user;
@@ -91,7 +93,7 @@ class AuthController extends Controller
 
         if ($user->isSuspended()) {
             return response()->json([
-                'message' => 'This account has been suspended. Contact your administrator if you think this is a mistake.',
+                'message' => __('This account has been suspended. Contact your administrator if you think this is a mistake.'),
                 'code' => 'account_suspended',
             ], 403);
         }
@@ -115,7 +117,7 @@ class AuthController extends Controller
         ])->saveQuietly());
 
         return response()->json([
-            'message' => 'Logged out successfully.',
+            'message' => __('Logged out successfully.'),
         ]);
     }
 

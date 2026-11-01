@@ -20,7 +20,7 @@ class PasswordResetOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your ChatWave password reset code',
+            subject: __('Your ChatWave password reset code'),
         );
     }
 

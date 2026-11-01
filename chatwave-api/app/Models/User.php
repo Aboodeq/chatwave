@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use App\Enums\UserRole;
+use App\Enums\Permission;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -31,6 +32,8 @@ class User extends Authenticatable
         'last_seen_at',
         'is_online',
         'show_online_status',
+        'read_receipts',
+        'locale',
     ];
 
     protected $hidden = [
@@ -39,9 +42,10 @@ class User extends Authenticatable
     ];
 
     protected $attributes = [
-        'role' => 'user',
         'is_online' => false,
         'show_online_status' => true,
+        'read_receipts' => true,
+        'locale' => 'en',
         'status_text' => 'Hey there! I am using ChatWave.',
     ];
 
@@ -49,10 +53,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
         'suspended_at' => 'datetime',
-        'role' => UserRole::class,
         'last_seen_at' => 'datetime',
         'is_online' => 'boolean',
         'show_online_status' => 'boolean',
+        'read_receipts' => 'boolean',
         'password' => 'hashed',
     ];
 
@@ -67,9 +71,66 @@ class User extends Authenticatable
         );
     }
 
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * The user's role, from the per-request cache (Member if none is set).
+     */
+    public function currentRole(): Role
+    {
+        return Role::cachedFind($this->role_id) ?? Role::member();
+    }
+
+    public function hasPermission(Permission $permission): bool
+    {
+        return $this->currentRole()->allows($permission);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function permissionValues(): array
+    {
+        return $this->currentRole()->grantedPermissions();
+    }
+
     public function isAdmin(): bool
     {
-        return $this->role === UserRole::Admin;
+        return $this->currentRole()->isAdmin();
+    }
+
+    /**
+     * Any administrative permission opens the admin dashboard (each page checks its own).
+     */
+    public function canAccessAdmin(): bool
+    {
+        foreach (Permission::cases() as $permission) {
+            if ($permission->isAdministrative() && $this->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether others may see when this user has read their messages. Turning read receipts
+     * off only counts if the user's role allows it.
+     */
+    public function sendsReadReceipts(): bool
+    {
+        return $this->read_receipts || ! $this->hasPermission(Permission::HideReadReceipts);
+    }
+
+    /**
+     * Whether others may see this user's online status and last seen (same rule).
+     */
+    public function sharesOnlineStatus(): bool
+    {
+        return $this->show_online_status || ! $this->hasPermission(Permission::HideOnlineStatus);
     }
 
     public function isSuspended(): bool
@@ -97,7 +158,7 @@ class User extends Authenticatable
      */
     public function isOnline(): bool
     {
-        return $this->show_online_status
+        return $this->sharesOnlineStatus()
             && $this->is_online
             && $this->last_seen_at !== null
             && $this->last_seen_at->gte(now()->subSeconds(self::ONLINE_WINDOW_SECONDS));
@@ -108,7 +169,7 @@ class User extends Authenticatable
      */
     public function visibleLastSeenAt(): ?CarbonInterface
     {
-        return $this->show_online_status ? $this->last_seen_at : null;
+        return $this->sharesOnlineStatus() ? $this->last_seen_at : null;
     }
 
     /**
@@ -182,7 +243,7 @@ class User extends Authenticatable
     public function conversations()
     {
         return $this->belongsToMany(Conversation::class, 'conversation_participants')
-            ->withPivot('role', 'joined_at', 'last_read_at', 'muted_until')
+            ->withPivot('role', 'joined_at', 'last_read_at', 'last_delivered_message_id', 'last_read_message_id', 'muted_until')
             ->withTimestamps();
     }
 

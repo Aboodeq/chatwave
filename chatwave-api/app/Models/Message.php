@@ -55,11 +55,6 @@ class Message extends Model
         return $this->hasMany(MessageMedia::class);
     }
 
-    public function receipts()
-    {
-        return $this->hasMany(MessageReceipt::class);
-    }
-
     public function reactions()
     {
         return $this->hasMany(MessageReaction::class);

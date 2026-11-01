@@ -30,9 +30,9 @@ class SendRegistrationCodeRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'phone.required' => 'Enter your phone number.',
-            'phone.regex' => 'Enter a valid phone number, including the country code.',
-            'phone.unique' => 'This phone number is already registered. Sign in instead.',
+            'phone.required' => __('Enter your phone number.'),
+            'phone.regex' => __('Enter a valid phone number, including the country code.'),
+            'phone.unique' => __('This phone number is already registered. Sign in instead.'),
         ];
     }
 }

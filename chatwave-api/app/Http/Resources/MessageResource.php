@@ -2,11 +2,24 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MessageReceipts;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class MessageResource extends JsonResource
 {
+    private ?MessageReceipts $receipts = null;
+
+    /**
+     * Include "status" (sent, delivered, seen) on the viewer's own messages.
+     */
+    public function withReceipts(?MessageReceipts $receipts): static
+    {
+        $this->receipts = $receipts;
+
+        return $this;
+    }
+
     public function toArray(Request $request): array
     {
         return [
@@ -32,6 +45,7 @@ class MessageResource extends JsonResource
                     ];
                 })->values();
             }),
+            'status' => $this->receipts?->statusOf($this->resource, $request->user()),
             'is_edited' => $this->is_edited,
             'edited_at' => $this->edited_at?->toISOString(),
             'created_at' => $this->created_at->toISOString(),

@@ -32,50 +32,50 @@ class SystemController extends Controller
             $this->check(
                 'debug',
                 ! $debug ? 'ok' : ($production ? 'problem' : 'info'),
-                $debug ? 'Debug mode is on' : 'Debug mode is off',
-                $debug ? 'Error pages show internal details. Set APP_DEBUG=false in production.' : 'Errors are hidden from visitors.',
+                $debug ? __('Debug mode is on') : __('Debug mode is off'),
+                $debug ? __('Error pages show internal details. Set APP_DEBUG=false in production.') : __('Errors are hidden from visitors.'),
             ),
             $this->check(
                 'cors',
                 in_array('*', $origins, true) ? ($production ? 'problem' : 'info') : 'ok',
-                in_array('*', $origins, true) ? 'Any website can call the API' : 'API calls are limited to your sites',
-                in_array('*', $origins, true) ? "Set CORS_ALLOWED_ORIGINS to the client's address." : implode(', ', $origins),
+                in_array('*', $origins, true) ? __('Any website can call the API') : __('API calls are limited to your sites'),
+                in_array('*', $origins, true) ? __("Set CORS_ALLOWED_ORIGINS to the client's address.") : implode(', ', $origins),
             ),
             $this->check(
                 'mail',
                 in_array($mailer, ['log', 'array'], true) ? 'warning' : 'ok',
-                in_array($mailer, ['log', 'array'], true) ? 'Emails are not sent' : 'Emails are sent',
+                in_array($mailer, ['log', 'array'], true) ? __('Emails are not sent') : __('Emails are sent'),
                 in_array($mailer, ['log', 'array'], true)
-                    ? 'Password reset emails are written to the log. Configure MAIL_MAILER to send them.'
-                    : "Using the {$mailer} mailer.",
+                    ? __('Password reset emails are written to the log. Configure MAIL_MAILER to send them.')
+                    : __('Using the :mailer mailer.', ['mailer' => $mailer]),
             ),
             $this->check(
                 'sms',
                 $sms->deliversMessages() ? 'ok' : 'warning',
-                $sms->deliversMessages() ? 'Text messages are sent' : 'Text messages are not sent',
+                $sms->deliversMessages() ? __('Text messages are sent') : __('Text messages are not sent'),
                 $sms->deliversMessages()
-                    ? "Using {$smsDriver}."
-                    : 'Phone sign-up codes are written to the log. Set SMS_DRIVER=twilio to send them.',
+                    ? __('Using :driver.', ['driver' => $smsDriver])
+                    : __('Phone sign-up codes are written to the log. Set SMS_DRIVER=twilio to send them.'),
             ),
             $this->check(
                 'queue',
                 $failed > 0 || $stalled ? 'warning' : 'ok',
                 match (true) {
-                    $stalled => 'Jobs are waiting to run',
-                    $failed > 0 => "{$failed} background ".($failed === 1 ? 'job has' : 'jobs have').' failed',
-                    default => 'Background jobs are running',
+                    $stalled => __('Jobs are waiting to run'),
+                    $failed > 0 => trans_choice('{1} :count background job has failed|[2,*] :count background jobs have failed', $failed),
+                    default => __('Background jobs are running'),
                 },
                 match (true) {
-                    $stalled => 'Some jobs have waited over 5 minutes. Is `php artisan queue:work` running?',
-                    $failed > 0 => 'See `php artisan queue:failed`, then retry or forget them.',
-                    default => $queue === 'sync' ? 'Jobs run during the request (sync queue).' : 'No stuck or failed jobs.',
+                    $stalled => __('Some jobs have waited over 5 minutes. Is `php artisan queue:work` running?'),
+                    $failed > 0 => __('See `php artisan queue:failed`, then retry or forget them.'),
+                    default => $queue === 'sync' ? __('Jobs run during the request (sync queue).') : __('No stuck or failed jobs.'),
                 },
             ),
             $this->check(
                 'https',
                 $https ? 'ok' : ($production ? 'problem' : 'info'),
-                $https ? 'Served over HTTPS' : 'Not served over HTTPS',
-                $https ? (string) config('app.url') : 'Set APP_URL to an https:// address in production.',
+                $https ? __('Served over HTTPS') : __('Not served over HTTPS'),
+                $https ? (string) config('app.url') : __('Set APP_URL to an https:// address in production.'),
             ),
         ];
 

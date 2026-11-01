@@ -15,12 +15,16 @@ class ConversationParticipant extends Model
         'role',
         'joined_at',
         'last_read_at',
+        'last_delivered_message_id',
+        'last_read_message_id',
         'muted_until',
     ];
 
     protected $casts = [
         'joined_at' => 'datetime',
         'last_read_at' => 'datetime',
+        'last_delivered_message_id' => 'integer',
+        'last_read_message_id' => 'integer',
         'muted_until' => 'datetime',
     ];
 

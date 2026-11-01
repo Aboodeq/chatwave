@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Enums\Permission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -35,7 +36,8 @@ class AdminAccessTest extends TestCase
     {
         $this->actingAs(User::factory()->admin()->create())
             ->getJson('/api/auth/me')
-            ->assertJsonPath('user.role', 'admin');
+            ->assertJsonPath('user.role.key', 'admin')
+            ->assertJsonPath('user.permissions', Permission::values());
     }
 
     public function test_the_make_admin_command_grants_and_revokes_access(): void

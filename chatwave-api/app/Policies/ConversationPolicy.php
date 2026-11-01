@@ -31,11 +31,11 @@ class ConversationPolicy
             $other = $conversation->participants()->whereKeyNot($user->getKey())->first();
 
             if ($other && $user->hasBlocked($other)) {
-                return Response::deny('You blocked this person. Unblock them to send a message.');
+                return Response::deny(__('You blocked this person. Unblock them to send a message.'));
             }
 
             if ($other && $user->isBlockedBy($other)) {
-                return Response::deny("You can't send messages to this person.");
+                return Response::deny(__("You can't send messages to this person."));
             }
         }
 
@@ -53,7 +53,7 @@ class ConversationPolicy
         }
 
         return $conversation->isPrivate()
-            ? Response::deny('Private conversations cannot be left.')
+            ? Response::deny(__('Private conversations cannot be left.'))
             : Response::allow();
     }
 }

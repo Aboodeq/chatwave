@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Conversation;
 use App\Models\Message;
-use App\Models\MessageReceipt;
 use App\Models\User;
 use App\Services\ConversationService;
 use Illuminate\Database\Seeder;
@@ -124,24 +123,23 @@ class DemoSeeder extends Seeder
             $created[$i] = $message;
         }
 
-        // Everything except the last $unread incoming messages has been read by both people.
+        // The other person has received and read everything. You've read everything except
+        // the last $unread incoming messages (so those show as unread, and yours as seen).
+        $lastId = end($created)->id;
         $incoming = collect($created)->filter(fn (Message $m) => $m->sender_id !== $me->id)->values();
-        $readByMe = $incoming->slice(0, max(0, $incoming->count() - $unread));
+        $firstUnread = $unread > 0 ? $incoming->slice(-$unread)->first() : null;
+        $readByMe = $firstUnread
+            ? collect($created)->filter(fn (Message $m) => $m->id < $firstUnread->id)->max('id')
+            : $lastId;
 
-        foreach ($created as $message) {
-            $reader = $message->sender_id === $me->id ? $other : $me;
-
-            if ($reader->is($me) && ! $readByMe->contains('id', $message->id)) {
-                continue;
-            }
-
-            MessageReceipt::create([
-                'message_id' => $message->id,
-                'user_id' => $reader->id,
-                'delivered_at' => $message->created_at,
-                'read_at' => $message->created_at,
-            ]);
-        }
+        $conversation->participants()->updateExistingPivot($me->id, [
+            'last_delivered_message_id' => $lastId,
+            'last_read_message_id' => $readByMe,
+        ]);
+        $conversation->participants()->updateExistingPivot($other->id, [
+            'last_delivered_message_id' => $lastId,
+            'last_read_message_id' => $lastId,
+        ]);
 
         Conversation::whereKey($conversation->id)->update(['updated_at' => end($created)->created_at]);
     }

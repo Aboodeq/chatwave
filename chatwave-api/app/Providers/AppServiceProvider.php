@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enums\Permission;
 use App\Models\User;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
@@ -46,8 +47,13 @@ class AppServiceProvider extends ServiceProvider
         // bcrypt ignores everything after 72 bytes, so don't accept longer passwords.
         Password::defaults(fn () => Password::min(8)->max(72));
 
-        // The admin dashboard and its API. Suspended accounts never get this far.
-        Gate::define('admin', fn (User $user) => $user->isAdmin());
+        // Role-based access: every permission is a gate ("can:admin.people"), and "admin"
+        // opens the dashboard for anyone with at least one administrative permission.
+        // Suspended accounts never get this far.
+        foreach (Permission::cases() as $permission) {
+            Gate::define($permission->value, fn (User $user) => $user->hasPermission($permission));
+        }
+        Gate::define('admin', fn (User $user) => $user->canAccessAdmin());
 
         $this->configureRateLimiting();
     }

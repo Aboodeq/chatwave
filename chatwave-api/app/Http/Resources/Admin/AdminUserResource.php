@@ -26,7 +26,12 @@ class AdminUserResource extends JsonResource
             'phone' => $this->phone,
             'avatar' => $this->avatarUrl(),
             'status_text' => $this->status_text,
-            'role' => $this->role->value,
+            'role' => [
+                'id' => $this->currentRole()->id,
+                'key' => $this->currentRole()->key,
+                'name' => $this->currentRole()->name,
+            ],
+            'has_admin_access' => $this->canAccessAdmin(),
             'sign_up_method' => $this->email === null ? 'phone' : 'email',
             'verified' => $this->email === null ? $this->phone_verified_at !== null : $this->email_verified_at !== null,
             'is_online' => $online,

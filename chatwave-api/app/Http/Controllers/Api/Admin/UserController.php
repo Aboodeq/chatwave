@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminActionResource;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\AdminAction;
 use App\Models\Contact;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,7 +28,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'search' => ['sometimes', 'nullable', 'string', 'max:100'],
             'status' => ['sometimes', Rule::in(['all', 'active', 'suspended', 'online'])],
-            'role' => ['sometimes', Rule::in(['all', 'admin', 'user'])],
+            'role' => ['sometimes', 'nullable', Rule::in(['all', ...Role::cachedAll()->keys()->map(fn ($id) => (string) $id)->all()])],
             'method' => ['sometimes', Rule::in(['all', 'email', 'phone'])],
             'sort' => ['sometimes', Rule::in([...self::SORTS, ...array_map(fn ($sort) => "-{$sort}", self::SORTS)])],
             'per_page' => ['sometimes', 'integer', 'min:5', 'max:100'],
@@ -56,7 +56,7 @@ class UserController extends Controller
             ->when(($validated['status'] ?? 'all') === 'online', fn ($query) => $query
                 ->where('is_online', true)
                 ->where('last_seen_at', '>=', now()->subSeconds(User::ONLINE_WINDOW_SECONDS)))
-            ->when(($validated['role'] ?? 'all') !== 'all', fn ($query) => $query->where('role', $validated['role']))
+            ->when(($validated['role'] ?? 'all') !== 'all', fn ($query) => $query->where('role_id', (int) $validated['role']))
             ->when(($validated['method'] ?? 'all') === 'email', fn ($query) => $query->whereNotNull('email'))
             ->when(($validated['method'] ?? 'all') === 'phone', fn ($query) => $query->whereNull('email'))
             // People who were never seen sort last, whichever the direction.
@@ -100,7 +100,7 @@ class UserController extends Controller
             'activity' => AdminActionResource::collection(
                 AdminAction::with(['admin', 'target'])->where('target_user_id', $user->id)->latest('id')->limit(20)->get()
             ),
-            'is_last_admin' => $user->isAdmin() && User::where('role', UserRole::Admin)->count() === 1,
+            'is_last_admin' => $user->isAdmin() && User::where('role_id', Role::admin()->id)->count() === 1,
         ]);
     }
 }

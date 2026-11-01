@@ -19,14 +19,15 @@ class SendPasswordResetCode implements ShouldQueue
 
     /**
      * @param  string  $identifier  A normalized email address or E.164 phone number.
+     * @param  string  $locale  The language to write the email or text message in.
      */
-    public function __construct(public string $identifier)
+    public function __construct(public string $identifier, public string $locale = 'en')
     {
         //
     }
 
     public function handle(PasswordResetService $passwordResets): void
     {
-        $passwordResets->send($this->identifier);
+        $passwordResets->send($this->identifier, $this->locale);
     }
 }

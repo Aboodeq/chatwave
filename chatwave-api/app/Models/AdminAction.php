@@ -20,6 +20,12 @@ class AdminAction extends Model
 
     public const SIGNED_OUT = 'user.signed_out';
 
+    public const ROLE_CREATED = 'role.created';
+
+    public const ROLE_UPDATED = 'role.updated';
+
+    public const ROLE_DELETED = 'role.deleted';
+
     protected $fillable = [
         'admin_id',
         'target_user_id',

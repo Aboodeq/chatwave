@@ -47,11 +47,11 @@ trait HandlesContactFields
     protected function contactMessages(): array
     {
         return [
-            'email.required_without' => 'Enter your email address or phone number.',
-            'phone.required_without' => 'Enter your phone number or email address.',
-            'email.prohibits' => 'Use an email address or a phone number, not both.',
-            'email.email' => 'Please enter a valid email address.',
-            'phone.regex' => 'Enter a valid phone number, including the country code.',
+            'email.required_without' => __('Enter your email address or phone number.'),
+            'phone.required_without' => __('Enter your phone number or email address.'),
+            'email.prohibits' => __('Use an email address or a phone number, not both.'),
+            'email.email' => __('Please enter a valid email address.'),
+            'phone.regex' => __('Enter a valid phone number, including the country code.'),
         ];
     }
 

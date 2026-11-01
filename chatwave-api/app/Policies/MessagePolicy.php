@@ -13,14 +13,14 @@ class MessagePolicy
     {
         return $this->isActiveAuthor($user, $message) && $message->type === 'text'
             ? Response::allow()
-            : Response::deny('You can only edit your own messages.');
+            : Response::deny(__('You can only edit your own messages.'));
     }
 
     public function delete(User $user, Message $message): Response
     {
         return $this->isActiveAuthor($user, $message) && $message->type !== 'system'
             ? Response::allow()
-            : Response::deny('You can only delete your own messages.');
+            : Response::deny(__('You can only delete your own messages.'));
     }
 
     /**

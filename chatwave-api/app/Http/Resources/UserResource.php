@@ -16,8 +16,16 @@ class UserResource extends PublicUserResource
             ...parent::toArray($request),
             'email' => $this->email,
             'phone' => $this->phone,
-            'role' => $this->role->value,
+            'role' => [
+                'id' => $this->currentRole()->id,
+                'key' => $this->currentRole()->key,
+                'name' => $this->currentRole()->name,
+            ],
+            // Everything the user's role allows, for showing or hiding parts of the app.
+            'permissions' => $this->permissionValues(),
             'show_online_status' => $this->show_online_status,
+            'read_receipts' => $this->read_receipts,
+            'locale' => $this->locale,
             'created_at' => $this->created_at->toISOString(),
         ];
     }

@@ -24,12 +24,13 @@ class PasswordResetController extends Controller
      */
     public function send(SendResetCodeRequest $request): JsonResponse
     {
-        SendPasswordResetCode::dispatch($request->contact());
-
-        $where = $request->contactField() === 'phone' ? 'this phone number' : 'this email';
+        // Sent in the language the person is using now.
+        SendPasswordResetCode::dispatch($request->contact(), app()->getLocale());
 
         return response()->json([
-            'message' => "If an account exists for {$where}, a verification code has been sent.",
+            'message' => $request->contactField() === 'phone'
+                ? __('If an account exists for this phone number, a verification code has been sent.')
+                : __('If an account exists for this email, a verification code has been sent.'),
             'expires_in' => VerificationCodeService::TTL_MINUTES * 60,
         ]);
     }
@@ -39,7 +40,7 @@ class PasswordResetController extends Controller
         $this->passwordResets->verify($request->contact(), $request->validated('otp'));
 
         return response()->json([
-            'message' => 'Verification code accepted.',
+            'message' => __('Verification code accepted.'),
         ]);
     }
 
@@ -52,7 +53,7 @@ class PasswordResetController extends Controller
         );
 
         return response()->json([
-            'message' => 'Password reset successfully.',
+            'message' => __('Password reset successfully.'),
         ]);
     }
 }

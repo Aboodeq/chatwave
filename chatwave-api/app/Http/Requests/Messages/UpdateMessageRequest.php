@@ -21,7 +21,7 @@ class UpdateMessageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'body.required' => 'Message cannot be empty.',
+            'body.required' => __('Message cannot be empty.'),
         ];
     }
 }

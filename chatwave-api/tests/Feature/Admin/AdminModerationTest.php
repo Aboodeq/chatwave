@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -73,7 +74,7 @@ class AdminModerationTest extends TestCase
             ->assertJsonValidationErrors(['user' => "You can't suspend your own account."]);
 
         $this->postJson("/api/admin/users/{$otherAdmin->id}/suspension")
-            ->assertJsonValidationErrors(['user' => 'Remove admin access before suspending this person.']);
+            ->assertJsonValidationErrors(['user' => 'Give this person another role before suspending them.']);
 
         $this->assertFalse($otherAdmin->fresh()->isSuspended());
     }
@@ -83,16 +84,16 @@ class AdminModerationTest extends TestCase
         $person = User::factory()->create();
 
         $this->actingAs($this->admin)
-            ->putJson("/api/admin/users/{$person->id}/role", ['role' => 'admin'])
+            ->putJson("/api/admin/users/{$person->id}/role", ['role_id' => Role::admin()->id])
             ->assertOk()
-            ->assertJsonPath('user.role', 'admin');
+            ->assertJsonPath('user.role.key', 'admin');
 
         $this->assertDatabaseHas('admin_actions', ['action' => 'user.role_changed', 'target_user_id' => $person->id]);
 
-        $this->putJson("/api/admin/users/{$this->admin->id}/role", ['role' => 'user'])
+        $this->putJson("/api/admin/users/{$this->admin->id}/role", ['role_id' => Role::member()->id])
             ->assertJsonValidationErrors(['user' => "You can't change your own role."]);
 
-        $this->putJson("/api/admin/users/{$person->id}/role", ['role' => 'owner'])->assertJsonValidationErrors(['role']);
+        $this->putJson("/api/admin/users/{$person->id}/role", ['role_id' => 'owner'])->assertJsonValidationErrors(['role_id']);
     }
 
     public function test_suspended_people_cannot_be_made_admins(): void
@@ -100,8 +101,8 @@ class AdminModerationTest extends TestCase
         $person = User::factory()->suspended()->create();
 
         $this->actingAs($this->admin)
-            ->putJson("/api/admin/users/{$person->id}/role", ['role' => 'admin'])
-            ->assertJsonValidationErrors(['role' => 'Restore this account before making it an admin.']);
+            ->putJson("/api/admin/users/{$person->id}/role", ['role_id' => Role::admin()->id])
+            ->assertJsonValidationErrors(['role_id' => 'Restore this account before making it an admin.']);
     }
 
     public function test_signing_someone_out_everywhere(): void

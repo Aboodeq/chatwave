@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\ActivityController as AdminActivityController;
 use App\Http\Controllers\Api\Admin\ModerationController as AdminModerationController;
 use App\Http\Controllers\Api\Admin\OverviewController as AdminOverviewController;
+use App\Http\Controllers\Api\Admin\RoleController as AdminRoleController;
 use App\Http\Controllers\Api\Admin\SystemController as AdminSystemController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AuthController;
@@ -94,16 +95,32 @@ Route::middleware(['auth:sanctum', EnsureAccountIsActive::class, RecordPresence:
     Route::delete('/messages/{message}', [MessageController::class, 'destroy'])
         ->can('delete', 'message');
 
-    // Admin dashboard
+    // Admin dashboard. Role-based: each area needs its own permission (App\Enums\Permission).
     Route::prefix('admin')->middleware('can:admin')->group(function () {
-        Route::get('/overview', AdminOverviewController::class);
-        Route::get('/users', [AdminUserController::class, 'index']);
-        Route::get('/users/{user}', [AdminUserController::class, 'show']);
-        Route::post('/users/{user}/suspension', [AdminModerationController::class, 'suspend']);
-        Route::delete('/users/{user}/suspension', [AdminModerationController::class, 'restore']);
-        Route::put('/users/{user}/role', [AdminModerationController::class, 'updateRole']);
-        Route::delete('/users/{user}/sessions', [AdminModerationController::class, 'signOut']);
-        Route::get('/activity', AdminActivityController::class);
-        Route::get('/system', AdminSystemController::class);
+        Route::get('/overview', AdminOverviewController::class)->middleware('can:admin.overview');
+
+        Route::middleware('can:admin.people')->group(function () {
+            Route::get('/users', [AdminUserController::class, 'index']);
+            Route::get('/users/{user}', [AdminUserController::class, 'show']);
+        });
+
+        Route::middleware('can:admin.moderate')->group(function () {
+            Route::post('/users/{user}/suspension', [AdminModerationController::class, 'suspend']);
+            Route::delete('/users/{user}/suspension', [AdminModerationController::class, 'restore']);
+            Route::delete('/users/{user}/sessions', [AdminModerationController::class, 'signOut']);
+        });
+
+        // Anyone in the dashboard may read the list of roles (for names and filters).
+        Route::get('/roles', [AdminRoleController::class, 'index']);
+
+        Route::middleware('can:admin.roles')->group(function () {
+            Route::put('/users/{user}/role', [AdminModerationController::class, 'updateRole']);
+            Route::post('/roles', [AdminRoleController::class, 'store']);
+            Route::put('/roles/{role}', [AdminRoleController::class, 'update']);
+            Route::delete('/roles/{role}', [AdminRoleController::class, 'destroy']);
+        });
+
+        Route::get('/activity', AdminActivityController::class)->middleware('can:admin.activity');
+        Route::get('/system', AdminSystemController::class)->middleware('can:admin.system');
     });
 });

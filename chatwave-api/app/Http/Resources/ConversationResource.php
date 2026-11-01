@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MessageReceipts;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -41,7 +42,7 @@ class ConversationResource extends JsonResource
             'is_blocked' => $iBlocked,
             'can_message' => ! $iBlocked && ! $theyBlocked,
             'last_message' => $this->latestMessage
-                ? new MessageResource($this->latestMessage)
+                ? (new MessageResource($this->latestMessage))->withReceipts(MessageReceipts::for($this->resource, $authUser))
                 : null,
             'unread_count' => (int) ($this->unread_count ?? 0),
             'participant' => $otherParticipant

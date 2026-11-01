@@ -26,7 +26,7 @@ class EnsureAccountIsActive
             }
 
             return response()->json([
-                'message' => 'This account has been suspended.',
+                'message' => __('This account has been suspended.'),
                 'code' => 'account_suspended',
             ], 403);
         }

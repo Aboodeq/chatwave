@@ -45,7 +45,7 @@ class SessionController extends Controller
 
         abort_if($deleted === 0, 404);
 
-        return response()->json(['message' => 'Signed out of that device.']);
+        return response()->json(['message' => __('Signed out of that device.')]);
     }
 
     /**
@@ -60,7 +60,7 @@ class SessionController extends Controller
             ->delete();
 
         return response()->json([
-            'message' => 'Signed out of all other devices.',
+            'message' => __('Signed out of all other devices.'),
             'signed_out' => $count,
         ]);
     }

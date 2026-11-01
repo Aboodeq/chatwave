@@ -23,9 +23,9 @@ class UpdatePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.current_password' => "That isn't your current password.",
-            'password.confirmed' => 'Passwords do not match.',
-            'password.different' => 'Choose a password different from your current one.',
+            'current_password.current_password' => __("That isn't your current password."),
+            'password.confirmed' => __('Passwords do not match.'),
+            'password.different' => __('Choose a password different from your current one.'),
         ];
     }
 }

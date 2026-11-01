@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
-use App\Models\MessageReceipt;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -82,32 +82,60 @@ class ConversationService
     }
 
     /**
-     * Mark every message from other people in the conversation as read by the user.
+     * The user's app has received everything up to now: mark the newest message from other
+     * people in each of their conversations as delivered to them (or just in one).
+     *
+     * Called whenever the app fetches conversations or messages, which it does every few
+     * seconds while open. So a message sent while someone is offline stays "sent" until
+     * their app next connects, then becomes "delivered". Only new messages are looked at,
+     * and nothing is written when there's nothing new.
      */
-    public function markAsRead(Conversation $conversation, User $user): void
+    public function markDelivered(User $user, ?Conversation $conversation = null): void
     {
-        $now = now();
+        $latest = Message::query()
+            ->join('conversation_participants as me', function ($join) use ($user) {
+                $join->on('me.conversation_id', '=', 'messages.conversation_id')->where('me.user_id', $user->id);
+            })
+            ->when($conversation, fn ($query) => $query->where('messages.conversation_id', $conversation->id))
+            ->where('messages.sender_id', '!=', $user->id)
+            ->whereRaw('messages.id > COALESCE(me.last_delivered_message_id, 0)')
+            ->groupBy('messages.conversation_id')
+            ->selectRaw('messages.conversation_id, MAX(messages.id) as latest_id')
+            ->pluck('latest_id', 'conversation_id');
 
-        // Bulk upserts in chunks; this used to run two queries per unread message.
-        $conversation->messages()
-            ->select('messages.id')
-            ->tap(fn (Builder $query) => $this->unreadBy($query, $user))
-            ->chunkById(500, function ($messages) use ($user, $now) {
-                MessageReceipt::upsert(
-                    $messages->map(fn ($message) => [
-                        'message_id' => $message->id,
-                        'user_id' => $user->id,
-                        'delivered_at' => $now,
-                        'read_at' => $now,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ])->all(),
-                    ['message_id', 'user_id'],
-                    ['read_at', 'updated_at'],
-                );
-            }, 'messages.id', 'id');
+        foreach ($latest as $conversationId => $latestId) {
+            ConversationParticipant::query()
+                ->where('conversation_id', $conversationId)
+                ->where('user_id', $user->id)
+                ->where(fn ($query) => $query->whereNull('last_delivered_message_id')->orWhere('last_delivered_message_id', '<', $latestId))
+                ->update(['last_delivered_message_id' => $latestId]);
+        }
+    }
 
-        $conversation->participants()->updateExistingPivot($user->id, ['last_read_at' => $now]);
+    /**
+     * The user has seen the conversation up to a message (by default, the newest one).
+     * Markers only move forward. Whether the sender gets to see "seen" depends on both
+     * people's read receipt settings (see MessageReceipts).
+     */
+    public function markAsRead(Conversation $conversation, User $user, ?int $upTo = null): void
+    {
+        $newest = (int) $conversation->messages()->max('id');
+        $readUpTo = $upTo === null ? $newest : min($upTo, $newest);
+
+        $participant = ConversationParticipant::query()
+            ->where('conversation_id', $conversation->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $participant) {
+            return;
+        }
+
+        $participant->forceFill([
+            'last_read_at' => now(),
+            'last_read_message_id' => max((int) $participant->last_read_message_id, $readUpTo) ?: null,
+            'last_delivered_message_id' => max((int) $participant->last_delivered_message_id, $readUpTo) ?: null,
+        ])->save();
     }
 
     /**
@@ -116,6 +144,10 @@ class ConversationService
     private function unreadBy(Builder $query, User $user): void
     {
         $query->where('sender_id', '!=', $user->id)
-            ->whereDoesntHave('receipts', fn (Builder $q) => $q->where('user_id', $user->id)->whereNotNull('read_at'));
+            ->where('messages.id', '>', ConversationParticipant::query()
+                ->selectRaw('COALESCE(last_read_message_id, 0)')
+                ->whereColumn('conversation_participants.conversation_id', 'messages.conversation_id')
+                ->where('conversation_participants.user_id', $user->id)
+                ->limit(1));
     }
 }

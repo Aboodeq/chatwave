@@ -63,7 +63,7 @@ class VerificationCodeService
 
         if ($reserved === 0) {
             throw ValidationException::withMessages([
-                'otp' => 'Too many attempts. Please request a new code.',
+                'otp' => __('Too many attempts. Please request a new code.'),
             ]);
         }
 
@@ -95,7 +95,7 @@ class VerificationCodeService
     public function invalidCode(): ValidationException
     {
         return ValidationException::withMessages([
-            'otp' => 'The verification code is invalid or expired.',
+            'otp' => __('The verification code is invalid or expired.'),
         ]);
     }
 

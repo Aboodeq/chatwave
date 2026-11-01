@@ -20,6 +20,9 @@ class ConversationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        // The app polls this list while it's open: whatever it lists has been delivered.
+        $this->conversationService->markDelivered($request->user());
+
         $conversations = $this->conversationService
             ->getConversationsForUser($request->user());
 
@@ -33,7 +36,7 @@ class ConversationController extends Controller
         $otherUser = User::findOrFail($request->integer('user_id'));
 
         // Someone who blocked you won't see a new conversation from you appear.
-        abort_if($request->user()->isBlockedBy($otherUser), 403, "You can't message this person.");
+        abort_if($request->user()->isBlockedBy($otherUser), 403, __("You can't message this person."));
 
         $conversation = $this->conversationService
             ->findOrCreatePrivateConversation($request->user(), $otherUser);
@@ -62,7 +65,7 @@ class ConversationController extends Controller
         $conversation->participants()->detach($request->user()->id);
 
         return response()->json([
-            'message' => 'Left conversation successfully.',
+            'message' => __('Left conversation successfully.'),
         ]);
     }
 }

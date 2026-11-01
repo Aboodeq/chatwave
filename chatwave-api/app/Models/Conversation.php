@@ -22,7 +22,7 @@ class Conversation extends Model
     public function participants()
     {
         return $this->belongsToMany(User::class, 'conversation_participants')
-            ->withPivot('role', 'joined_at', 'last_read_at', 'muted_until')
+            ->withPivot('role', 'joined_at', 'last_read_at', 'last_delivered_message_id', 'last_read_message_id', 'muted_until')
             ->withTimestamps();
     }
 

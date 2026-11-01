@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminActionResource;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\AdminAction;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Admin\DailyBuckets;
 use Carbon\CarbonImmutable;
@@ -65,7 +65,7 @@ class OverviewController extends Controller
                 'messages' => array_sum($messages),
                 'messages_previous' => Message::whereBetween('created_at', [$previousFrom, $buckets->fromUtc()])->count(),
                 'conversations' => Conversation::count(),
-                'admins' => User::where('role', UserRole::Admin)->count(),
+                'admins' => User::where('role_id', Role::admin()->id)->count(),
                 'suspended' => User::whereNotNull('suspended_at')->count(),
                 'phone_accounts' => User::whereNull('email')->count(),
             ],

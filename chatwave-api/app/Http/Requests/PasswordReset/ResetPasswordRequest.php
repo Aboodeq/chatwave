@@ -28,7 +28,7 @@ class ResetPasswordRequest extends FormRequest
     {
         return [
             ...$this->contactMessages(),
-            'password.confirmed' => 'Passwords do not match.',
+            'password.confirmed' => __('Passwords do not match.'),
         ];
     }
 }

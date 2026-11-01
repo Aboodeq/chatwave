@@ -33,7 +33,7 @@ class BlockController extends Controller
 
     public function store(Request $request, User $user): JsonResponse
     {
-        abort_if($user->is($request->user()), 422, "You can't block yourself.");
+        abort_if($user->is($request->user()), 422, __("You can't block yourself."));
 
         Contact::updateOrCreate(
             ['user_id' => $request->user()->id, 'contact_id' => $user->id],
@@ -41,7 +41,7 @@ class BlockController extends Controller
         );
         $request->user()->forgetBlocks();
 
-        return response()->json(['message' => "You blocked {$user->name}."]);
+        return response()->json(['message' => __('You blocked :name.', ['name' => $user->name])]);
     }
 
     public function destroy(Request $request, User $user): JsonResponse
@@ -52,6 +52,6 @@ class BlockController extends Controller
             ->update(['is_blocked' => false]);
         $request->user()->forgetBlocks();
 
-        return response()->json(['message' => "You unblocked {$user->name}."]);
+        return response()->json(['message' => __('You unblocked :name.', ['name' => $user->name])]);
     }
 }

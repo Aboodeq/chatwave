@@ -27,7 +27,7 @@ class StoreConversationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'user_id.not_in' => 'You cannot start a conversation with yourself.',
+            'user_id.not_in' => __('You cannot start a conversation with yourself.'),
         ];
     }
 }

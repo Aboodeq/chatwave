@@ -146,10 +146,11 @@ class MessageTest extends TestCase
         $queries = count(DB::getQueryLog());
         DB::disableQueryLog();
 
-        // Used to be two queries per unread message (~120 here).
+        // Used to be two queries per unread message (~120 here); now it moves one marker.
         $this->assertLessThan(10, $queries);
-        $this->assertSame(60, DB::table('message_receipts')->whereNotNull('read_at')->count());
-        $this->assertNotNull($conversation->participants()->find($me->id)->pivot->last_read_at);
+        $pivot = $conversation->participants()->find($me->id)->pivot;
+        $this->assertNotNull($pivot->last_read_at);
+        $this->assertSame((int) $conversation->messages()->max('id'), (int) $pivot->last_read_message_id);
 
         $this->actingAs($me)->getJson('/api/conversations')->assertJsonPath('conversations.0.unread_count', 0);
     }

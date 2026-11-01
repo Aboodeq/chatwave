@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Enums\UserRole;
 use App\Enums\VerificationPurpose;
 use App\Models\User;
 use App\Models\VerificationCode;
@@ -153,16 +152,16 @@ class PhoneSignUpTest extends TestCase
     public function test_the_first_account_administers_the_system(): void
     {
         $this->requestCode()->assertOk();
-        $this->register()->assertCreated()->assertJsonPath('user.role', 'admin');
+        $this->register()->assertCreated()->assertJsonPath('user.role.key', 'admin');
 
         $this->postJson('/api/auth/register', [
             'name' => 'Second Person',
             'email' => 'second@example.com',
             'password' => 'secret-pass-1',
             'password_confirmation' => 'secret-pass-1',
-        ])->assertCreated()->assertJsonPath('user.role', 'user');
+        ])->assertCreated()->assertJsonPath('user.role.key', 'member');
 
-        $this->assertSame(UserRole::Admin, User::firstWhere('phone', self::PHONE)->role);
+        $this->assertTrue(User::firstWhere('phone', self::PHONE)->isAdmin());
     }
 
     public function test_a_failed_text_message_is_reported_and_leaves_no_code(): void

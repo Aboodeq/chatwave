@@ -36,8 +36,8 @@ class StoreMessageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'body.required' => 'Message cannot be empty.',
-            'reply_to_id.exists' => 'You can only reply to a message in this conversation.',
+            'body.required' => __('Message cannot be empty.'),
+            'reply_to_id.exists' => __('You can only reply to a message in this conversation.'),
         ];
     }
 }
