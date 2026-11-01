@@ -228,12 +228,12 @@ These are missing features or larger design decisions rather than bugs.
 9. **Token storage.** Bearer tokens live in browser storage, so any XSS bug would expose
    them. If the client and API can share a parent domain, consider Sanctum's cookie-based
    SPA authentication; either way, serve the client with a Content-Security-Policy.
-10. **Scale.** The conversation list is unpaginated, and unread counts use a correlated
-    subquery per conversation. Fine today; a `last_read_message_id` watermark would scale
-    better.
+10. **Scale.** The conversation list is unpaginated. (Unread counts and message status
+    now use per-person markers, the last delivered and last read message, instead of a
+    row per message.)
 11. **Security logging.** Failed sign-ins, lockouts and password resets aren't logged.
-    (Admin actions are: suspensions, restored access, role changes and sign-outs go to an
-    audit log shown on the admin dashboard.)
+    (Admin actions are: suspensions, restored access, role changes, role edits and
+    sign-outs go to an audit log shown on the admin dashboard.)
 12. **Production checklist.** `APP_DEBUG=false`, `CORS_ALLOWED_ORIGINS` set to the client's
     origin, a queue worker (reset emails depend on it), the scheduler cron, HTTPS.
     Admin › System now checks most of these and flags what's missing.
