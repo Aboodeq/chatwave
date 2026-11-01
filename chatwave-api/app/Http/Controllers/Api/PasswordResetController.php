@@ -7,29 +7,36 @@ use App\Http\Requests\PasswordReset\ResetPasswordRequest;
 use App\Http\Requests\PasswordReset\SendResetCodeRequest;
 use App\Http\Requests\PasswordReset\VerifyResetCodeRequest;
 use App\Jobs\SendPasswordResetCode;
-use App\Services\PasswordResetOtpService;
+use App\Services\PasswordResetService;
+use App\Services\VerificationCodeService;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Every endpoint takes "email" or "phone": accounts created with a phone number get their
+ * code by text message.
+ */
 class PasswordResetController extends Controller
 {
-    public function __construct(protected PasswordResetOtpService $otps) {}
+    public function __construct(protected PasswordResetService $passwordResets) {}
 
     /**
      * Always answers the same way, so the endpoint can't be used to find out who has an account.
      */
     public function send(SendResetCodeRequest $request): JsonResponse
     {
-        SendPasswordResetCode::dispatch($request->validated('email'));
+        SendPasswordResetCode::dispatch($request->contact());
+
+        $where = $request->contactField() === 'phone' ? 'this phone number' : 'this email';
 
         return response()->json([
-            'message' => 'If an account exists for this email, a verification code has been sent.',
-            'expires_in' => PasswordResetOtpService::TTL_MINUTES * 60,
+            'message' => "If an account exists for {$where}, a verification code has been sent.",
+            'expires_in' => VerificationCodeService::TTL_MINUTES * 60,
         ]);
     }
 
     public function verify(VerifyResetCodeRequest $request): JsonResponse
     {
-        $this->otps->verify($request->validated('email'), $request->validated('otp'));
+        $this->passwordResets->verify($request->contact(), $request->validated('otp'));
 
         return response()->json([
             'message' => 'Verification code accepted.',
@@ -38,8 +45,8 @@ class PasswordResetController extends Controller
 
     public function reset(ResetPasswordRequest $request): JsonResponse
     {
-        $this->otps->reset(
-            $request->validated('email'),
+        $this->passwordResets->reset(
+            $request->contact(),
             $request->validated('otp'),
             $request->validated('password'),
         );

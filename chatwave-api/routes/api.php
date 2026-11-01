@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\ActivityController as AdminActivityController;
+use App\Http\Controllers\Api\Admin\ModerationController as AdminModerationController;
+use App\Http\Controllers\Api\Admin\OverviewController as AdminOverviewController;
+use App\Http\Controllers\Api\Admin\SystemController as AdminSystemController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AvatarController;
 use App\Http\Controllers\Api\BlockController;
@@ -9,6 +14,7 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\RecordPresence;
 use Illuminate\Support\Facades\Route;
 
@@ -21,12 +27,17 @@ Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
     });
 
+    // Signing up with a phone number starts by texting a code to it.
+    Route::post('/register/code', [AuthController::class, 'sendRegistrationCode'])
+        ->middleware('throttle:code-send');
+
+    // Password reset by email, or by text message for phone accounts.
     Route::post('/password/otp', [PasswordResetController::class, 'send'])
-        ->middleware('throttle:password-otp-send');
+        ->middleware('throttle:code-send');
     Route::post('/password/otp/verify', [PasswordResetController::class, 'verify'])
-        ->middleware('throttle:password-otp-check');
+        ->middleware('throttle:code-check');
     Route::post('/password/reset', [PasswordResetController::class, 'reset'])
-        ->middleware('throttle:password-otp-check');
+        ->middleware('throttle:code-check');
 });
 
 // Profile photos (public, so <img> tags can load them). Only random upload names match.
@@ -34,8 +45,9 @@ Route::get('/avatars/{file}', [AvatarController::class, 'show'])
     ->where('file', '[A-Za-z0-9]{20,64}\.(jpg|jpeg|png|webp)')
     ->name('avatars.show');
 
-// Protected routes. RecordPresence keeps "online" and "last seen" current.
-Route::middleware(['auth:sanctum', RecordPresence::class])->group(function () {
+// Protected routes. Suspended accounts are turned away; RecordPresence keeps "online" and
+// "last seen" current.
+Route::middleware(['auth:sanctum', EnsureAccountIsActive::class, RecordPresence::class])->group(function () {
 
     // Auth
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -81,4 +93,17 @@ Route::middleware(['auth:sanctum', RecordPresence::class])->group(function () {
         ->can('update', 'message');
     Route::delete('/messages/{message}', [MessageController::class, 'destroy'])
         ->can('delete', 'message');
+
+    // Admin dashboard
+    Route::prefix('admin')->middleware('can:admin')->group(function () {
+        Route::get('/overview', AdminOverviewController::class);
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::get('/users/{user}', [AdminUserController::class, 'show']);
+        Route::post('/users/{user}/suspension', [AdminModerationController::class, 'suspend']);
+        Route::delete('/users/{user}/suspension', [AdminModerationController::class, 'restore']);
+        Route::put('/users/{user}/role', [AdminModerationController::class, 'updateRole']);
+        Route::delete('/users/{user}/sessions', [AdminModerationController::class, 'signOut']);
+        Route::get('/activity', AdminActivityController::class);
+        Route::get('/system', AdminSystemController::class);
+    });
 });

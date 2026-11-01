@@ -16,6 +16,7 @@ class UserResource extends PublicUserResource
             ...parent::toArray($request),
             'email' => $this->email,
             'phone' => $this->phone,
+            'role' => $this->role->value,
             'show_online_status' => $this->show_online_status,
             'created_at' => $this->created_at->toISOString(),
         ];

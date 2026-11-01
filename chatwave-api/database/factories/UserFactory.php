@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -31,6 +32,32 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * An account created with a phone number instead of an email address.
+     */
+    public function withPhone(?string $phone = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email' => null,
+            'email_verified_at' => null,
+            'phone' => $phone ?? '+1555'.fake()->unique()->numerify('#######'),
+            'phone_verified_at' => now(),
+        ]);
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => ['role' => UserRole::Admin]);
+    }
+
+    public function suspended(string $reason = 'Spam'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'suspended_at' => now(),
+            'suspension_reason' => $reason,
+        ]);
     }
 
     /**

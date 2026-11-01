@@ -2,10 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Enums\VerificationPurpose;
 use App\Jobs\SendPasswordResetCode;
 use App\Mail\PasswordResetOtpMail;
-use App\Models\PasswordResetOtp;
 use App\Models\User;
+use App\Models\VerificationCode;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -18,10 +19,11 @@ class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function storeCode(string $email = 'person@example.com', string $code = '123456', array $attributes = []): PasswordResetOtp
+    private function storeCode(string $email = 'person@example.com', string $code = '123456', array $attributes = []): VerificationCode
     {
-        return PasswordResetOtp::create([
-            'email' => $email,
+        return VerificationCode::create([
+            'purpose' => VerificationPurpose::PasswordReset,
+            'identifier' => $email,
             'code_hash' => Hash::make($code),
             'attempts' => 0,
             'expires_at' => now()->addMinutes(10),
@@ -58,8 +60,9 @@ class PasswordResetTest extends TestCase
             return $mail->hasTo('person@example.com') && preg_match('/^\d{6}$/', $mail->code) === 1;
         });
 
-        $this->assertDatabaseHas('password_reset_otps', [
-            'email' => 'person@example.com',
+        $this->assertDatabaseHas('verification_codes', [
+            'purpose' => 'password_reset',
+            'identifier' => 'person@example.com',
             'attempts' => 0,
             'verified_at' => null,
         ]);
@@ -74,7 +77,7 @@ class PasswordResetTest extends TestCase
             ->assertJson(['expires_in' => 600]);
 
         Mail::assertNothingSent();
-        $this->assertDatabaseCount('password_reset_otps', 0);
+        $this->assertDatabaseCount('verification_codes', 0);
     }
 
     public function test_codes_are_sent_from_the_queue_not_during_the_request(): void
@@ -83,7 +86,7 @@ class PasswordResetTest extends TestCase
 
         $this->postJson('/api/auth/password/otp', ['email' => 'person@example.com'])->assertOk();
 
-        Queue::assertPushed(SendPasswordResetCode::class, fn ($job) => $job->email === 'person@example.com');
+        Queue::assertPushed(SendPasswordResetCode::class, fn ($job) => $job->identifier === 'person@example.com');
     }
 
     public function test_a_new_code_can_be_requested_once_a_minute(): void
@@ -116,7 +119,7 @@ class PasswordResetTest extends TestCase
         $this->reset('123456')->assertOk();
 
         $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
-        $this->assertDatabaseMissing('password_reset_otps', ['email' => 'person@example.com']);
+        $this->assertDatabaseMissing('verification_codes', ['identifier' => 'person@example.com']);
         Event::assertDispatched(PasswordReset::class);
 
         // Every existing session is signed out.
@@ -171,7 +174,7 @@ class PasswordResetTest extends TestCase
 
         $this->verify('123456')->assertJsonValidationErrors(['otp']);
 
-        $this->assertDatabaseCount('password_reset_otps', 0);
+        $this->assertDatabaseCount('verification_codes', 0);
     }
 
     public function test_guesses_are_capped_per_email_even_across_new_codes(): void
@@ -181,7 +184,7 @@ class PasswordResetTest extends TestCase
         // Requesting a new code resets the per-code counter, so a separate per-address
         // limit has to stop attackers from cycling codes.
         for ($round = 0; $round < 2; $round++) {
-            PasswordResetOtp::query()->delete();
+            VerificationCode::query()->delete();
             $this->storeCode();
 
             for ($i = 0; $i < 5; $i++) {
@@ -189,7 +192,7 @@ class PasswordResetTest extends TestCase
             }
         }
 
-        PasswordResetOtp::query()->delete();
+        VerificationCode::query()->delete();
         $this->storeCode();
 
         $this->verify('123456')->assertStatus(429);
@@ -200,9 +203,9 @@ class PasswordResetTest extends TestCase
         $this->storeCode('old@example.com', attributes: ['expires_at' => now()->subDays(2)]);
         $this->storeCode('fresh@example.com');
 
-        $this->artisan('model:prune', ['--model' => [PasswordResetOtp::class]])->assertSuccessful();
+        $this->artisan('model:prune', ['--model' => [VerificationCode::class]])->assertSuccessful();
 
-        $this->assertDatabaseMissing('password_reset_otps', ['email' => 'old@example.com']);
-        $this->assertDatabaseHas('password_reset_otps', ['email' => 'fresh@example.com']);
+        $this->assertDatabaseMissing('verification_codes', ['identifier' => 'old@example.com']);
+        $this->assertDatabaseHas('verification_codes', ['identifier' => 'fresh@example.com']);
     }
 }

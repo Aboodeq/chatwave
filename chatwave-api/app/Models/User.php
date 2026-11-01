@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,6 +39,7 @@ class User extends Authenticatable
     ];
 
     protected $attributes = [
+        'role' => 'user',
         'is_online' => false,
         'show_online_status' => true,
         'status_text' => 'Hey there! I am using ChatWave.',
@@ -45,6 +47,9 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'phone_verified_at' => 'datetime',
+        'suspended_at' => 'datetime',
+        'role' => UserRole::class,
         'last_seen_at' => 'datetime',
         'is_online' => 'boolean',
         'show_online_status' => 'boolean',
@@ -53,13 +58,31 @@ class User extends Authenticatable
 
     /**
      * Emails are stored lowercased so lookups and the unique index are case-insensitive
-     * on every database.
+     * on every database. Accounts created with a phone number have no email.
      */
     protected function email(): Attribute
     {
         return Attribute::make(
-            set: fn (string $value) => Str::lower(trim($value)),
+            set: fn (?string $value) => $value === null ? null : Str::lower(trim($value)),
         );
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
+    }
+
+    /**
+     * How the person signs in, for display: their email, or their phone number.
+     */
+    public function signInIdentifier(): string
+    {
+        return $this->email ?? (string) $this->phone;
     }
 
     public function avatarUrl(): ?string

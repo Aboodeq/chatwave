@@ -22,7 +22,11 @@ class SeederTest extends TestCase
         $this->seed(DemoSeeder::class);
 
         $this->assertSame(1, User::where('email', 'test@example.com')->count());
-        $this->assertSame(6, User::count());
+        $this->assertSame(7, User::count());
         $this->assertSame(4, Conversation::count());
+
+        // The test user can open the admin dashboard, and one demo person uses a phone number.
+        $this->assertTrue(User::firstWhere('email', 'test@example.com')->isAdmin());
+        $this->assertSame(1, User::whereNull('email')->whereNotNull('phone_verified_at')->count());
     }
 }

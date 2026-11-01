@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\PasswordReset;
 
-use App\Http\Requests\Concerns\NormalizesEmail;
+use App\Http\Requests\Concerns\HandlesContactFields;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VerifyResetCodeRequest extends FormRequest
 {
-    use NormalizesEmail;
+    use HandlesContactFields;
 
     public function authorize(): bool
     {
@@ -17,8 +17,13 @@ class VerifyResetCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email', 'max:191'],
+            ...$this->contactRules(),
             'otp' => ['required', 'digits:6'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return $this->contactMessages();
     }
 }

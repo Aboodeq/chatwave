@@ -2,14 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Services\PasswordResetOtpService;
+use App\Services\PasswordResetService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
 /**
- * Generates and emails a reset code off the request cycle. The HTTP response then takes the
- * same time whether or not the email belongs to an account, and the plain code never
- * touches the queue payload (it is created inside the worker).
+ * Generates and sends a reset code off the request cycle. The HTTP response then takes the
+ * same time whether or not the email or phone number belongs to an account, and the plain
+ * code never touches the queue payload (it is created inside the worker).
  */
 class SendPasswordResetCode implements ShouldQueue
 {
@@ -17,13 +17,16 @@ class SendPasswordResetCode implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(public string $email)
+    /**
+     * @param  string  $identifier  A normalized email address or E.164 phone number.
+     */
+    public function __construct(public string $identifier)
     {
         //
     }
 
-    public function handle(PasswordResetOtpService $otps): void
+    public function handle(PasswordResetService $passwordResets): void
     {
-        $otps->send($this->email);
+        $passwordResets->send($this->identifier);
     }
 }

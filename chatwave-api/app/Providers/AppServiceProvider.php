@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Services\Sms\LogSmsSender;
+use App\Services\Sms\SmsSender;
+use App\Services\Sms\TwilioSmsSender;
+use App\Support\Phone;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -17,7 +23,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Text messages: "log" writes them to the application log (development), "twilio"
+        // sends them. See config/services.php.
+        $this->app->singleton(SmsSender::class, fn () => match (config('services.sms.driver')) {
+            'twilio' => new TwilioSmsSender(
+                (string) config('services.twilio.sid'),
+                (string) config('services.twilio.token'),
+                (string) config('services.twilio.from'),
+            ),
+            default => new LogSmsSender,
+        });
     }
 
     /**
@@ -30,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
 
         // bcrypt ignores everything after 72 bytes, so don't accept longer passwords.
         Password::defaults(fn () => Password::min(8)->max(72));
+
+        // The admin dashboard and its API. Suspended accounts never get this far.
+        Gate::define('admin', fn (User $user) => $user->isAdmin());
 
         $this->configureRateLimiting();
     }
@@ -45,34 +63,46 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(20)->by($request->ip());
         });
 
-        // Sending a reset code: per IP, plus a one-minute cooldown and caps per address.
-        RateLimiter::for('password-otp-send', function (Request $request) {
-            $email = $this->emailKey($request);
+        // Sending a code (password reset, or phone sign-up): per IP, plus a one-minute
+        // cooldown and caps per email or phone number, shared by both endpoints so nobody
+        // can flood someone's inbox or phone.
+        RateLimiter::for('code-send', function (Request $request) {
+            $contact = $this->contactKey($request);
 
             return [
                 Limit::perMinute(5)->by('ip:'.$request->ip()),
-                Limit::perMinute(1)->by('cooldown:'.$email),
-                Limit::perHour(5)->by('hourly:'.$email),
-                Limit::perDay(10)->by('daily:'.$email),
+                Limit::perMinute(1)->by('cooldown:'.$contact),
+                Limit::perHour(5)->by('hourly:'.$contact),
+                Limit::perDay(10)->by('daily:'.$contact),
             ];
         });
 
         // Checking a reset code: per IP, plus caps per address that survive requesting new
-        // codes. Each code also allows only 5 wrong guesses (PasswordResetOtpService), so a
+        // codes. Each code also allows only 5 wrong guesses (VerificationCodeService), so a
         // 6-digit code can be guessed at most ~30 times a day per account, whatever the IP.
-        RateLimiter::for('password-otp-check', function (Request $request) {
-            $email = $this->emailKey($request);
+        RateLimiter::for('code-check', function (Request $request) {
+            $contact = $this->contactKey($request);
 
             return [
                 Limit::perMinute(10)->by('ip:'.$request->ip()),
-                Limit::perHour(10)->by('hourly:'.$email),
-                Limit::perDay(30)->by('daily:'.$email),
+                Limit::perHour(10)->by('hourly:'.$contact),
+                Limit::perDay(30)->by('daily:'.$contact),
             ];
         });
     }
 
-    private function emailKey(Request $request): string
+    /**
+     * The email address or phone number a request is about, normalized like the form
+     * requests do (rate limiters run before them).
+     */
+    private function contactKey(Request $request): string
     {
-        return sha1(Str::lower(trim((string) $request->input('email'))));
+        $email = $request->input('email');
+
+        $contact = is_string($email) && trim($email) !== ''
+            ? Str::lower(trim($email))
+            : Phone::normalize((string) $request->input('phone'));
+
+        return sha1($contact);
     }
 }

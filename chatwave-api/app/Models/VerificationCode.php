@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use App\Enums\VerificationPurpose;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 
-class PasswordResetOtp extends Model
+/**
+ * A hashed one-time code sent by email or text message. See VerificationCodeService.
+ */
+class VerificationCode extends Model
 {
     use MassPrunable;
 
     protected $fillable = [
-        'email',
+        'purpose',
+        'identifier',
         'code_hash',
         'attempts',
         'expires_at',
@@ -23,6 +28,7 @@ class PasswordResetOtp extends Model
     ];
 
     protected $casts = [
+        'purpose' => VerificationPurpose::class,
         'attempts' => 'integer',
         'expires_at' => 'datetime',
         'verified_at' => 'datetime',

@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Http\Requests\Concerns\NormalizesEmail;
+use App\Http\Requests\Concerns\HandlesContactFields;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
-    use NormalizesEmail;
+    use HandlesContactFields;
 
     /** Failed attempts allowed per account and IP before a one-minute lockout. */
     public const MAX_ATTEMPTS = 5;
@@ -24,7 +24,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email', 'max:191'],
+            ...$this->contactRules(),
             'password' => ['required', 'string', 'max:255'],
             'remember' => ['sometimes', 'boolean'],
         ];
@@ -33,14 +33,14 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'Email is required.',
-            'email.email' => 'Please enter a valid email address.',
+            ...$this->contactMessages(),
             'password.required' => 'Password is required.',
         ];
     }
 
     /**
-     * Check the credentials and return the user.
+     * Check the credentials and return the user. Accounts sign in with their email address
+     * or their phone number.
      *
      * Uses Auth::validate() rather than Auth::attempt(): it compares in constant time but
      * never starts a session, which a token API doesn't need (and which crashed when the
@@ -52,23 +52,29 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $credentials = $this->only('email', 'password');
+        $field = $this->contactField();
+        $credentials = [$field => $this->contact(), 'password' => $this->input('password')];
 
-        if (! Auth::validate($credentials)) {
+        // The "web" guard checks credentials (in constant time) without needing a session.
+        $guard = Auth::guard('web');
+
+        if (! $guard->validate($credentials)) {
             RateLimiter::hit($this->throttleKey(), 60);
 
+            $what = $field === 'phone' ? 'phone number' : 'email';
+
             throw ValidationException::withMessages([
-                'email' => "That email and password don't match. Check them and try again.",
+                $field => "That {$what} and password don't match. Check them and try again.",
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
 
         /** @var User $user */
-        $user = Auth::getLastAttempted();
+        $user = $guard->getLastAttempted();
 
         if (config('hashing.rehash_on_login', true)) {
-            Auth::getProvider()->rehashPasswordIfRequired($user, $credentials);
+            $guard->getProvider()->rehashPasswordIfRequired($user, $credentials);
         }
 
         return $user;
@@ -86,7 +92,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => __('auth.throttle', [
+            $this->contactField() => __('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -95,6 +101,6 @@ class LoginRequest extends FormRequest
 
     protected function throttleKey(): string
     {
-        return 'login:'.sha1((string) $this->input('email')).'|'.$this->ip();
+        return 'login:'.sha1($this->contact()).'|'.$this->ip();
     }
 }

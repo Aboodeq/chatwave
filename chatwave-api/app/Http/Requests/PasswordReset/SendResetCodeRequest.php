@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\PasswordReset;
 
-use App\Http\Requests\Concerns\NormalizesEmail;
+use App\Http\Requests\Concerns\HandlesContactFields;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SendResetCodeRequest extends FormRequest
 {
-    use NormalizesEmail;
+    use HandlesContactFields;
 
     public function authorize(): bool
     {
@@ -16,8 +16,11 @@ class SendResetCodeRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'email' => ['required', 'string', 'email', 'max:191'],
-        ];
+        return $this->contactRules();
+    }
+
+    public function messages(): array
+    {
+        return $this->contactMessages();
     }
 }

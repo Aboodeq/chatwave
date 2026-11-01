@@ -15,7 +15,8 @@ use Illuminate\Support\Carbon;
  *
  *   php artisan db:seed --class=DemoSeeder
  *
- * Sign in as test@example.com / password. Every demo account uses the password "password".
+ * Sign in as test@example.com / password (an admin). Every demo account uses the password
+ * "password"; Omar Khalil signs in with the phone number +1 202 555 0143.
  */
 class DemoSeeder extends Seeder
 {
@@ -38,6 +39,17 @@ class DemoSeeder extends Seeder
         ));
 
         [$maya, $daniel, $lina, $sam, $yuki] = $people->all();
+
+        // Someone who signed up with a phone number (a fictional 555-01xx number).
+        // Sign in with +1 202 555 0143 and the password "password".
+        if (! User::where('phone', '+12025550143')->exists()) {
+            (new User([
+                'name' => 'Omar Khalil',
+                'phone' => '+12025550143',
+                'password' => 'password',
+                'status_text' => 'Signed up with my phone',
+            ]))->forceFill(['phone_verified_at' => now()])->save();
+        }
 
         // Presence, so "Online" and "Last seen" show up. Yuki keeps it private.
         foreach ([

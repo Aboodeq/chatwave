@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests\PasswordReset;
 
-use App\Http\Requests\Concerns\NormalizesEmail;
+use App\Http\Requests\Concerns\HandlesContactFields;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordRequest extends FormRequest
 {
-    use NormalizesEmail;
+    use HandlesContactFields;
 
     public function authorize(): bool
     {
@@ -18,7 +18,7 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email', 'max:191'],
+            ...$this->contactRules(),
             'otp' => ['required', 'digits:6'],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ];
@@ -27,6 +27,7 @@ class ResetPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
+            ...$this->contactMessages(),
             'password.confirmed' => 'Passwords do not match.',
         ];
     }
